@@ -170,6 +170,19 @@ namespace zivillian.ldap.test
             Assert.False(control.Value.Value.IsEmpty);
         }
 
+        [Fact]
+        public void CanReadUnbindRequest()
+        {
+            var data = new byte[]
+            {
+                0x30, 0x84, 0x00, 0x00, 0x00, 0x05, 0x02, 0x01,
+                0x28, 0x42, 0x00
+            };
+            var message = Read(data);
+            Assert.Equal(40, message.Id);
+            Assert.IsType<LdapUnbindRequest>(message);
+        }
+
         private LdapRequestMessage Read(byte[] message)
         {
             return LdapReader.ReadMessage(message.AsMemory());

@@ -40,7 +40,13 @@ namespace zivillian.ldap.Asn1
         [ExpectedTag(TagClass.Application, 1)]
         public Asn1BindResponse? BindResponse;
 
-        //public Asn1UnbindRequest? UnbindRequest;
+        /*
+         * UnbindRequest ::= [APPLICATION 2] NULL
+         */
+        [ExpectedTag(TagClass.Application, 2)]
+        [AnyValue]
+        //TODO
+        public ReadOnlyMemory<byte>? UnbindRequest;
 
         [ExpectedTag(TagClass.Application, 3)]
         public Asn1SearchRequest? SearchRequest;

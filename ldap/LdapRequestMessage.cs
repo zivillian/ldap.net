@@ -33,6 +33,10 @@ namespace zivillian.ldap
             {
                 return new LdapSearchRequest(message);
             }
+            else if (message.ProtocolOp.UnbindRequest != null)
+            {
+                return new LdapUnbindRequest(message);
+            }
             else
             {
                 throw new NotImplementedException();
