@@ -29,6 +29,10 @@ namespace zivillian.ldap
             {
                 return new LdapDeleteRequest(message);
             }
+            else if (message.ProtocolOp.SearchRequest != null)
+            {
+                return new LdapSearchRequest(message);
+            }
             else
             {
                 throw new NotImplementedException();

@@ -36,16 +36,27 @@ namespace zivillian.ldap.Asn1
 
         [ExpectedTag(TagClass.Application, 0)]
         public Asn1BindRequest? BindRequest;
+
         [ExpectedTag(TagClass.Application, 1)]
         public Asn1BindResponse? BindResponse;
+
         //public Asn1UnbindRequest? UnbindRequest;
-        //public Asn1SearchRequest? SearchRequest;
+
+        [ExpectedTag(TagClass.Application, 3)]
+        public Asn1SearchRequest? SearchRequest;
+
         //public Asn1SearchResEntry? SearchResultEntry;
+
         //public Asn1SearchResDone? SearchResultDone;
+
         //public Asn1SearchResRef? SearchResultReference;
+
         //public Asn1ModifyRequest? ModifyRequest;
+
         //public Asn1ModifyResponse? ModifyResponse;
+
         //public Asn1AddRequest? AddRequest;
+
         //public Asn1AddResponse? AddResponse;
 
         /*
@@ -59,13 +70,21 @@ namespace zivillian.ldap.Asn1
         [ExpectedTag(TagClass.Application, 10)]
         [OctetString]
         public ReadOnlyMemory<byte>? DelRequest;
+
         //public Asn1DelResponse? DelResponse;
+
         //public Asn1ModDNRequest? ModifyDNRequest;
+
         //public Asn1ModDNResponse? ModifyDNResponse;
+
         //public Asn1CompareRequest? CompareRequest;
+
         //public Asn1CompareResponse? CompareResponse;
+
         //public Asn1AbandonRequest? AbandonRequest;
+
         //public Asn1ExtendedReq? ExtendedRequest;
+
         //public Asn1ExtendedResp? ExtendedResponse;
     }
 }

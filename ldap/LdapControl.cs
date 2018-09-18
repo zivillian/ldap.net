@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Security.Cryptography;
+using System.Text;
 using zivillian.ldap.Asn1;
 
 namespace zivillian.ldap
@@ -8,16 +8,16 @@ namespace zivillian.ldap
     {
         internal LdapControl(Asn1Control control)
         {
-            Oid = control.ControlType;
+            Oid = Encoding.UTF8.GetString(control.ControlType.Span);
             Criticality = control.Criticality;
             Value = control.ControlValue;
         }
 
-        public ReadOnlyMemory<byte> Value { get; set; }
+        public ReadOnlyMemory<byte>? Value { get; set; }
 
         public bool Criticality { get; }
 
-        public Oid Oid { get; }
+        public string Oid { get; }
 
         internal static LdapControl[] Create(Asn1Control[] controls)
         {

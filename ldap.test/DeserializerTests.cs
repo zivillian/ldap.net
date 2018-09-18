@@ -122,7 +122,52 @@ namespace zivillian.ldap.test
             };
             var message = Read(data);
             Assert.Equal(28, message.Id);
-            //var search = Assert.IsType<LdapSearchRequest>(message);
+            var search = Assert.IsType<LdapSearchRequest>(message);
+            Assert.True(String.IsNullOrEmpty(search.BaseObject));
+            Assert.Equal(SearchScope.BaseObject, search.Scope);
+            Assert.Equal(DerefAliases.NeverDerefAliases, search.DerefAliases);
+            Assert.Equal(Int32.MaxValue, search.SizeLimit);
+            Assert.Equal(TimeSpan.MaxValue, search.TimeLimit);
+            Assert.False(search.TypesOnly);
+        }
+
+        [Fact]
+        public void CanReadSearchRequest2()
+        {
+            var data = new byte[]
+            {
+                0x30, 0x84, 0x00, 0x00, 0x00, 0x7f, 0x02, 0x01,
+                0x1e, 0x63, 0x84, 0x00, 0x00, 0x00, 0x42, 0x04,
+                0x11, 0x64, 0x63, 0x3d, 0x65, 0x78, 0x61, 0x6d,
+                0x70, 0x6c, 0x65, 0x2c, 0x64, 0x63, 0x3d, 0x63,
+                0x6f, 0x6d, 0x0a, 0x01, 0x01, 0x0a, 0x01, 0x00,
+                0x02, 0x01, 0x00, 0x02, 0x01, 0x3c, 0x01, 0x01,
+                0x00, 0x87, 0x0b, 0x6f, 0x62, 0x6a, 0x65, 0x63,
+                0x74, 0x63, 0x6c, 0x61, 0x73, 0x73, 0x30, 0x84,
+                0x00, 0x00, 0x00, 0x0d, 0x04, 0x0b, 0x6f, 0x62,
+                0x6a, 0x65, 0x63, 0x74, 0x63, 0x6c, 0x61, 0x73,
+                0x73, 0xa0, 0x84, 0x00, 0x00, 0x00, 0x2e, 0x30,
+                0x84, 0x00, 0x00, 0x00, 0x28, 0x04, 0x16, 0x31,
+                0x2e, 0x32, 0x2e, 0x38, 0x34, 0x30, 0x2e, 0x31,
+                0x31, 0x33, 0x35, 0x35, 0x36, 0x2e, 0x31, 0x2e,
+                0x34, 0x2e, 0x33, 0x31, 0x39, 0x01, 0x01, 0xff,
+                0x04, 0x0b, 0x30, 0x84, 0x00, 0x00, 0x00, 0x05,
+                0x02, 0x01, 0x64, 0x04, 0x00
+            };
+            var message = Read(data);
+            Assert.Equal(30, message.Id);
+            var search = Assert.IsType<LdapSearchRequest>(message);
+            Assert.Equal("dc=example,dc=com", search.BaseObject);
+            Assert.Equal(SearchScope.SingleLevel, search.Scope);
+            Assert.Equal(DerefAliases.NeverDerefAliases, search.DerefAliases);
+            Assert.Equal(Int32.MaxValue, search.SizeLimit);
+            Assert.Equal(TimeSpan.FromSeconds(60), search.TimeLimit);
+            Assert.False(search.TypesOnly);
+
+            var control = Assert.Single(message.Controls);
+            Assert.Equal("1.2.840.113556.1.4.319", control.Oid);
+            Assert.True(control.Criticality);
+            Assert.False(control.Value.Value.IsEmpty);
         }
 
         private LdapRequestMessage Read(byte[] message)

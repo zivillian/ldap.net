@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using System.Security.Cryptography;
 using System.Security.Cryptography.Asn1;
 
 namespace zivillian.ldap.Asn1
@@ -17,14 +16,14 @@ namespace zivillian.ldap.Asn1
          * LDAPOID ::= OCTET STRING -- Constrained to <numericoid>
          */
 
-        [ObjectIdentifier]
-        public Oid ControlType;
+        [OctetString]
+        public ReadOnlyMemory<byte> ControlType;
 
         [DefaultValue(0x01, 0x01, 0x00)]
         public bool Criticality;
 
         [OctetString]
         [OptionalValue]
-        public ReadOnlyMemory<byte> ControlValue;
+        public ReadOnlyMemory<byte>? ControlValue;
     }
 }
