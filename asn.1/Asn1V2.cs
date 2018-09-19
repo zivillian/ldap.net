@@ -82,20 +82,20 @@ namespace System.Security.Cryptography.Asn1
         private const byte ControlMask = ClassMask | ConstructedMask;
         private const byte TagNumberMask = 0b0001_1111;
 
-        internal static readonly Asn1Tag EndOfContents = new Asn1Tag(0, (int)UniversalTagNumber.EndOfContents);
-        internal static readonly Asn1Tag Boolean = new Asn1Tag(0, (int)UniversalTagNumber.Boolean);
-        internal static readonly Asn1Tag Integer = new Asn1Tag(0, (int)UniversalTagNumber.Integer);
-        internal static readonly Asn1Tag PrimitiveBitString = new Asn1Tag(0, (int)UniversalTagNumber.BitString);
-        internal static readonly Asn1Tag ConstructedBitString = new Asn1Tag(ConstructedMask, (int)UniversalTagNumber.BitString);
-        internal static readonly Asn1Tag PrimitiveOctetString = new Asn1Tag(0, (int)UniversalTagNumber.OctetString);
-        internal static readonly Asn1Tag ConstructedOctetString = new Asn1Tag(ConstructedMask, (int)UniversalTagNumber.OctetString);
-        internal static readonly Asn1Tag Null = new Asn1Tag(0, (int)UniversalTagNumber.Null);
-        internal static readonly Asn1Tag ObjectIdentifier = new Asn1Tag(0, (int)UniversalTagNumber.ObjectIdentifier);
-        internal static readonly Asn1Tag Enumerated = new Asn1Tag(0, (int)UniversalTagNumber.Enumerated);
-        internal static readonly Asn1Tag Sequence = new Asn1Tag(ConstructedMask, (int)UniversalTagNumber.Sequence);
-        internal static readonly Asn1Tag SetOf = new Asn1Tag(ConstructedMask, (int)UniversalTagNumber.SetOf);
-        internal static readonly Asn1Tag UtcTime = new Asn1Tag(0, (int)UniversalTagNumber.UtcTime);
-        internal static readonly Asn1Tag GeneralizedTime = new Asn1Tag(0, (int)UniversalTagNumber.GeneralizedTime);
+        public static readonly Asn1Tag EndOfContents = new Asn1Tag(0, (int)UniversalTagNumber.EndOfContents);
+        public static readonly Asn1Tag Boolean = new Asn1Tag(0, (int)UniversalTagNumber.Boolean);
+        public static readonly Asn1Tag Integer = new Asn1Tag(0, (int)UniversalTagNumber.Integer);
+        public static readonly Asn1Tag PrimitiveBitString = new Asn1Tag(0, (int)UniversalTagNumber.BitString);
+        public static readonly Asn1Tag ConstructedBitString = new Asn1Tag(ConstructedMask, (int)UniversalTagNumber.BitString);
+        public static readonly Asn1Tag PrimitiveOctetString = new Asn1Tag(0, (int)UniversalTagNumber.OctetString);
+        public static readonly Asn1Tag ConstructedOctetString = new Asn1Tag(ConstructedMask, (int)UniversalTagNumber.OctetString);
+        public static readonly Asn1Tag Null = new Asn1Tag(0, (int)UniversalTagNumber.Null);
+        public static readonly Asn1Tag ObjectIdentifier = new Asn1Tag(0, (int)UniversalTagNumber.ObjectIdentifier);
+        public static readonly Asn1Tag Enumerated = new Asn1Tag(0, (int)UniversalTagNumber.Enumerated);
+        public static readonly Asn1Tag Sequence = new Asn1Tag(ConstructedMask, (int)UniversalTagNumber.Sequence);
+        public static readonly Asn1Tag SetOf = new Asn1Tag(ConstructedMask, (int)UniversalTagNumber.SetOf);
+        public static readonly Asn1Tag UtcTime = new Asn1Tag(0, (int)UniversalTagNumber.UtcTime);
+        public static readonly Asn1Tag GeneralizedTime = new Asn1Tag(0, (int)UniversalTagNumber.GeneralizedTime);
 
         private readonly byte _controlFlags;
         private readonly int _tagValue;

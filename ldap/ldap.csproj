@@ -6,10 +6,16 @@
     <OutputType>Library</OutputType>
     <StartupObject />
     <RootNamespace>zivillian.ldap</RootNamespace>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\asn.1\asn.1.csproj" />
   </ItemGroup>
-
+  <ItemGroup>
+    <AsnXml Include="Asn1\Generated\Asn1LdapMessage.xml" />
+    <AsnXml Include="Asn1\Generated\Asn1Control.xml" />
+    <AsnXml Include="Asn1\Generated\Asn1ProtocolOp.xml" />
+  </ItemGroup>
+  <Import Project="Asn1\Generated\AsnXml.targets" />
 </Project>

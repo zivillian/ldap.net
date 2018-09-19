@@ -36,7 +36,7 @@ namespace zivillian.ldap.Asn1
         [ExpectedTag(TagClass.ContextSpecific, 2)]
         [AnyValue]
         public ReadOnlyMemory<byte>? Not;
-        
+
         [ExpectedTag(TagClass.ContextSpecific, 3)]
         public Asn1AttributeValueAssertion? Equality;
 

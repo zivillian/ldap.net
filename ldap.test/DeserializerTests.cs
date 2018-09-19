@@ -185,6 +185,7 @@ namespace zivillian.ldap.test
 
         private LdapRequestMessage Read(byte[] message)
         {
+            //zivillian.ldap.Asn1.Generated.Asn1Serializer.Deserialize(message);
             return LdapReader.ReadMessage(message.AsMemory());
         }
     }
