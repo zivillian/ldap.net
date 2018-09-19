@@ -29,5 +29,8 @@
         ...,
         intermediateResponse  IntermediateResponse },
   -->
+  <asn:AsnType name="BindRequest" typeName="Asn1BindRequest" implicitTag="0"/>
+  <asn:AsnType name="BindResponse" typeName="Asn1BindResponse" implicitTag="1"/>
+  <asn:AnyValue name="UnbindRequest" implicitTag="2"/>
   <asn:OctetString name="DelRequest" implicitTag="10"/>
 </asn:Choice>

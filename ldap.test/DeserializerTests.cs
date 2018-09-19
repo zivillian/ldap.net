@@ -4,6 +4,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
+using zivillian.ldap.Asn1.Generated;
 
 namespace zivillian.ldap.test
 {
@@ -20,6 +21,7 @@ namespace zivillian.ldap.test
                 0x63, 0x3d, 0x65, 0x78, 0x61, 0x6d, 0x70, 0x6c,
                 0x65, 0x2c, 0x64, 0x63, 0x3d, 0x63, 0x6f, 0x6d
             };
+            Asn1Serializer.DeserializeDeleteRequest(data);
             var message = Read(data);
             Assert.Equal(42, message.Id);
             var delete = Assert.IsType<LdapDeleteRequest>(message);
@@ -42,6 +44,7 @@ namespace zivillian.ldap.test
                 0x80, 0x08, 0x70, 0x61, 0x73, 0x73, 0x77, 0x6f,
                 0x72, 0x64
             };
+            Asn1Serializer.DeserializeBindRequest(data);
             var message = Read(data);
             Assert.Equal(27, message.Id);
             var bind = Assert.IsType<LdapBindRequest>(message);
@@ -60,6 +63,7 @@ namespace zivillian.ldap.test
                 0x30, 0x0c, 0x02, 0x01, 0x1b, 0x61, 0x07, 0x0a,
                 0x01, 0x00, 0x04, 0x00, 0x04, 0x00
             };
+            Asn1Serializer.DeserializeBindResponse(data);
             var message = Read(data);
             Assert.Equal(27, message.Id);
             var bind = Assert.IsType<LdapBindResponse>(message);
@@ -120,6 +124,7 @@ namespace zivillian.ldap.test
                 0x65, 0x64, 0x43, 0x61, 0x70, 0x61, 0x62, 0x69,
                 0x6c, 0x69, 0x74, 0x69, 0x65, 0x73
             };
+            Asn1Serializer.DeserializeSearchRequest(data);
             var message = Read(data);
             Assert.Equal(28, message.Id);
             var search = Assert.IsType<LdapSearchRequest>(message);
@@ -154,6 +159,7 @@ namespace zivillian.ldap.test
                 0x04, 0x0b, 0x30, 0x84, 0x00, 0x00, 0x00, 0x05,
                 0x02, 0x01, 0x64, 0x04, 0x00
             };
+            Asn1Serializer.DeserializeSearchRequestPartial(data);
             var message = Read(data);
             Assert.Equal(30, message.Id);
             var search = Assert.IsType<LdapSearchRequest>(message);
@@ -178,6 +184,7 @@ namespace zivillian.ldap.test
                 0x30, 0x84, 0x00, 0x00, 0x00, 0x05, 0x02, 0x01,
                 0x28, 0x42, 0x00
             };
+            Asn1Serializer.DeserializeUnbindRequest(data);
             var message = Read(data);
             Assert.Equal(40, message.Id);
             Assert.IsType<LdapUnbindRequest>(message);

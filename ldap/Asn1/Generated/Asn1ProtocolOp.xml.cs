@@ -8,6 +8,9 @@ namespace zivillian.ldap.Asn1.Generated
     [StructLayout(LayoutKind.Sequential)]
     internal partial struct Asn1ProtocolOp
     {
+        internal Asn1BindRequest? BindRequest;
+        internal Asn1BindResponse? BindResponse;
+        internal ReadOnlyMemory<byte>? UnbindRequest;
         internal ReadOnlyMemory<byte>? DelRequest;
 
 #if DEBUG
@@ -24,6 +27,9 @@ namespace zivillian.ldap.Asn1.Generated
                 usedTags.Add(tag, fieldName);
             };
             
+            ensureUniqueTag(new Asn1Tag(TagClass.ContextSpecific, 0), "BindRequest");
+            ensureUniqueTag(new Asn1Tag(TagClass.ContextSpecific, 1), "BindResponse");
+            ensureUniqueTag(new Asn1Tag(TagClass.ContextSpecific, 2), "UnbindRequest");
             ensureUniqueTag(new Asn1Tag(TagClass.ContextSpecific, 10), "DelRequest");
         }
 #endif
@@ -32,6 +38,42 @@ namespace zivillian.ldap.Asn1.Generated
         {
             bool wroteValue = false; 
             
+            if (BindRequest.HasValue)
+            {
+                if (wroteValue)
+                    throw new CryptographicException();
+                
+                BindRequest.Value.Encode(writer, new Asn1Tag(TagClass.ContextSpecific, 0));
+                wroteValue = true;
+            }
+
+            if (BindResponse.HasValue)
+            {
+                if (wroteValue)
+                    throw new CryptographicException();
+                
+                BindResponse.Value.Encode(writer, new Asn1Tag(TagClass.ContextSpecific, 1));
+                wroteValue = true;
+            }
+
+            if (UnbindRequest.HasValue)
+            {
+                if (wroteValue)
+                    throw new CryptographicException();
+                
+                // Validator for tag constraint for UnbindRequest
+                {
+                    if (!Asn1Tag.TryParse(UnbindRequest.Value.Span, out Asn1Tag validateTag, out _) ||
+                        !validateTag.HasSameClassAndValue(new Asn1Tag(TagClass.ContextSpecific, 2)))
+                    {
+                        throw new CryptographicException();
+                    }
+                }
+
+                writer.WriteEncodedValue(UnbindRequest.Value);
+                wroteValue = true;
+            }
+
             if (DelRequest.HasValue)
             {
                 if (wroteValue)
@@ -64,7 +106,25 @@ namespace zivillian.ldap.Asn1.Generated
             decoded = default;
             Asn1Tag tag = reader.PeekTag();
             
-            if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.ContextSpecific, 10)))
+            if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.ContextSpecific, 0)))
+            {
+                Asn1BindRequest tmpBindRequest;
+                Asn1BindRequest.Decode(reader, new Asn1Tag(TagClass.ContextSpecific, 0), out tmpBindRequest);
+                decoded.BindRequest = tmpBindRequest;
+
+            }
+            else if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.ContextSpecific, 1)))
+            {
+                Asn1BindResponse tmpBindResponse;
+                Asn1BindResponse.Decode(reader, new Asn1Tag(TagClass.ContextSpecific, 1), out tmpBindResponse);
+                decoded.BindResponse = tmpBindResponse;
+
+            }
+            else if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.ContextSpecific, 2)))
+            {
+                decoded.UnbindRequest = reader.GetEncodedValue();
+            }
+            else if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.ContextSpecific, 10)))
             {
 
                 if (reader.TryGetPrimitiveOctetStringBytes(new Asn1Tag(TagClass.ContextSpecific, 10), out ReadOnlyMemory<byte> tmpDelRequest))

@@ -19,14 +19,6 @@ namespace zivillian.ldap.Asn1
         [ExpectedTag(TagClass.ContextSpecific, 0)]
         public ReadOnlyMemory<byte>? Simple;
 
-        [AnyValue]
-        [ExpectedTag(TagClass.ContextSpecific, 1)]
-        public ReadOnlyMemory<byte>? Reserved;
-        
-        [AnyValue]
-        [ExpectedTag(TagClass.ContextSpecific, 2)]
-        public ReadOnlyMemory<byte>? Reserved2;
-        
         [ExpectedTag(TagClass.ContextSpecific, 3)]
         public Asn1SaslCredentials? Sasl;
     }
