@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<asn:Choice
+  xmlns:asn="http://schemas.dot.net/asnxml/201808/"
+  name="Asn1Filter"
+  namespace="zivillian.ldap.Asn1.Generated">
+  <!--
+    Filter ::= CHOICE {
+         and             [0] SET SIZE (1..MAX) OF filter Filter,
+         or              [1] SET SIZE (1..MAX) OF filter Filter,
+         not             [2] Filter,
+         equalityMatch   [3] AttributeValueAssertion,
+         substrings      [4] SubstringFilter,
+         greaterOrEqual  [5] AttributeValueAssertion,
+         lessOrEqual     [6] AttributeValueAssertion,
+         present         [7] AttributeDescription,
+         approxMatch     [8] AttributeValueAssertion,
+         extensibleMatch [9] MatchingRuleAssertion,
+         ...  }
+    
+    AttributeDescription ::= LDAPString - Constrained to <attributedescription> - [RFC4512]
+  -->
+  <asn:SetOf name="And" implicitTag="0">
+    <asn:AsnType typeName="Asn1Filter"/>
+  </asn:SetOf>
+  <asn:SetOf name="Or" implicitTag="1">
+    <asn:AsnType typeName="Asn1Filter"/>
+  </asn:SetOf>
+  <asn:AsnType name="Not" typeName="Asn1Filter" implicitTag="2"/>
+</asn:Choice>

@@ -15,6 +15,7 @@
   <ItemGroup>
     <AsnXml Include="Asn1\Generated\Asn1LdapMessage.xml" />
     <AsnXml Include="Asn1\Generated\Asn1Control.xml" />
+    <!--<AsnXml Include="Asn1\Generated\Asn1Filter.xml" />-->
     <AsnXml Include="Asn1\Generated\Asn1ProtocolOp.xml" />
   </ItemGroup>
   <Import Project="Asn1\Generated\AsnXml.targets" />
