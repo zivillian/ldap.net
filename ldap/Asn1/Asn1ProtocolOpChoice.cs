@@ -51,7 +51,8 @@ namespace zivillian.ldap.Asn1
         [ExpectedTag(TagClass.Application, 3)]
         public Asn1SearchRequest? SearchRequest;
 
-        //public Asn1SearchResEntry? SearchResultEntry;
+        [ExpectedTag(TagClass.Application, 4)]
+        public Asn1SearchResultEntry? SearchResultEntry;
 
         //public Asn1SearchResDone? SearchResultDone;
 

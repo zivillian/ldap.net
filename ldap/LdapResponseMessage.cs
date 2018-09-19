@@ -25,4 +25,18 @@ namespace zivillian.ldap
             Referrals = LdapReferral.Create(referral);
         }
     }
+
+    public class LdapSearchResultEntry : LdapRequestMessage
+    {
+        public string ObjectName { get; }
+
+        public string[] Attributes { get{throw new NotImplementedException();} }
+
+        internal LdapSearchResultEntry(Asn1LdapMessage message)
+            : base(message)
+        {
+            var search = message.ProtocolOp.SearchResultEntry.Value;
+            ObjectName = Encoding.UTF8.GetString(search.ObjectName.Span);
+        }
+    }
 }

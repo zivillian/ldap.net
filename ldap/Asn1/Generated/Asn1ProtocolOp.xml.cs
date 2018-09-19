@@ -11,6 +11,8 @@ namespace zivillian.ldap.Asn1.Generated
         internal Asn1BindRequest? BindRequest;
         internal Asn1BindResponse? BindResponse;
         internal ReadOnlyMemory<byte>? UnbindRequest;
+        internal Asn1SearchRequest? SearchRequest;
+        internal Asn1SearchResultEntry? SearchResEntry;
         internal ReadOnlyMemory<byte>? DelRequest;
 
 #if DEBUG
@@ -30,6 +32,8 @@ namespace zivillian.ldap.Asn1.Generated
             ensureUniqueTag(new Asn1Tag(TagClass.ContextSpecific, 0), "BindRequest");
             ensureUniqueTag(new Asn1Tag(TagClass.ContextSpecific, 1), "BindResponse");
             ensureUniqueTag(new Asn1Tag(TagClass.ContextSpecific, 2), "UnbindRequest");
+            ensureUniqueTag(new Asn1Tag(TagClass.ContextSpecific, 3), "SearchRequest");
+            ensureUniqueTag(new Asn1Tag(TagClass.ContextSpecific, 4), "SearchResEntry");
             ensureUniqueTag(new Asn1Tag(TagClass.ContextSpecific, 10), "DelRequest");
         }
 #endif
@@ -71,6 +75,24 @@ namespace zivillian.ldap.Asn1.Generated
                 }
 
                 writer.WriteEncodedValue(UnbindRequest.Value);
+                wroteValue = true;
+            }
+
+            if (SearchRequest.HasValue)
+            {
+                if (wroteValue)
+                    throw new CryptographicException();
+                
+                SearchRequest.Value.Encode(writer, new Asn1Tag(TagClass.ContextSpecific, 3));
+                wroteValue = true;
+            }
+
+            if (SearchResEntry.HasValue)
+            {
+                if (wroteValue)
+                    throw new CryptographicException();
+                
+                SearchResEntry.Value.Encode(writer, new Asn1Tag(TagClass.ContextSpecific, 4));
                 wroteValue = true;
             }
 
@@ -123,6 +145,20 @@ namespace zivillian.ldap.Asn1.Generated
             else if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.ContextSpecific, 2)))
             {
                 decoded.UnbindRequest = reader.GetEncodedValue();
+            }
+            else if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.ContextSpecific, 3)))
+            {
+                Asn1SearchRequest tmpSearchRequest;
+                Asn1SearchRequest.Decode(reader, new Asn1Tag(TagClass.ContextSpecific, 3), out tmpSearchRequest);
+                decoded.SearchRequest = tmpSearchRequest;
+
+            }
+            else if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.ContextSpecific, 4)))
+            {
+                Asn1SearchResultEntry tmpSearchResEntry;
+                Asn1SearchResultEntry.Decode(reader, new Asn1Tag(TagClass.ContextSpecific, 4), out tmpSearchResEntry);
+                decoded.SearchResEntry = tmpSearchResEntry;
+
             }
             else if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.ContextSpecific, 10)))
             {

@@ -46,5 +46,10 @@ namespace zivillian.ldap.Asn1.Generated
             var reader = new AsnReader(data.Slice(9), AsnEncodingRules.BER);
             Asn1SearchRequest.Decode(reader, new Asn1Tag(TagClass.Application, 3), out _);
         }
+
+        public static void DeserializeSearchResEntry(ReadOnlyMemory<byte> data)
+        {
+            Asn1SearchResultEntry.Decode(new Asn1Tag(TagClass.Application, 4), data.Slice(7), AsnEncodingRules.BER);
+        }
     }
 }

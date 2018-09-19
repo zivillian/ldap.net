@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<asn:Sequence
+  xmlns:asn="http://schemas.dot.net/asnxml/201808/"
+  name="Asn1PartialAttribute"
+  namespace="zivillian.ldap.Asn1.Generated">
+  <!--
+       
+    PartialAttribute ::= SEQUENCE {
+     type       AttributeDescription,
+     vals       SET OF value AttributeValue }
+
+    AttributeDescription ::= LDAPString
+           - Constrained to 
+           - [RFC4512]
+
+    AttributeValue ::= OCTET STRING
+  -->
+  <asn:OctetString name="Type"/>
+  <asn:SetOf name="Values">
+    <asn:OctetString/>
+  </asn:SetOf>
+</asn:Sequence>

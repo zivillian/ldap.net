@@ -8,7 +8,11 @@ namespace zivillian.ldap.Asn1
     internal struct Asn1BindResponse
     {
         /*
-         *LDAPResult ::= SEQUENCE {
+         * SEQUENCE {
+         *     COMPONENTS OF LDAPResult,
+         *     serverSaslCreds    [7] OCTET STRING OPTIONAL }
+         *
+         * LDAPResult ::= SEQUENCE {
          *     resultCode         ENUMERATED {
          *          ...  },
          *     matchedDN          LDAPDN,
