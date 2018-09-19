@@ -10,7 +10,7 @@ namespace zivillian.ldap.Asn1
     {
         internal Asn1BindRequest? BindRequest;
         internal Asn1BindResponse? BindResponse;
-        internal ReadOnlyMemory<byte>? UnbindRequest;
+        internal bool ? UnbindRequest;
         internal Asn1SearchRequest? SearchRequest;
         internal Asn1SearchResultEntry? SearchResEntry;
         internal ReadOnlyMemory<byte>? DelRequest;
@@ -65,16 +65,7 @@ namespace zivillian.ldap.Asn1
                 if (wroteValue)
                     throw new CryptographicException();
                 
-                // Validator for tag constraint for UnbindRequest
-                {
-                    if (!Asn1Tag.TryParse(UnbindRequest.Value.Span, out Asn1Tag validateTag, out _) ||
-                        !validateTag.HasSameClassAndValue(new Asn1Tag(TagClass.Application, 2)))
-                    {
-                        throw new CryptographicException();
-                    }
-                }
-
-                writer.WriteEncodedValue(UnbindRequest.Value);
+                writer.WriteNull(new Asn1Tag(TagClass.Application, 2));
                 wroteValue = true;
             }
 
@@ -144,7 +135,9 @@ namespace zivillian.ldap.Asn1
             }
             else if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.Application, 2)))
             {
-                decoded.UnbindRequest = reader.GetEncodedValue();
+                reader.ReadNull(new Asn1Tag(TagClass.Application, 2));
+                decoded.UnbindRequest = true;
+
             }
             else if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.Application, 3)))
             {

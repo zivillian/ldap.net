@@ -31,7 +31,7 @@
   -->
   <asn:AsnType name="BindRequest" typeName="Asn1BindRequest" implicitTag="0" tagClass="Application"/>
   <asn:AsnType name="BindResponse" typeName="Asn1BindResponse" implicitTag="1" tagClass="Application"/>
-  <asn:AnyValue name="UnbindRequest" implicitTag="2" tagClass="Application"/>
+  <asn:NullValue name="UnbindRequest" implicitTag="2" tagClass="Application"/>
   <asn:AsnType name="SearchRequest" typeName="Asn1SearchRequest" implicitTag="3" tagClass="Application"/>
   <asn:AsnType name="SearchResEntry" typeName="Asn1SearchResultEntry" implicitTag="4" tagClass="Application"/>
   <asn:OctetString name="DelRequest" implicitTag="10" tagClass="Application"/>

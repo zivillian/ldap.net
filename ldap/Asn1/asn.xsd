@@ -43,6 +43,7 @@
         <xs:element name="GeneralizedTime" type="FieldBase" />
         <xs:element name="VisibleString" type="FieldBase" />
         <xs:element name="BMPString" type="FieldBase" />
+        <xs:element name="NullValue" type="NullValueType" />
       </xs:choice>
     </xs:sequence>
     <xs:attribute name="name" use="required" type="xs:NCName" />
@@ -74,6 +75,13 @@
     <xs:complexContent>
       <xs:extension base="FieldBase">
         <xs:attribute name="universalTagNumber" use="optional" type="xs:unsignedShort" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="NullValueType">
+    <xs:complexContent>
+      <xs:extension base="FieldBase">
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
