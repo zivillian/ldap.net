@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+
+<asn:Sequence
+  xmlns:asn="http://schemas.dot.net/asnxml/201808/"
+  name="Asn1Control"
+  namespace="zivillian.ldap.Asn1" >
+  <!--
+    Control ::= SEQUENCE {
+         controlType             LDAPOID,
+         criticality             BOOLEAN DEFAULT FALSE,
+         controlValue            OCTET STRING OPTIONAL }
+    
+    LDAPOID ::= OCTET STRING - Constrained to <numericoid>
+  -->
+  <asn:OctetString name="Type"/>
+  <asn:Boolean name="Criticality"/>
+  <asn:OctetString optional="true" name="Value"/>
+</asn:Sequence>

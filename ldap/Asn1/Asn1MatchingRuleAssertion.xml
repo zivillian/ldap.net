@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<asn:Sequence
+  xmlns:asn="http://schemas.dot.net/asnxml/201808/"
+  name="Asn1MatchingRuleAssertion"
+  namespace="zivillian.ldap.Asn1">
+  <!-- 
+    MatchingRuleAssertion ::= SEQUENCE {
+         matchingRule    [1] MatchingRuleId OPTIONAL,
+         type            [2] AttributeDescription OPTIONAL,
+         matchValue      [3] AssertionValue,
+         dnAttributes    [4] BOOLEAN DEFAULT FALSE }
+    
+    MatchingRuleId ::= LDAPString
+    
+    AssertionValue ::= OCTET STRING  
+  -->
+  <asn:OctetString optional="true" name="MatchingRule" implicitTag="1"/>
+  <asn:OctetString optional="true" name="Type" implicitTag="2"/>
+  <asn:OctetString optional="true" name="Value" implicitTag="3"/>
+  <asn:Boolean name="DNAttributes" implicitTag="4"/>
+</asn:Sequence>

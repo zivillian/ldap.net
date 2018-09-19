@@ -15,14 +15,22 @@ namespace zivillian.ldap
         public string[] Referrals { get; }
 
         internal LdapResponseMessage(ResultCode resultCode, ReadOnlyMemory<byte> matchedDN, 
-            ReadOnlyMemory<byte> diagnosticMessage, Asn1Referral[] referral, 
+            ReadOnlyMemory<byte> diagnosticMessage, ReadOnlyMemory<byte>[] referral, 
             Asn1LdapMessage message)
             : base(message)
         {
             ResultCode = resultCode;
             MatchedDN = Encoding.UTF8.GetString(matchedDN.Span);
             DiagnosticMessage = Encoding.UTF8.GetString(diagnosticMessage.Span);
-            Referrals = LdapReferral.Create(referral);
+            Referrals = new string[0];
+            if (referral != null)
+            {
+                Referrals = new string[referral.Length];
+                for (int i = 0; i < referral.Length; i++)
+                {
+                    Referrals[i] = Encoding.UTF8.GetString(referral[i].Span);
+                }
+            }
         }
     }
 
@@ -35,7 +43,7 @@ namespace zivillian.ldap
         internal LdapSearchResultEntry(Asn1LdapMessage message)
             : base(message)
         {
-            var search = message.ProtocolOp.SearchResultEntry.Value;
+            var search = message.ProtocolOp.SearchResEntry.Value;
             ObjectName = Encoding.UTF8.GetString(search.ObjectName.Span);
         }
     }

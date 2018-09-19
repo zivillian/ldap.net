@@ -14,7 +14,7 @@ namespace zivillian.ldap
 
         public string SaslMechanism { get; }
 
-        public ReadOnlyMemory<byte> SaslCredentials { get; }
+        public ReadOnlyMemory<byte>? SaslCredentials { get; }
 
         internal LdapBindRequest(Asn1LdapMessage message)
             : base(message)

@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<asn:Sequence
+  xmlns:asn="http://schemas.dot.net/asnxml/201808/"
+  name="Asn1SearchResultEntry"
+  namespace="zivillian.ldap.Asn1">
+  <!--
+    SEQUENCE {
+     objectName      LDAPDN,
+     attributes      PartialAttributeList }
+
+    PartialAttributeList ::= SEQUENCE OF
+       partialAttribute PartialAttribute
+  -->
+  <asn:OctetString name="ObjectName"/>
+  <asn:SequenceOf name="Attributes">
+    <asn:AsnType typeName="Asn1PartialAttribute"/>
+  </asn:SequenceOf>
+</asn:Sequence>

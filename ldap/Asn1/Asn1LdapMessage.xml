@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+
+<asn:Sequence
+  xmlns:asn="http://schemas.dot.net/asnxml/201808/"
+  name="Asn1LdapMessage"
+  namespace="zivillian.ldap.Asn1" >
+  <!--
+    LDAPMessage ::= SEQUENCE {
+         messageID       MessageID,
+         protocolOp      CHOICE {
+              bindRequest           BindRequest,
+              bindResponse          BindResponse,
+              unbindRequest         UnbindRequest,
+              searchRequest         SearchRequest,
+              searchResEntry        SearchResultEntry,
+              searchResDone         SearchResultDone,
+              searchResRef          SearchResultReference,
+              modifyRequest         ModifyRequest,
+              modifyResponse        ModifyResponse,
+              addRequest            AddRequest,
+              addResponse           AddResponse,
+              delRequest            DelRequest,
+              delResponse           DelResponse,
+              modDNRequest          ModifyDNRequest,
+              modDNResponse         ModifyDNResponse,
+              compareRequest        CompareRequest,
+              compareResponse       CompareResponse,
+              abandonRequest        AbandonRequest,
+              extendedReq           ExtendedRequest,
+              extendedResp          ExtendedResponse,
+              ...,
+              intermediateResponse  IntermediateResponse },
+         controls       [0] Controls OPTIONAL }
+   
+    MessageID ::= INTEGER (0 ..  maxInt)
+   
+    maxInt INTEGER ::= 2147483647 - (2^^31 - 1) -
+   
+    Controls ::= SEQUENCE OF control Control
+  -->
+  <asn:Integer name="MessageID" backingType="int" />
+  <asn:AsnType name="ProtocolOp" typeName="Asn1ProtocolOp"/>
+  <asn:SequenceOf name="Controls" optional="true" implicitTag="0">
+    <asn:AsnType typeName="Asn1Control"/>
+  </asn:SequenceOf>
+</asn:Sequence>

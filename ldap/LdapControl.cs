@@ -8,9 +8,9 @@ namespace zivillian.ldap
     {
         internal LdapControl(Asn1Control control)
         {
-            Oid = Encoding.UTF8.GetString(control.ControlType.Span);
+            Oid = Encoding.UTF8.GetString(control.Type.Span);
             Criticality = control.Criticality;
-            Value = control.ControlValue;
+            Value = control.Value;
         }
 
         public ReadOnlyMemory<byte>? Value { get; set; }

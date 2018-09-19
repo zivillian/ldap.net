@@ -13,21 +13,21 @@
     <ProjectReference Include="..\asn.1\asn.1.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <AsnXml Include="Asn1\Generated\Asn1LdapMessage.xml" />
-    <AsnXml Include="Asn1\Generated\Asn1AttributeValueAssertion.xml" />
-    <AsnXml Include="Asn1\Generated\Asn1AuthenticationChoice.xml" />
-    <AsnXml Include="Asn1\Generated\Asn1BindRequest.xml" />
-    <AsnXml Include="Asn1\Generated\Asn1BindResponse.xml" />
-    <AsnXml Include="Asn1\Generated\Asn1Control.xml" />
-    <AsnXml Include="Asn1\Generated\Asn1Filter.xml" />
-    <AsnXml Include="Asn1\Generated\Asn1MatchingRuleAssertion.xml" />
-    <AsnXml Include="Asn1\Generated\Asn1PartialAttribute.xml" />
-    <AsnXml Include="Asn1\Generated\Asn1ProtocolOp.xml" />
-    <AsnXml Include="Asn1\Generated\Asn1SaslCredentials.xml" />
-    <AsnXml Include="Asn1\Generated\Asn1SearchRequest.xml" />
-    <AsnXml Include="Asn1\Generated\Asn1SearchResultEntry.xml" />
-    <AsnXml Include="Asn1\Generated\Asn1Substring.xml" />
-    <AsnXml Include="Asn1\Generated\Asn1SubstringFilter.xml" />
+    <AsnXml Include="Asn1\Asn1LdapMessage.xml" />
+    <AsnXml Include="Asn1\Asn1AttributeValueAssertion.xml" />
+    <AsnXml Include="Asn1\Asn1AuthenticationChoice.xml" />
+    <AsnXml Include="Asn1\Asn1BindRequest.xml" />
+    <AsnXml Include="Asn1\Asn1BindResponse.xml" />
+    <AsnXml Include="Asn1\Asn1Control.xml" />
+    <AsnXml Include="Asn1\Asn1Filter.xml" />
+    <AsnXml Include="Asn1\Asn1MatchingRuleAssertion.xml" />
+    <AsnXml Include="Asn1\Asn1PartialAttribute.xml" />
+    <AsnXml Include="Asn1\Asn1ProtocolOp.xml" />
+    <AsnXml Include="Asn1\Asn1SaslCredentials.xml" />
+    <AsnXml Include="Asn1\Asn1SearchRequest.xml" />
+    <AsnXml Include="Asn1\Asn1SearchResultEntry.xml" />
+    <AsnXml Include="Asn1\Asn1Substring.xml" />
+    <AsnXml Include="Asn1\Asn1SubstringFilter.xml" />
   </ItemGroup>
-  <Import Project="Asn1\Generated\AsnXml.targets" />
+  <Import Project="Asn1\AsnXml.targets" />
 </Project>

@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<asn:Sequence
+  xmlns:asn="http://schemas.dot.net/asnxml/201808/"
+  name="Asn1BindResponse"
+  namespace="zivillian.ldap.Asn1">
+  <!--
+    SEQUENCE {
+         COMPONENTS OF LDAPResult,
+         serverSaslCreds    [7] OCTET STRING OPTIONAL }
+         
+    LDAPResult ::= SEQUENCE {
+         resultCode         ENUMERATED {
+              ...  },
+         matchedDN          LDAPDN,
+         diagnosticMessage  LDAPString,
+         referral           [3] Referral OPTIONAL }
+    
+     Referral ::= SEQUENCE SIZE (1..MAX) OF uri URI
+    
+     URI ::= LDAPString     - limited to characters permitted in
+              - URIs
+  -->
+  <asn:Enumerated backingType="ResultCode" name="ResultCode"/>
+  <asn:OctetString name="MatchedDN"/>
+  <asn:OctetString name="DiagnosticMessage"/>
+  <asn:SequenceOf name="Referral" optional="true" implicitTag="3">
+    <asn:OctetString/>
+  </asn:SequenceOf>
+  <asn:OctetString name="ServerSaslCreds" optional="true" implicitTag="7"/>
+</asn:Sequence>

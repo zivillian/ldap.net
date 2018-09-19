@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<asn:Sequence
+  xmlns:asn="http://schemas.dot.net/asnxml/201808/"
+  name="Asn1BindRequest"
+  namespace="zivillian.ldap.Asn1">
+  <!--
+    BindRequest ::= [APPLICATION 0] SEQUENCE {
+         version                 INTEGER (1 ..  127),
+         name                    LDAPDN,
+         authentication          AuthenticationChoice }
+  -->
+  <asn:Integer backingType="byte" name="Version"/>
+  <asn:OctetString name="Name"/>
+  <asn:AsnType name="Authentication" typeName="Asn1AuthenticationChoice"/>
+</asn:Sequence>

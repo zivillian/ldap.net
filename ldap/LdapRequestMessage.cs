@@ -11,7 +11,7 @@ namespace zivillian.ldap
 
         internal LdapRequestMessage(Asn1LdapMessage message)
         {
-            Id = message.Id;
+            Id = message.MessageID;
             Controls = LdapControl.Create(message.Controls);
         }
 
@@ -37,7 +37,7 @@ namespace zivillian.ldap
             {
                 return new LdapUnbindRequest(message);
             }
-            else if (message.ProtocolOp.SearchResultEntry != null)
+            else if (message.ProtocolOp.SearchResEntry != null)
             {
                 return new LdapSearchResultEntry(message);
             }

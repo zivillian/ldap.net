@@ -8,7 +8,7 @@ namespace zivillian.ldap
     {
         public static LdapRequestMessage ReadMessage(ReadOnlyMemory<byte> source)
         {
-            var message = AsnSerializer.Deserialize<Asn1LdapMessage>(source, AsnEncodingRules.BER);
+            var message = Asn1Serializer.Deserialize(source);
             return LdapRequestMessage.Create(message);
         }
     }

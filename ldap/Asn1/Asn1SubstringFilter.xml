@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<asn:Sequence
+  xmlns:asn="http://schemas.dot.net/asnxml/201808/"
+  name="Asn1SubstringFilter"
+  namespace="zivillian.ldap.Asn1">
+  <!--
+    SubstringFilter ::= SEQUENCE {
+         type           AttributeDescription,
+         substrings     SEQUENCE SIZE (1..MAX) OF substring CHOICE {
+              initial [0] AssertionValue,  - can occur at most once
+              any     [1] AssertionValue,
+              final   [2] AssertionValue } - can occur at most once
+         }
+  -->
+  <asn:OctetString name="Type"/>
+  <asn:SequenceOf name="Substrings">
+    <asn:AsnType typeName="Asn1Substring"/>
+  </asn:SequenceOf>
+</asn:Sequence>

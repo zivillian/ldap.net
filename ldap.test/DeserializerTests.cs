@@ -4,7 +4,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
-using zivillian.ldap.Asn1.Generated;
+using zivillian.ldap.Asn1;
 
 namespace zivillian.ldap.test
 {
@@ -52,7 +52,7 @@ namespace zivillian.ldap.test
             Assert.Equal("cn=read-only-admin,dc=example,dc=com", bind.Name);
             Assert.Equal("password", Encoding.UTF8.GetString(bind.Simple.Span));
             Assert.Null(bind.SaslMechanism);
-            Assert.Equal(0, bind.SaslCredentials.Length);
+            Assert.Null(bind.SaslCredentials);
         }
 
         [Fact]
@@ -246,7 +246,6 @@ namespace zivillian.ldap.test
 
         private LdapRequestMessage Read(byte[] message)
         {
-            //zivillian.ldap.Asn1.Generated.Asn1Serializer.Deserialize(message);
             return LdapReader.ReadMessage(message.AsMemory());
         }
     }

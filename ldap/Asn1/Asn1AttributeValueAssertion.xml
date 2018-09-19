@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<asn:Sequence
+  xmlns:asn="http://schemas.dot.net/asnxml/201808/"
+  name="Asn1AttributeValueAssertion"
+  namespace="zivillian.ldap.Asn1">
+  <!--
+    AttributeValueAssertion ::= SEQUENCE {
+         attributeDesc   AttributeDescription,
+         assertionValue  AssertionValue }
+    
+    AttributeDescription ::= LDAPString
+              - Constrained to <attributedescription>
+              - [RFC4512]
+    
+    AssertionValue ::= OCTET STRING
+  -->
+  <asn:OctetString name="Description"/>
+  <asn:OctetString name="Value"/>
+</asn:Sequence>
