@@ -241,7 +241,34 @@ namespace zivillian.ldap.test
             Assert.Equal(28, message.Id);
             var result = Assert.IsType<LdapSearchResultEntry>(message);
             Assert.Equal(String.Empty, result.ObjectName);
-            //TODO Assert.Equal(4, result.Attributes.Length);
+            Assert.Equal(4, result.Attributes.Length);
+            
+            var attr = result.Attributes[0];
+            Assert.Equal("namingContexts", attr.Type);
+            var value = Assert.Single(attr.Values);
+            Assert.Equal("dc=example,dc=com", value);
+            
+            attr = result.Attributes[1];
+            Assert.Equal("supportedControl", attr.Type);
+            Assert.Equal(8, attr.Values.Length);
+            Assert.Equal("2.16.840.1.113730.3.4.18", attr.Values[0]);
+            Assert.Equal("2.16.840.1.113730.3.4.2", attr.Values[1]);
+            Assert.Equal("1.3.6.1.4.1.4203.1.10.1", attr.Values[2]);
+            Assert.Equal("1.2.840.113556.1.4.319", attr.Values[3]);
+            Assert.Equal("1.2.826.0.1.3344810.2.3", attr.Values[4]);
+            Assert.Equal("1.3.6.1.1.13.2", attr.Values[5]);
+            Assert.Equal("1.3.6.1.1.13.1", attr.Values[6]);
+            Assert.Equal("1.3.6.1.1.12", attr.Values[7]);
+            
+            attr = result.Attributes[2];
+            Assert.Equal("supportedLDAPVersion", attr.Type);
+            value = Assert.Single(attr.Values);
+            Assert.Equal("3", value);
+            
+            attr = result.Attributes[3];
+            Assert.Equal("subschemaSubentry", attr.Type);
+            value = Assert.Single(attr.Values);
+            Assert.Equal("cn=Subschema", value);
         }
 
         private LdapRequestMessage Read(byte[] message)
