@@ -33,48 +33,4 @@ namespace zivillian.ldap
             }
         }
     }
-
-    public class LdapSearchResultEntry : LdapRequestMessage
-    {
-        public string ObjectName { get; }
-
-        public LdapAttribute[] Attributes { get; }
-
-        internal LdapSearchResultEntry(Asn1LdapMessage message)
-            : base(message)
-        {
-            var search = message.ProtocolOp.SearchResEntry;
-            ObjectName = Encoding.UTF8.GetString(search.ObjectName.Span);
-            Attributes = new LdapAttribute[0];
-            if (search.Attributes.Length > 0)
-            {
-                Attributes = new LdapAttribute[search.Attributes.Length];
-                for (int i = 0; i < search.Attributes.Length; i++)
-                {
-                    Attributes[i] = new LdapAttribute(search.Attributes[i]);
-                }
-            }
-        }
-    }
-
-    public class LdapAttribute
-    {
-        public string Type { get; }
-
-        public string[] Values { get; }
-
-        internal LdapAttribute(Asn1PartialAttribute attribute)
-        {
-            Type = Encoding.UTF8.GetString(attribute.Type.Span);
-            Values= new string[0];
-            if (attribute.Values.Length > 0)
-            {
-                Values = new string[attribute.Values.Length];
-                for (int i = 0; i < attribute.Values.Length; i++)
-                {
-                    Values[i] = Encoding.UTF8.GetString(attribute.Values[i].Span);
-                }
-            }
-        }
-    }
 }

@@ -25,6 +25,7 @@
     <AsnXml Include="Asn1\Asn1ProtocolOp.xml" />
     <AsnXml Include="Asn1\Asn1SaslCredentials.xml" />
     <AsnXml Include="Asn1\Asn1SearchRequest.xml" />
+    <AsnXml Include="Asn1\Asn1SearchResultDone.xml" />
     <AsnXml Include="Asn1\Asn1SearchResultEntry.xml" />
     <AsnXml Include="Asn1\Asn1Substring.xml" />
     <AsnXml Include="Asn1\Asn1SubstringFilter.xml" />

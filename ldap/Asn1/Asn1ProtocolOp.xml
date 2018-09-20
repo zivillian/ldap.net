@@ -34,5 +34,6 @@
   <asn:NullValue name="UnbindRequest" implicitTag="2" tagClass="Application"/>
   <asn:AsnType name="SearchRequest" typeName="Asn1SearchRequest" implicitTag="3" tagClass="Application"/>
   <asn:AsnType name="SearchResEntry" typeName="Asn1SearchResultEntry" implicitTag="4" tagClass="Application"/>
+  <asn:AsnType name="SearchResultDone" typeName="Asn1SearchResultDone" implicitTag="5" tagClass="Application"/>
   <asn:OctetString name="DelRequest" implicitTag="10" tagClass="Application"/>
 </asn:Choice>

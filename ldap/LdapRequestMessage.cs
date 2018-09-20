@@ -41,6 +41,11 @@ namespace zivillian.ldap
             {
                 return new LdapSearchResultEntry(message);
             }
+            else if (message.ProtocolOp.SearchResultDone != null)
+            {
+                var ldapResult = message.ProtocolOp.SearchResultDone;
+                return new LdapSearchResultDone(ldapResult.ResultCode, ldapResult.MatchedDN, ldapResult.DiagnosticMessage, ldapResult.Referral, message);
+            }
             else
             {
                 throw new NotImplementedException();

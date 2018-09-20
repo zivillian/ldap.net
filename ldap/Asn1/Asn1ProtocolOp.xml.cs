@@ -11,6 +11,7 @@ namespace zivillian.ldap.Asn1
         internal bool ? UnbindRequest;
         internal Asn1SearchRequest SearchRequest;
         internal Asn1SearchResultEntry SearchResEntry;
+        internal Asn1SearchResultDone SearchResultDone;
         internal ReadOnlyMemory<byte>? DelRequest;
 
 #if DEBUG
@@ -32,6 +33,7 @@ namespace zivillian.ldap.Asn1
             ensureUniqueTag(new Asn1Tag(TagClass.Application, 2), "UnbindRequest");
             ensureUniqueTag(new Asn1Tag(TagClass.Application, 3), "SearchRequest");
             ensureUniqueTag(new Asn1Tag(TagClass.Application, 4), "SearchResEntry");
+            ensureUniqueTag(new Asn1Tag(TagClass.Application, 5), "SearchResultDone");
             ensureUniqueTag(new Asn1Tag(TagClass.Application, 10), "DelRequest");
         }
 #endif
@@ -82,6 +84,15 @@ namespace zivillian.ldap.Asn1
                     throw new CryptographicException();
                 
                 SearchResEntry.Encode(writer, new Asn1Tag(TagClass.Application, 4));
+                wroteValue = true;
+            }
+
+            if (SearchResultDone != null)
+            {
+                if (wroteValue)
+                    throw new CryptographicException();
+                
+                SearchResultDone.Encode(writer, new Asn1Tag(TagClass.Application, 5));
                 wroteValue = true;
             }
 
@@ -158,6 +169,13 @@ namespace zivillian.ldap.Asn1
                 Asn1SearchResultEntry tmpSearchResEntry;
                 Asn1SearchResultEntry.Decode(reader, new Asn1Tag(TagClass.Application, 4), out tmpSearchResEntry);
                 decoded.SearchResEntry = tmpSearchResEntry;
+
+            }
+            else if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.Application, 5)))
+            {
+                Asn1SearchResultDone tmpSearchResultDone;
+                Asn1SearchResultDone.Decode(reader, new Asn1Tag(TagClass.Application, 5), out tmpSearchResultDone);
+                decoded.SearchResultDone = tmpSearchResultDone;
 
             }
             else if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.Application, 10)))

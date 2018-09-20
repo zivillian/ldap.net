@@ -53,6 +53,7 @@ namespace zivillian.ldap.test
             Assert.Equal("password", Encoding.UTF8.GetString(bind.Simple.Span));
             Assert.Null(bind.SaslMechanism);
             Assert.Null(bind.SaslCredentials);
+            Assert.Empty(bind.Controls);
         }
 
         [Fact]
@@ -134,6 +135,7 @@ namespace zivillian.ldap.test
             Assert.Equal(Int32.MaxValue, search.SizeLimit);
             Assert.Equal(TimeSpan.MaxValue, search.TimeLimit);
             Assert.False(search.TypesOnly);
+            Assert.Empty(search.Controls);
         }
 
         [Fact]
@@ -187,7 +189,8 @@ namespace zivillian.ldap.test
             Asn1Serializer.DeserializeUnbindRequest(data);
             var message = Read(data);
             Assert.Equal(40, message.Id);
-            Assert.IsType<LdapUnbindRequest>(message);
+            var unbind = Assert.IsType<LdapUnbindRequest>(message);
+            Assert.Empty(unbind.Controls);
         }
 
         [Fact]
@@ -269,6 +272,26 @@ namespace zivillian.ldap.test
             Assert.Equal("subschemaSubentry", attr.Type);
             value = Assert.Single(attr.Values);
             Assert.Equal("cn=Subschema", value);
+
+            Assert.Empty(result.Controls);
+        }
+
+        [Fact]
+        public void CanReadSearchResultDone()
+        {
+            var data = new byte[]
+            {
+                0x30, 0x0c, 0x02, 0x01, 0x1c, 0x65, 0x07, 0x0a,
+                0x01, 0x00, 0x04, 0x00, 0x04, 0x00
+            };
+            var message = Read(data);
+            Assert.Equal(28, message.Id);
+            var done = Assert.IsType<LdapSearchResultDone>(message);
+            Assert.Equal(ResultCode.Success, done.ResultCode);
+            Assert.Equal(String.Empty, done.MatchedDN);
+            Assert.Equal(String.Empty, done.DiagnosticMessage);
+            Assert.Empty(done.Referrals);
+            Assert.Empty(done.Controls);
         }
 
         private LdapRequestMessage Read(byte[] message)
