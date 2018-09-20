@@ -35,6 +35,18 @@
   <asn:AsnType name="SearchRequest" typeName="Asn1SearchRequest" implicitTag="3" tagClass="Application"/>
   <asn:AsnType name="SearchResEntry" typeName="Asn1SearchResultEntry" implicitTag="4" tagClass="Application"/>
   <asn:AsnType name="SearchResultDone" typeName="Asn1LDAPResult" implicitTag="5" tagClass="Application"/>
+  <asn:SequenceOf name="SearchResultReference" implicitTag="6" tagClass="Application">
+    <asn:OctetString/>
+  </asn:SequenceOf>
+  <asn:AsnType name="ModifyResponse" typeName="Asn1LDAPResult" implicitTag="7" tagClass="Application"/>
+
+  <asn:AsnType name="AddResponse" typeName="Asn1LDAPResult" implicitTag="9" tagClass="Application"/>
   <asn:OctetString name="DelRequest" implicitTag="10" tagClass="Application"/>
   <asn:AsnType name="DelResponse" typeName="Asn1LDAPResult" implicitTag="11" tagClass="Application"/>
+
+  <asn:AsnType name="ModifyDNResponse" typeName="Asn1LDAPResult" implicitTag="13" tagClass="Application"/>
+
+  <asn:AsnType name="CompareResponse" typeName="Asn1LDAPResult" implicitTag="15" tagClass="Application"/>
+  <asn:Integer name="AbandonRequest" backingType="int" implicitTag="16" tagClass="Application"/>
+
 </asn:Choice>
