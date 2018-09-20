@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Security.Cryptography.Asn1;
 
 namespace zivillian.ldap.Asn1
 {
-    [StructLayout(LayoutKind.Sequential)]
-    internal partial struct Asn1Substring
+    internal sealed partial class Asn1Substring
     {
         internal ReadOnlyMemory<byte>? Initial;
         internal ReadOnlyMemory<byte>? Any;
@@ -78,12 +76,21 @@ namespace zivillian.ldap.Asn1
             return decoded;
         }
 
+        internal static void Decode(AsnReader reader, Asn1Tag expectedTag, out Asn1Substring decoded)
+        {
+            if (reader == null)
+                throw new ArgumentNullException(nameof(reader));
+
+            reader.ReadNull(expectedTag);
+            Decode(reader, out decoded);
+        }
+
         internal static void Decode(AsnReader reader, out Asn1Substring decoded)
         {
             if (reader == null)
                 throw new ArgumentNullException(nameof(reader));
 
-            decoded = default;
+            decoded = new Asn1Substring();
             Asn1Tag tag = reader.PeekTag();
             
             if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.ContextSpecific, 0)))

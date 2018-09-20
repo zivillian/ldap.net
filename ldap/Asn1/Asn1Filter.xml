@@ -25,7 +25,7 @@
   <asn:SetOf name="Or" implicitTag="1">
     <asn:AsnType typeName="Asn1Filter"/>
   </asn:SetOf>
-  <!--todo <asn:AsnType name="Not" typeName="Asn1Filter" implicitTag="2"/>-->
+  <asn:AsnType name="Not" typeName="Asn1Filter" implicitTag="2"/>
   <asn:AsnType name="EqualityMatch" typeName="Asn1AttributeValueAssertion" implicitTag="3" />
   <asn:AsnType name="Substrings" typeName="Asn1SubstringFilter" implicitTag="4" />
   <asn:AsnType name="GreaterOrEqual" typeName="Asn1AttributeValueAssertion" implicitTag="5" />

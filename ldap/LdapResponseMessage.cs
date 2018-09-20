@@ -43,7 +43,7 @@ namespace zivillian.ldap
         internal LdapSearchResultEntry(Asn1LdapMessage message)
             : base(message)
         {
-            var search = message.ProtocolOp.SearchResEntry.Value;
+            var search = message.ProtocolOp.SearchResEntry;
             ObjectName = Encoding.UTF8.GetString(search.ObjectName.Span);
         }
     }

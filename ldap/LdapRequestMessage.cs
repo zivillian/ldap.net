@@ -23,7 +23,7 @@ namespace zivillian.ldap
             }
             else if (message.ProtocolOp.BindResponse != null)
             {
-                return new LdapBindResponse(message.ProtocolOp.BindResponse.Value, message);
+                return new LdapBindResponse(message.ProtocolOp.BindResponse, message);
             }
             else if (message.ProtocolOp.DelRequest != null)
             {

@@ -1,18 +1,16 @@
 ﻿using System;
-using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Security.Cryptography.Asn1;
 
 namespace zivillian.ldap.Asn1
 {
-    [StructLayout(LayoutKind.Sequential)]
-    internal partial struct Asn1ProtocolOp
+    internal sealed partial class Asn1ProtocolOp
     {
-        internal Asn1BindRequest? BindRequest;
-        internal Asn1BindResponse? BindResponse;
+        internal Asn1BindRequest BindRequest;
+        internal Asn1BindResponse BindResponse;
         internal bool ? UnbindRequest;
-        internal Asn1SearchRequest? SearchRequest;
-        internal Asn1SearchResultEntry? SearchResEntry;
+        internal Asn1SearchRequest SearchRequest;
+        internal Asn1SearchResultEntry SearchResEntry;
         internal ReadOnlyMemory<byte>? DelRequest;
 
 #if DEBUG
@@ -42,21 +40,21 @@ namespace zivillian.ldap.Asn1
         {
             bool wroteValue = false; 
             
-            if (BindRequest.HasValue)
+            if (BindRequest != null)
             {
                 if (wroteValue)
                     throw new CryptographicException();
                 
-                BindRequest.Value.Encode(writer, new Asn1Tag(TagClass.Application, 0));
+                BindRequest.Encode(writer, new Asn1Tag(TagClass.Application, 0));
                 wroteValue = true;
             }
 
-            if (BindResponse.HasValue)
+            if (BindResponse != null)
             {
                 if (wroteValue)
                     throw new CryptographicException();
                 
-                BindResponse.Value.Encode(writer, new Asn1Tag(TagClass.Application, 1));
+                BindResponse.Encode(writer, new Asn1Tag(TagClass.Application, 1));
                 wroteValue = true;
             }
 
@@ -69,21 +67,21 @@ namespace zivillian.ldap.Asn1
                 wroteValue = true;
             }
 
-            if (SearchRequest.HasValue)
+            if (SearchRequest != null)
             {
                 if (wroteValue)
                     throw new CryptographicException();
                 
-                SearchRequest.Value.Encode(writer, new Asn1Tag(TagClass.Application, 3));
+                SearchRequest.Encode(writer, new Asn1Tag(TagClass.Application, 3));
                 wroteValue = true;
             }
 
-            if (SearchResEntry.HasValue)
+            if (SearchResEntry != null)
             {
                 if (wroteValue)
                     throw new CryptographicException();
                 
-                SearchResEntry.Value.Encode(writer, new Asn1Tag(TagClass.Application, 4));
+                SearchResEntry.Encode(writer, new Asn1Tag(TagClass.Application, 4));
                 wroteValue = true;
             }
 
@@ -111,12 +109,21 @@ namespace zivillian.ldap.Asn1
             return decoded;
         }
 
+        internal static void Decode(AsnReader reader, Asn1Tag expectedTag, out Asn1ProtocolOp decoded)
+        {
+            if (reader == null)
+                throw new ArgumentNullException(nameof(reader));
+
+            reader.ReadNull(expectedTag);
+            Decode(reader, out decoded);
+        }
+
         internal static void Decode(AsnReader reader, out Asn1ProtocolOp decoded)
         {
             if (reader == null)
                 throw new ArgumentNullException(nameof(reader));
 
-            decoded = default;
+            decoded = new Asn1ProtocolOp();
             Asn1Tag tag = reader.PeekTag();
             
             if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.Application, 0)))

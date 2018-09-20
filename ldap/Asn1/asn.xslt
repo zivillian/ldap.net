@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <xsl:stylesheet version="1.0"
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   xmlns:xs="http://www.w3.org/2001/XMLSchema"
@@ -43,20 +43,18 @@
 
   <xsl:template match="asn:Sequence">using System;<xsl:if test="asn:SequenceOf | asn:SetOf">
 using System.Collections.Generic;</xsl:if>
-using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Security.Cryptography.Asn1;
 
 namespace <xsl:value-of select="@namespace" />
 {
-    [StructLayout(LayoutKind.Sequential)]
-    internal partial struct <xsl:value-of select="@name" />
+    internal sealed partial class <xsl:value-of select="@name" />
     {<xsl:apply-templates mode="Validate" /><xsl:apply-templates mode="DefaultFieldDef" /><xsl:apply-templates mode="FieldDef" />
       <xsl:if test="*[@defaultDerInit]">
 #if DEBUG  
         static <xsl:value-of select="@name" />()
         {
-            <xsl:value-of select="@name" /> decoded = default;
+            <xsl:value-of select="@name" /> decoded = new <xsl:value-of select="@name" />();
             AsnReader reader;<xsl:if test="asn:SequenceOf[@defaultDerInit] | asn:SetOf[@defaultDerInit]">
             AsnReader collectionReader;</xsl:if><xsl:apply-templates mode="DefaultFieldVerify" />
         }
@@ -101,7 +99,7 @@ namespace <xsl:value-of select="@namespace" />
             if (reader == null)
                 throw new ArgumentNullException(nameof(reader));
 
-            decoded = default;
+            decoded = new <xsl:value-of select="@name" />();
             AsnReader sequenceReader = reader.ReadSequence(expectedTag);<xsl:if test="*[@explicitTag]">
             AsnReader explicitReader;</xsl:if><xsl:if test="*[@defaultDerInit]">
             AsnReader defaultReader;</xsl:if><xsl:if test="asn:SequenceOf | asn:SetOf">
@@ -116,14 +114,12 @@ namespace <xsl:value-of select="@namespace" />
 
     <xsl:template match="asn:Choice">using System;<xsl:if test="asn:SequenceOf | asn:SetOf">
 using System.Collections.Generic;</xsl:if>
-using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Security.Cryptography.Asn1;
 
 namespace <xsl:value-of select="@namespace" />
 {
-    [StructLayout(LayoutKind.Sequential)]
-    internal partial struct <xsl:value-of select="@name" />
+    internal sealed partial class <xsl:value-of select="@name" />
     {<xsl:apply-templates mode="Validate" /><xsl:apply-templates mode="ValidateChoice" /><xsl:apply-templates mode="FieldDef" />
 
 #if DEBUG
@@ -162,12 +158,21 @@ namespace <xsl:value-of select="@namespace" />
             return decoded;
         }
 
+        internal static void Decode(AsnReader reader, Asn1Tag expectedTag, out <xsl:value-of select="@name" /> decoded)
+        {
+            if (reader == null)
+                throw new ArgumentNullException(nameof(reader));
+
+            reader.ReadNull(expectedTag);
+            Decode(reader, out decoded);
+        }
+
         internal static void Decode(AsnReader reader, out <xsl:value-of select="@name" /> decoded)
         {
             if (reader == null)
                 throw new ArgumentNullException(nameof(reader));
 
-            decoded = default;
+            decoded = new <xsl:value-of select="@name" />();
             Asn1Tag tag = reader.PeekTag();<xsl:if test="*[@explicitTag]">
             AsnReader explicitReader;</xsl:if><xsl:if test="asn:SequenceOf | asn:SetOf">
             AsnReader collectionReader;</xsl:if>
@@ -245,7 +250,7 @@ namespace <xsl:value-of select="@namespace" />
   </xsl:template>
   
   <!-- Struct OPTIONAL -->
-  <xsl:template match="asn:AsnType | asn:AnyValue | asn:NullValue | asn:Boolean | asn:Integer | asn:BitString | asn:NamedBitList | asn:OctetString | asn:Enumerated | asn:UtcTime | asn:GeneralizedTime" mode="EncodeOptional">
+  <xsl:template match="asn:AnyValue | asn:NullValue | asn:Boolean | asn:Integer | asn:BitString | asn:NamedBitList | asn:OctetString | asn:Enumerated | asn:UtcTime | asn:GeneralizedTime" mode="EncodeOptional">
 
             if (<xsl:value-of select="@name"/>.HasValue)
             {<xsl:apply-templates select="." mode="EncodeValue"><xsl:with-param name="indent" select="'    '"/></xsl:apply-templates>
@@ -253,7 +258,7 @@ namespace <xsl:value-of select="@namespace" />
 </xsl:template>
 
   <!-- Class OPTIONAL -->
-  <xsl:template match="asn:ObjectIdentifier | asn:UTF8String | asn:SequenceOf | asn:SetOf | asn:PrintableString | asn:T61String | asn:IA5String | asn:VisibleString | asn:BMPString" mode="EncodeOptional">
+  <xsl:template match="asn:AsnType | asn:ObjectIdentifier | asn:UTF8String | asn:SequenceOf | asn:SetOf | asn:PrintableString | asn:T61String | asn:IA5String | asn:VisibleString | asn:BMPString" mode="EncodeOptional">
 
             if (<xsl:value-of select="@name"/> != null)
             {<xsl:apply-templates select="." mode="EncodeValue"><xsl:with-param name="indent" select="'    '"/></xsl:apply-templates>
@@ -261,7 +266,7 @@ namespace <xsl:value-of select="@namespace" />
 </xsl:template>
 
   <!-- Struct CHOICE -->
-  <xsl:template match="asn:AsnType | asn:AnyValue | asn:NullValue | asn:Boolean | asn:Integer | asn:BitString | asn:NamedBitList | asn:OctetString | asn:Enumerated | asn:UtcTime | asn:GeneralizedTime" mode="EncodeChoice">
+  <xsl:template match="asn:AnyValue | asn:NullValue | asn:Boolean | asn:Integer | asn:BitString | asn:NamedBitList | asn:OctetString | asn:Enumerated | asn:UtcTime | asn:GeneralizedTime" mode="EncodeChoice">
             if (<xsl:value-of select="@name"/>.HasValue)
             {
                 if (wroteValue)
@@ -272,7 +277,7 @@ namespace <xsl:value-of select="@namespace" />
 </xsl:template>
 
   <!-- Class CHOICE -->
-  <xsl:template match="asn:ObjectIdentifier | asn:UTF8String | asn:SequenceOf | asn:SetOf | asn:PrintableString | asn:T61String | asn:IA5String | asn:VisibleString | asn:BMPString" mode="EncodeChoice">
+  <xsl:template match="asn:AsnType | asn:ObjectIdentifier | asn:UTF8String | asn:SequenceOf | asn:SetOf | asn:PrintableString | asn:T61String | asn:IA5String | asn:VisibleString | asn:BMPString" mode="EncodeChoice">
             if (<xsl:value-of select="@name"/> != null)
             {
                 if (wroteValue)
@@ -380,7 +385,7 @@ namespace <xsl:value-of select="@namespace" />
   </xsl:template>
 
   <xsl:template match="asn:AsnType" mode="FieldDef">
-        internal <xsl:value-of select="@typeName"/><xsl:if test="@optional | parent::asn:Choice">?</xsl:if> <xsl:value-of select="@name" />;</xsl:template>
+        internal <xsl:value-of select="@typeName"/><xsl:if test="@optional and not(parent::asn:Choice) and not(parent::asn:Sequence)">?</xsl:if> <xsl:value-of select="@name" />;</xsl:template>
 
   <xsl:template match="asn:AsnType" mode="CollectionElementType"><xsl:value-of select="@typeName"/></xsl:template>
 
@@ -388,9 +393,15 @@ namespace <xsl:value-of select="@namespace" />
     <xsl:param name="writerName"/>
     <xsl:param name="indent" />
     <xsl:param name="name" select="@name"/>
-    <xsl:variable name="nullable" select="@optional | parent::asn:Choice"/>
-    <xsl:if test="1" xml:space="preserve">
-            <xsl:value-of select="$indent"/><xsl:value-of select="$name"/><xsl:if test="$nullable">.Value</xsl:if>.Encode(<xsl:value-of select="$writerName"/><xsl:call-template name="MaybeImplicitCallS"/>);</xsl:if>
+    <xsl:variable name="nullable" select="@optional and not(parent::asn:Choice) and not(parent::asn:Sequence)"/>
+    <xsl:choose xml:space="preserve">
+      <xsl:when test="../@name = @typeName">
+            <xsl:value-of select="$indent"/>writer.PushSequence(<xsl:call-template name="MaybeImplicitCall0"/>);
+            <xsl:value-of select="$indent"/><xsl:value-of select="$name"/><xsl:if test="$nullable">.Value</xsl:if>.Encode(<xsl:value-of select="$writerName"/>);
+            <xsl:value-of select="$indent"/>writer.PopSequence();
+      </xsl:when><xsl:otherwise>
+            <xsl:value-of select="$indent"/><xsl:value-of select="$name"/><xsl:if test="$nullable">.Value</xsl:if>.Encode(<xsl:value-of select="$writerName"/><xsl:call-template name="MaybeImplicitCallS"/>);</xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
   
   <xsl:template match="asn:AsnType" mode="DecodeSimpleValue" xml:space="default">

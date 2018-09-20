@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Security.Cryptography.Asn1;
 
 namespace zivillian.ldap.Asn1
 {
-    [StructLayout(LayoutKind.Sequential)]
-    internal partial struct Asn1MatchingRuleAssertion
+    internal sealed partial class Asn1MatchingRuleAssertion
     {
         internal ReadOnlyMemory<byte>? MatchingRule;
         internal ReadOnlyMemory<byte>? Type;
@@ -71,7 +69,7 @@ namespace zivillian.ldap.Asn1
             if (reader == null)
                 throw new ArgumentNullException(nameof(reader));
 
-            decoded = default;
+            decoded = new Asn1MatchingRuleAssertion();
             AsnReader sequenceReader = reader.ReadSequence(expectedTag);
             
 

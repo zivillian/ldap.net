@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Security.Cryptography.Asn1;
 
 namespace zivillian.ldap.Asn1
 {
-    [StructLayout(LayoutKind.Sequential)]
-    internal partial struct Asn1SearchRequest
+    internal sealed partial class Asn1SearchRequest
     {
         internal ReadOnlyMemory<byte> BaseObject;
         internal SearchScope Scope;
@@ -72,7 +70,7 @@ namespace zivillian.ldap.Asn1
             if (reader == null)
                 throw new ArgumentNullException(nameof(reader));
 
-            decoded = default;
+            decoded = new Asn1SearchRequest();
             AsnReader sequenceReader = reader.ReadSequence(expectedTag);
             AsnReader collectionReader;
             

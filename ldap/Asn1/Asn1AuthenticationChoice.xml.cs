@@ -1,15 +1,13 @@
 ﻿using System;
-using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Security.Cryptography.Asn1;
 
 namespace zivillian.ldap.Asn1
 {
-    [StructLayout(LayoutKind.Sequential)]
-    internal partial struct Asn1AuthenticationChoice
+    internal sealed partial class Asn1AuthenticationChoice
     {
         internal ReadOnlyMemory<byte>? Simple;
-        internal Asn1SaslCredentials? Sasl;
+        internal Asn1SaslCredentials Sasl;
 
 #if DEBUG
         static Asn1AuthenticationChoice()
@@ -43,12 +41,12 @@ namespace zivillian.ldap.Asn1
                 wroteValue = true;
             }
 
-            if (Sasl.HasValue)
+            if (Sasl != null)
             {
                 if (wroteValue)
                     throw new CryptographicException();
                 
-                Sasl.Value.Encode(writer, new Asn1Tag(TagClass.ContextSpecific, 3));
+                Sasl.Encode(writer, new Asn1Tag(TagClass.ContextSpecific, 3));
                 wroteValue = true;
             }
 
@@ -67,12 +65,21 @@ namespace zivillian.ldap.Asn1
             return decoded;
         }
 
+        internal static void Decode(AsnReader reader, Asn1Tag expectedTag, out Asn1AuthenticationChoice decoded)
+        {
+            if (reader == null)
+                throw new ArgumentNullException(nameof(reader));
+
+            reader.ReadNull(expectedTag);
+            Decode(reader, out decoded);
+        }
+
         internal static void Decode(AsnReader reader, out Asn1AuthenticationChoice decoded)
         {
             if (reader == null)
                 throw new ArgumentNullException(nameof(reader));
 
-            decoded = default;
+            decoded = new Asn1AuthenticationChoice();
             Asn1Tag tag = reader.PeekTag();
             
             if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.ContextSpecific, 0)))

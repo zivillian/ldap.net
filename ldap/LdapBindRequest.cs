@@ -19,7 +19,7 @@ namespace zivillian.ldap
         internal LdapBindRequest(Asn1LdapMessage message)
             : base(message)
         {
-            var bindRequest = message.ProtocolOp.BindRequest.Value;
+            var bindRequest = message.ProtocolOp.BindRequest;
             Version = bindRequest.Version;
             Name = Encoding.UTF8.GetString(bindRequest.Name.Span);
             var auth = bindRequest.Authentication;
@@ -29,7 +29,7 @@ namespace zivillian.ldap
             }
             else if (auth.Sasl != null)
             {
-                var sasl = auth.Sasl.Value;
+                var sasl = auth.Sasl;
                 SaslMechanism = Encoding.UTF8.GetString(sasl.Mechanism.Span);
                 SaslCredentials = sasl.Credentials;
             }

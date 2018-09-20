@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Security.Cryptography.Asn1;
 
 namespace zivillian.ldap.Asn1
 {
-    [StructLayout(LayoutKind.Sequential)]
-    internal partial struct Asn1SaslCredentials
+    internal sealed partial class Asn1SaslCredentials
     {
         internal ReadOnlyMemory<byte> Mechanism;
         internal ReadOnlyMemory<byte>? Credentials;
@@ -57,7 +55,7 @@ namespace zivillian.ldap.Asn1
             if (reader == null)
                 throw new ArgumentNullException(nameof(reader));
 
-            decoded = default;
+            decoded = new Asn1SaslCredentials();
             AsnReader sequenceReader = reader.ReadSequence(expectedTag);
             
 

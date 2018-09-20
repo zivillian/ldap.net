@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Security.Cryptography.Asn1;
 
 namespace zivillian.ldap.Asn1
 {
-    [StructLayout(LayoutKind.Sequential)]
-    internal partial struct Asn1LdapMessage
+    internal sealed partial class Asn1LdapMessage
     {
         internal int MessageID;
         internal Asn1ProtocolOp ProtocolOp;
@@ -67,7 +65,7 @@ namespace zivillian.ldap.Asn1
             if (reader == null)
                 throw new ArgumentNullException(nameof(reader));
 
-            decoded = default;
+            decoded = new Asn1LdapMessage();
             AsnReader sequenceReader = reader.ReadSequence(expectedTag);
             AsnReader collectionReader;
             

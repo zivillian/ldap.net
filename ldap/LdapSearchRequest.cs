@@ -21,7 +21,7 @@ namespace zivillian.ldap
         internal LdapSearchRequest(Asn1LdapMessage message)
             : base(message)
         {
-            var search = message.ProtocolOp.SearchRequest.Value;
+            var search = message.ProtocolOp.SearchRequest;
             BaseObject = Encoding.UTF8.GetString(search.BaseObject.Span);
             Scope = search.Scope;
             DerefAliases = search.DerefAliases;

@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Security.Cryptography.Asn1;
 
 namespace zivillian.ldap.Asn1
 {
-    [StructLayout(LayoutKind.Sequential)]
-    internal partial struct Asn1Control
+    internal sealed partial class Asn1Control
     {
         internal ReadOnlyMemory<byte> Type;
         internal bool Criticality;
@@ -59,7 +57,7 @@ namespace zivillian.ldap.Asn1
             if (reader == null)
                 throw new ArgumentNullException(nameof(reader));
 
-            decoded = default;
+            decoded = new Asn1Control();
             AsnReader sequenceReader = reader.ReadSequence(expectedTag);
             
 
