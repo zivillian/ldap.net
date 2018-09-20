@@ -286,12 +286,33 @@ namespace zivillian.ldap.test
             };
             var message = Read(data);
             Assert.Equal(28, message.Id);
-            var done = Assert.IsType<LdapSearchResultDone>(message);
+            var done = Assert.IsType<LdapResponseMessage>(message);
             Assert.Equal(ResultCode.Success, done.ResultCode);
             Assert.Equal(String.Empty, done.MatchedDN);
             Assert.Equal(String.Empty, done.DiagnosticMessage);
             Assert.Empty(done.Referrals);
             Assert.Empty(done.Controls);
+        }
+
+        [Fact]
+        public void CanReadDeleteResponse()
+        {
+            var data = new byte[]
+            {
+                0x30, 0x25, 0x02, 0x01, 0x2a, 0x6b, 0x20, 0x0a,
+                0x01, 0x32, 0x04, 0x00, 0x04, 0x19, 0x6e, 0x6f,
+                0x20, 0x77, 0x72, 0x69, 0x74, 0x65, 0x20, 0x61,
+                0x63, 0x63, 0x65, 0x73, 0x73, 0x20, 0x74, 0x6f,
+                0x20, 0x70, 0x61, 0x72, 0x65, 0x6e, 0x74
+            };
+            var message = Read(data);
+            Assert.Equal(42, message.Id);
+            var del = Assert.IsType<LdapResponseMessage>(message);
+            Assert.Equal(ResultCode.InsufficientAccessRights, del.ResultCode);
+            Assert.Equal(String.Empty, del.MatchedDN);
+            Assert.Equal("no write access to parent", del.DiagnosticMessage);
+            Assert.Empty(del.Referrals);
+            Assert.Empty(del.Controls);
         }
 
         private LdapRequestMessage Read(byte[] message)

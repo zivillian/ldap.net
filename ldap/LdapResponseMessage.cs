@@ -4,7 +4,7 @@ using zivillian.ldap.Asn1;
 
 namespace zivillian.ldap
 {
-    public abstract class LdapResponseMessage:LdapRequestMessage
+    public class LdapResponseMessage:LdapRequestMessage
     {
         public ResultCode ResultCode { get; }
 
@@ -13,6 +13,11 @@ namespace zivillian.ldap
         public string DiagnosticMessage { get; }
         
         public string[] Referrals { get; }
+
+        internal LdapResponseMessage(Asn1LDAPResult result, Asn1LdapMessage message)
+        :this(result.ResultCode, result.MatchedDN, result.DiagnosticMessage, result.Referral, message)
+        {
+        }
 
         internal LdapResponseMessage(ResultCode resultCode, ReadOnlyMemory<byte> matchedDN, 
             ReadOnlyMemory<byte> diagnosticMessage, ReadOnlyMemory<byte>[] referral, 

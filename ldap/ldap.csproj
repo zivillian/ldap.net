@@ -20,12 +20,12 @@
     <AsnXml Include="Asn1\Asn1BindResponse.xml" />
     <AsnXml Include="Asn1\Asn1Control.xml" />
     <AsnXml Include="Asn1\Asn1Filter.xml" />
+    <AsnXml Include="Asn1\Asn1LDAPResult.xml" />
     <AsnXml Include="Asn1\Asn1MatchingRuleAssertion.xml" />
     <AsnXml Include="Asn1\Asn1PartialAttribute.xml" />
     <AsnXml Include="Asn1\Asn1ProtocolOp.xml" />
     <AsnXml Include="Asn1\Asn1SaslCredentials.xml" />
     <AsnXml Include="Asn1\Asn1SearchRequest.xml" />
-    <AsnXml Include="Asn1\Asn1SearchResultDone.xml" />
     <AsnXml Include="Asn1\Asn1SearchResultEntry.xml" />
     <AsnXml Include="Asn1\Asn1Substring.xml" />
     <AsnXml Include="Asn1\Asn1SubstringFilter.xml" />

@@ -43,8 +43,11 @@ namespace zivillian.ldap
             }
             else if (message.ProtocolOp.SearchResultDone != null)
             {
-                var ldapResult = message.ProtocolOp.SearchResultDone;
-                return new LdapSearchResultDone(ldapResult.ResultCode, ldapResult.MatchedDN, ldapResult.DiagnosticMessage, ldapResult.Referral, message);
+                return new LdapResponseMessage(message.ProtocolOp.SearchResultDone, message);
+            }
+            else if (message.ProtocolOp.DelResponse != null)
+            {
+                return new LdapResponseMessage(message.ProtocolOp.DelResponse, message);
             }
             else
             {

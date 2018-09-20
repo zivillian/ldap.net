@@ -11,8 +11,9 @@ namespace zivillian.ldap.Asn1
         internal bool ? UnbindRequest;
         internal Asn1SearchRequest SearchRequest;
         internal Asn1SearchResultEntry SearchResEntry;
-        internal Asn1SearchResultDone SearchResultDone;
+        internal Asn1LDAPResult SearchResultDone;
         internal ReadOnlyMemory<byte>? DelRequest;
+        internal Asn1LDAPResult DelResponse;
 
 #if DEBUG
         static Asn1ProtocolOp()
@@ -35,6 +36,7 @@ namespace zivillian.ldap.Asn1
             ensureUniqueTag(new Asn1Tag(TagClass.Application, 4), "SearchResEntry");
             ensureUniqueTag(new Asn1Tag(TagClass.Application, 5), "SearchResultDone");
             ensureUniqueTag(new Asn1Tag(TagClass.Application, 10), "DelRequest");
+            ensureUniqueTag(new Asn1Tag(TagClass.Application, 11), "DelResponse");
         }
 #endif
 
@@ -102,6 +104,15 @@ namespace zivillian.ldap.Asn1
                     throw new CryptographicException();
                 
                 writer.WriteOctetString(new Asn1Tag(TagClass.Application, 10), DelRequest.Value.Span);
+                wroteValue = true;
+            }
+
+            if (DelResponse != null)
+            {
+                if (wroteValue)
+                    throw new CryptographicException();
+                
+                DelResponse.Encode(writer, new Asn1Tag(TagClass.Application, 11));
                 wroteValue = true;
             }
 
@@ -173,8 +184,8 @@ namespace zivillian.ldap.Asn1
             }
             else if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.Application, 5)))
             {
-                Asn1SearchResultDone tmpSearchResultDone;
-                Asn1SearchResultDone.Decode(reader, new Asn1Tag(TagClass.Application, 5), out tmpSearchResultDone);
+                Asn1LDAPResult tmpSearchResultDone;
+                Asn1LDAPResult.Decode(reader, new Asn1Tag(TagClass.Application, 5), out tmpSearchResultDone);
                 decoded.SearchResultDone = tmpSearchResultDone;
 
             }
@@ -189,6 +200,13 @@ namespace zivillian.ldap.Asn1
                 {
                     decoded.DelRequest = reader.ReadOctetString(new Asn1Tag(TagClass.Application, 10));
                 }
+
+            }
+            else if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.Application, 11)))
+            {
+                Asn1LDAPResult tmpDelResponse;
+                Asn1LDAPResult.Decode(reader, new Asn1Tag(TagClass.Application, 11), out tmpDelResponse);
+                decoded.DelResponse = tmpDelResponse;
 
             }
             else
