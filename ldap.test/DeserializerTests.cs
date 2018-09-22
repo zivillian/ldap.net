@@ -352,6 +352,7 @@ namespace zivillian.ldap.test
             };
             var message = Read(data, false);
             Assert.Equal(12, message.Id);
+            Assert.Empty(message.Controls);
             var modify = Assert.IsType<LdapModifyRequest>(message);
             Assert.Equal("ou=chemists,dc=example,dc=com", modify.Object);
             Assert.Equal(2, modify.Changes.Length);
@@ -363,6 +364,24 @@ namespace zivillian.ldap.test
             Assert.Equal("description", modify.Changes[1].Modification.Type);
             value = Assert.Single(modify.Changes[1].Modification.Values);
             Assert.Equal("Foobar", value);
+        }
+
+        [Fact]
+        public void CanReadModifyResponse()
+        {
+            var data = new byte[]
+            {
+                0x30, 0x0c, 0x02, 0x01, 0x0c, 0x67, 0x07, 0x0a,
+                0x01, 0x32, 0x04, 0x00, 0x04, 0x00
+            };
+            var message = Read(data);
+            Assert.Equal(12, message.Id);
+            Assert.Empty(message.Controls);
+            var modify = Assert.IsType<LdapModifyResponse>(message);
+            Assert.Equal(ResultCode.InsufficientAccessRights, modify.ResultCode);
+            Assert.Equal(String.Empty, modify.MatchedDN);
+            Assert.Equal(String.Empty, modify.DiagnosticMessage);
+            Assert.Empty(modify.Referrals);
         }
 
         private LdapRequestMessage Read(byte[] data, bool validateRoundtrip = true)
