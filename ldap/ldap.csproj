@@ -14,6 +14,7 @@
   </ItemGroup>
   <ItemGroup>
     <AsnXml Include="Asn1\Asn1LdapMessage.xml" />
+    <AsnXml Include="Asn1\Asn1AddRequest.xml" />
     <AsnXml Include="Asn1\Asn1AttributeValueAssertion.xml" />
     <AsnXml Include="Asn1\Asn1AuthenticationChoice.xml" />
     <AsnXml Include="Asn1\Asn1BindRequest.xml" />

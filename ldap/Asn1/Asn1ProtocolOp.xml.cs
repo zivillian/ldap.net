@@ -16,6 +16,7 @@ namespace zivillian.ldap.Asn1
         internal ReadOnlyMemory<byte>[] SearchResultReference;
         internal Asn1ModifyRequest ModifyRequest;
         internal Asn1LDAPResult ModifyResponse;
+        internal Asn1AddRequest AddRequest;
         internal Asn1LDAPResult AddResponse;
         internal ReadOnlyMemory<byte>? DelRequest;
         internal Asn1LDAPResult DelResponse;
@@ -46,6 +47,7 @@ namespace zivillian.ldap.Asn1
             ensureUniqueTag(new Asn1Tag(TagClass.Application, 19), "SearchResultReference");
             ensureUniqueTag(new Asn1Tag(TagClass.Application, 6), "ModifyRequest");
             ensureUniqueTag(new Asn1Tag(TagClass.Application, 7), "ModifyResponse");
+            ensureUniqueTag(new Asn1Tag(TagClass.Application, 8), "AddRequest");
             ensureUniqueTag(new Asn1Tag(TagClass.Application, 9), "AddResponse");
             ensureUniqueTag(new Asn1Tag(TagClass.Application, 10), "DelRequest");
             ensureUniqueTag(new Asn1Tag(TagClass.Application, 11), "DelResponse");
@@ -144,6 +146,15 @@ namespace zivillian.ldap.Asn1
                     throw new CryptographicException();
                 
                 ModifyResponse.Encode(writer, new Asn1Tag(TagClass.Application, 7));
+                wroteValue = true;
+            }
+
+            if (AddRequest != null)
+            {
+                if (wroteValue)
+                    throw new CryptographicException();
+                
+                AddRequest.Encode(writer, new Asn1Tag(TagClass.Application, 8));
                 wroteValue = true;
             }
 
@@ -315,6 +326,13 @@ namespace zivillian.ldap.Asn1
                 Asn1LDAPResult tmpModifyResponse;
                 Asn1LDAPResult.Decode(reader, new Asn1Tag(TagClass.Application, 7), out tmpModifyResponse);
                 decoded.ModifyResponse = tmpModifyResponse;
+
+            }
+            else if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.Application, 8)))
+            {
+                Asn1AddRequest tmpAddRequest;
+                Asn1AddRequest.Decode(reader, new Asn1Tag(TagClass.Application, 8), out tmpAddRequest);
+                decoded.AddRequest = tmpAddRequest;
 
             }
             else if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.Application, 9)))

@@ -3,7 +3,7 @@
 <asn:Sequence
   xmlns:asn="http://schemas.dot.net/asnxml/201808/"
   name="Asn1LdapMessage"
-  namespace="zivillian.ldap.Asn1" >
+  namespace="zivillian.ldap.Asn1">
   <!--
     LDAPMessage ::= SEQUENCE {
          messageID       MessageID,

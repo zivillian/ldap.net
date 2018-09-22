@@ -40,7 +40,7 @@
   </asn:SequenceOf>
   <asn:AsnType name="ModifyRequest" typeName="Asn1ModifyRequest" implicitTag="6" tagClass="Application"/>
   <asn:AsnType name="ModifyResponse" typeName="Asn1LDAPResult" implicitTag="7" tagClass="Application"/>
-
+  <asn:AsnType name="AddRequest" typeName="Asn1AddRequest" implicitTag="8" tagClass="Application"/>
   <asn:AsnType name="AddResponse" typeName="Asn1LDAPResult" implicitTag="9" tagClass="Application"/>
   <asn:OctetString name="DelRequest" implicitTag="10" tagClass="Application"/>
   <asn:AsnType name="DelResponse" typeName="Asn1LDAPResult" implicitTag="11" tagClass="Application"/>
