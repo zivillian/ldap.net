@@ -8,7 +8,7 @@ namespace zivillian.ldap.Asn1
     {
         internal ReadOnlyMemory<byte>? MatchingRule;
         internal ReadOnlyMemory<byte>? Type;
-        internal ReadOnlyMemory<byte>? Value;
+        internal ReadOnlyMemory<byte> Value;
         internal bool DNAttributes;
       
         internal void Encode(AsnWriter writer)
@@ -32,12 +32,7 @@ namespace zivillian.ldap.Asn1
                 writer.WriteOctetString(new Asn1Tag(TagClass.ContextSpecific, 2), Type.Value.Span);
             }
 
-
-            if (Value.HasValue)
-            {
-                writer.WriteOctetString(new Asn1Tag(TagClass.ContextSpecific, 3), Value.Value.Span);
-            }
-
+            writer.WriteOctetString(new Asn1Tag(TagClass.ContextSpecific, 3), Value.Span);
             writer.WriteBoolean(new Asn1Tag(TagClass.ContextSpecific, 4), DNAttributes);
             writer.PopSequence(tag);
         }
@@ -103,18 +98,13 @@ namespace zivillian.ldap.Asn1
             }
 
 
-            if (sequenceReader.HasData && sequenceReader.PeekTag().HasSameClassAndValue(new Asn1Tag(TagClass.ContextSpecific, 3)))
+            if (sequenceReader.TryGetPrimitiveOctetStringBytes(new Asn1Tag(TagClass.ContextSpecific, 3), out ReadOnlyMemory<byte> tmpValue))
             {
-
-                if (sequenceReader.TryGetPrimitiveOctetStringBytes(new Asn1Tag(TagClass.ContextSpecific, 3), out ReadOnlyMemory<byte> tmpValue))
-                {
-                    decoded.Value = tmpValue;
-                }
-                else
-                {
-                    decoded.Value = sequenceReader.ReadOctetString(new Asn1Tag(TagClass.ContextSpecific, 3));
-                }
-
+                decoded.Value = tmpValue;
+            }
+            else
+            {
+                decoded.Value = sequenceReader.ReadOctetString(new Asn1Tag(TagClass.ContextSpecific, 3));
             }
 
             decoded.DNAttributes = sequenceReader.ReadBoolean(new Asn1Tag(TagClass.ContextSpecific, 4));

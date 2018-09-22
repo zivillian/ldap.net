@@ -16,6 +16,6 @@
   -->
   <asn:OctetString optional="true" name="MatchingRule" implicitTag="1"/>
   <asn:OctetString optional="true" name="Type" implicitTag="2"/>
-  <asn:OctetString optional="true" name="Value" implicitTag="3"/>
+  <asn:OctetString name="Value" implicitTag="3"/>
   <asn:Boolean name="DNAttributes" implicitTag="4"/>
 </asn:Sequence>

@@ -21,8 +21,7 @@ namespace zivillian.ldap.test
                 0x63, 0x3d, 0x65, 0x78, 0x61, 0x6d, 0x70, 0x6c,
                 0x65, 0x2c, 0x64, 0x63, 0x3d, 0x63, 0x6f, 0x6d
             };
-            Asn1Serializer.DeserializeDeleteRequest(data);
-            var message = Read(data);
+            var message = Read(data, false);
             Assert.Equal(42, message.Id);
             var delete = Assert.IsType<LdapDeleteRequest>(message);
             Assert.Equal("ou=chemists,dc=example,dc=com", delete.DN);
@@ -44,13 +43,12 @@ namespace zivillian.ldap.test
                 0x80, 0x08, 0x70, 0x61, 0x73, 0x73, 0x77, 0x6f,
                 0x72, 0x64
             };
-            Asn1Serializer.DeserializeBindRequest(data);
-            var message = Read(data);
+            var message = Read(data, false);
             Assert.Equal(27, message.Id);
             var bind = Assert.IsType<LdapBindRequest>(message);
             Assert.Equal(3, bind.Version);
             Assert.Equal("cn=read-only-admin,dc=example,dc=com", bind.Name);
-            Assert.Equal("password", Encoding.UTF8.GetString(bind.Simple.Span));
+            Assert.Equal("password", Encoding.UTF8.GetString(bind.Simple.Value.Span));
             Assert.Null(bind.SaslMechanism);
             Assert.Null(bind.SaslCredentials);
             Assert.Empty(bind.Controls);
@@ -64,7 +62,6 @@ namespace zivillian.ldap.test
                 0x30, 0x0c, 0x02, 0x01, 0x1b, 0x61, 0x07, 0x0a,
                 0x01, 0x00, 0x04, 0x00, 0x04, 0x00
             };
-            Asn1Serializer.DeserializeBindResponse(data);
             var message = Read(data);
             Assert.Equal(27, message.Id);
             var bind = Assert.IsType<LdapBindResponse>(message);
@@ -125,8 +122,7 @@ namespace zivillian.ldap.test
                 0x65, 0x64, 0x43, 0x61, 0x70, 0x61, 0x62, 0x69,
                 0x6c, 0x69, 0x74, 0x69, 0x65, 0x73
             };
-            Asn1Serializer.DeserializeSearchRequest(data);
-            var message = Read(data);
+            var message = Read(data, false);
             Assert.Equal(28, message.Id);
             var search = Assert.IsType<LdapSearchRequest>(message);
             Assert.True(String.IsNullOrEmpty(search.BaseObject));
@@ -135,6 +131,24 @@ namespace zivillian.ldap.test
             Assert.Equal(Int32.MaxValue, search.SizeLimit);
             Assert.Equal(TimeSpan.MaxValue, search.TimeLimit);
             Assert.False(search.TypesOnly);
+            var filter = Assert.IsType<LdapPresentFilter>(search.Filter);
+            Assert.Equal("objectclass", filter.Attribute);
+            Assert.Equal(15, search.Attributes.Length);
+            Assert.Equal("subschemaSubentry", search.Attributes[0]);
+            Assert.Equal("dsServiceName", search.Attributes[1]);
+            Assert.Equal("namingContexts", search.Attributes[2]);
+            Assert.Equal("defaultNamingContext", search.Attributes[3]);
+            Assert.Equal("schemaNamingContext", search.Attributes[4]);
+            Assert.Equal("configurationNamingContext", search.Attributes[5]);
+            Assert.Equal("rootDomainNamingContext", search.Attributes[6]);
+            Assert.Equal("supportedControl", search.Attributes[7]);
+            Assert.Equal("supportedLDAPVersion", search.Attributes[8]);
+            Assert.Equal("supportedLDAPPolicies", search.Attributes[9]);
+            Assert.Equal("supportedSASLMechanisms", search.Attributes[10]);
+            Assert.Equal("dnsHostName", search.Attributes[11]);
+            Assert.Equal("ldapServiceName", search.Attributes[12]);
+            Assert.Equal("serverName", search.Attributes[13]);
+            Assert.Equal("supportedCapabilities", search.Attributes[14]);
             Assert.Empty(search.Controls);
         }
 
@@ -161,8 +175,7 @@ namespace zivillian.ldap.test
                 0x04, 0x0b, 0x30, 0x84, 0x00, 0x00, 0x00, 0x05,
                 0x02, 0x01, 0x64, 0x04, 0x00
             };
-            Asn1Serializer.DeserializeSearchRequestPartial(data);
-            var message = Read(data);
+            var message = Read(data, false);
             Assert.Equal(30, message.Id);
             var search = Assert.IsType<LdapSearchRequest>(message);
             Assert.Equal("dc=example,dc=com", search.BaseObject);
@@ -186,8 +199,7 @@ namespace zivillian.ldap.test
                 0x30, 0x84, 0x00, 0x00, 0x00, 0x05, 0x02, 0x01,
                 0x28, 0x42, 0x00
             };
-            Asn1Serializer.DeserializeUnbindRequest(data);
-            var message = Read(data);
+            var message = Read(data, false);
             Assert.Equal(40, message.Id);
             var unbind = Assert.IsType<LdapUnbindRequest>(message);
             Assert.Empty(unbind.Controls);
@@ -239,7 +251,6 @@ namespace zivillian.ldap.test
                 0x0c, 0x63, 0x6e, 0x3d, 0x53, 0x75, 0x62, 0x73,
                 0x63, 0x68, 0x65, 0x6d, 0x61
             };
-            Asn1Serializer.DeserializeSearchResEntry(data);
             var message = Read(data);
             Assert.Equal(28, message.Id);
             var result = Assert.IsType<LdapSearchResultEntry>(message);
@@ -286,7 +297,7 @@ namespace zivillian.ldap.test
             };
             var message = Read(data);
             Assert.Equal(28, message.Id);
-            var done = Assert.IsType<LdapResponseMessage>(message);
+            var done = Assert.IsType<LdapSearchResultDone>(message);
             Assert.Equal(ResultCode.Success, done.ResultCode);
             Assert.Equal(String.Empty, done.MatchedDN);
             Assert.Equal(String.Empty, done.DiagnosticMessage);
@@ -307,7 +318,7 @@ namespace zivillian.ldap.test
             };
             var message = Read(data);
             Assert.Equal(42, message.Id);
-            var del = Assert.IsType<LdapResponseMessage>(message);
+            var del = Assert.IsType<LdapDeleteResponse>(message);
             Assert.Equal(ResultCode.InsufficientAccessRights, del.ResultCode);
             Assert.Equal(String.Empty, del.MatchedDN);
             Assert.Equal("no write access to parent", del.DiagnosticMessage);
@@ -315,9 +326,15 @@ namespace zivillian.ldap.test
             Assert.Empty(del.Controls);
         }
 
-        private LdapRequestMessage Read(byte[] message)
+        private LdapRequestMessage Read(byte[] data, bool validateRoundtrip = true)
         {
-            return LdapReader.ReadMessage(message.AsMemory());
+            var message = LdapReader.ReadMessage(data);
+            if (validateRoundtrip)
+            {
+                var serialized = LdapReader.WriteMessage(message);
+                Assert.Equal(data, serialized);
+            }
+            return message;
         }
     }
 }

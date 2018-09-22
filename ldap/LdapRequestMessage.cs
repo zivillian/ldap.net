@@ -15,6 +15,20 @@ namespace zivillian.ldap
             Controls = LdapControl.Create(message.Controls);
         }
 
+        internal Asn1LdapMessage GetAsn()
+        {
+            var result = new Asn1LdapMessage
+            {
+                MessageID = Id,
+                Controls = LdapControl.Create(Controls),
+                ProtocolOp = new Asn1ProtocolOp()
+            };
+            SetProtocolOp(result.ProtocolOp);
+            return result;
+        }
+
+        internal abstract void SetProtocolOp(Asn1ProtocolOp op);
+
         internal static LdapRequestMessage Create(Asn1LdapMessage message)
         {
             if (message.ProtocolOp.BindRequest != null)
@@ -43,11 +57,11 @@ namespace zivillian.ldap
             }
             else if (message.ProtocolOp.SearchResultDone != null)
             {
-                return new LdapResponseMessage(message.ProtocolOp.SearchResultDone, message);
+                return new LdapSearchResultDone(message.ProtocolOp.SearchResultDone, message);
             }
             else if (message.ProtocolOp.DelResponse != null)
             {
-                return new LdapResponseMessage(message.ProtocolOp.DelResponse, message);
+                return new LdapDeleteResponse(message.ProtocolOp.DelResponse, message);
             }
             else
             {

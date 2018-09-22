@@ -13,5 +13,10 @@ namespace zivillian.ldap
         {
             DN = Encoding.UTF8.GetString(message.ProtocolOp.DelRequest.Value.Span);
         }
+
+        internal override void SetProtocolOp(Asn1ProtocolOp op)
+        {
+            op.DelRequest = Encoding.UTF8.GetBytes(DN);
+        }
     }
 }

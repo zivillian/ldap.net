@@ -11,5 +11,10 @@ namespace zivillian.ldap
             var message = Asn1Serializer.Deserialize(source);
             return LdapRequestMessage.Create(message);
         }
+
+        public static byte[] WriteMessage(LdapRequestMessage message)
+        {
+            return Asn1Serializer.Serialize(message.GetAsn());
+        }
     }
 }

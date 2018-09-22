@@ -6,11 +6,11 @@ namespace zivillian.ldap
 {
     public class LdapBindRequest : LdapRequestMessage
     {
-        public int Version { get; }
+        public byte Version { get; }
 
         public string Name { get; }
 
-        public ReadOnlyMemory<byte> Simple { get; }
+        public ReadOnlyMemory<byte>? Simple { get; }
 
         public string SaslMechanism { get; }
 
@@ -32,6 +32,29 @@ namespace zivillian.ldap
                 var sasl = auth.Sasl;
                 SaslMechanism = Encoding.UTF8.GetString(sasl.Mechanism.Span);
                 SaslCredentials = sasl.Credentials;
+            }
+        }
+
+        internal override void SetProtocolOp(Asn1ProtocolOp op)
+        {
+            var bindRequest = op.BindRequest = new Asn1BindRequest
+            {
+                Version = Version,
+                Name = Encoding.UTF8.GetBytes(Name),
+                Authentication = new Asn1AuthenticationChoice()
+            };
+            if (Simple.HasValue)
+            {
+                bindRequest.Authentication.Simple = Simple.Value;
+            }
+            else if (SaslMechanism != null)
+            {
+                var sasl = new Asn1SaslCredentials
+                {
+                    Mechanism = Encoding.UTF8.GetBytes(SaslMechanism),
+                    Credentials = SaslCredentials
+                };
+                bindRequest.Authentication.Sasl = sasl;
             }
         }
     }

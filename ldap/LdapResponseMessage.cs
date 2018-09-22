@@ -4,38 +4,63 @@ using zivillian.ldap.Asn1;
 
 namespace zivillian.ldap
 {
-    public class LdapResponseMessage:LdapRequestMessage
+    public class LdapSearchResultDone : LdapResponseMessage
     {
-        public ResultCode ResultCode { get; }
+        internal LdapSearchResultDone(Asn1LDAPResult result, Asn1LdapMessage message)
+            : base(result, message)
+        {
+        }
 
-        public string MatchedDN { get; }
+        internal override void SetProtocolOp(Asn1ProtocolOp op, Asn1LDAPResult result)
+        {
+            op.SearchResultDone = result;
+        }
+    }
+    public class LdapDeleteResponse : LdapResponseMessage
+    {
+        internal LdapDeleteResponse(Asn1LDAPResult result, Asn1LdapMessage message)
+            : base(result, message)
+        {
+        }
 
-        public string DiagnosticMessage { get; }
+        internal override void SetProtocolOp(Asn1ProtocolOp op, Asn1LDAPResult result)
+        {
+            op.DelResponse = result;
+        }
+    }
+
+    public abstract class LdapResponseMessage:LdapRequestMessage, ILdapResult
+    {
+        public ResultCode ResultCode { get; internal set; }
+
+        public string MatchedDN { get; internal set; }
+
+        public string DiagnosticMessage { get; internal set; }
         
-        public string[] Referrals { get; }
+        public string[] Referrals { get; internal set; }
 
         internal LdapResponseMessage(Asn1LDAPResult result, Asn1LdapMessage message)
-        :this(result.ResultCode, result.MatchedDN, result.DiagnosticMessage, result.Referral, message)
-        {
-        }
-
-        internal LdapResponseMessage(ResultCode resultCode, ReadOnlyMemory<byte> matchedDN, 
-            ReadOnlyMemory<byte> diagnosticMessage, ReadOnlyMemory<byte>[] referral, 
-            Asn1LdapMessage message)
             : base(message)
         {
-            ResultCode = resultCode;
-            MatchedDN = Encoding.UTF8.GetString(matchedDN.Span);
-            DiagnosticMessage = Encoding.UTF8.GetString(diagnosticMessage.Span);
-            Referrals = new string[0];
-            if (referral != null)
-            {
-                Referrals = new string[referral.Length];
-                for (int i = 0; i < referral.Length; i++)
-                {
-                    Referrals[i] = Encoding.UTF8.GetString(referral[i].Span);
-                }
-            }
+            
+            ResultCode = result.ResultCode;
+            MatchedDN = Encoding.UTF8.GetString(result.MatchedDN.Span);
+            DiagnosticMessage = Encoding.UTF8.GetString(result.DiagnosticMessage.Span);
+            Referrals = this.GetReferrals(result.Referral);
         }
+
+        internal override void SetProtocolOp(Asn1ProtocolOp op)
+        {
+            var asn = new Asn1LDAPResult
+            {
+                ResultCode = ResultCode,
+                MatchedDN = Encoding.UTF8.GetBytes(MatchedDN),
+                DiagnosticMessage = Encoding.UTF8.GetBytes(DiagnosticMessage),
+                Referral = this.GetReferrals(Referrals),
+            };
+            SetProtocolOp(op, asn);
+        }
+
+        internal abstract void SetProtocolOp(Asn1ProtocolOp op, Asn1LDAPResult result);
     }
 }

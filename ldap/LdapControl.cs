@@ -30,5 +30,25 @@ namespace zivillian.ldap
             }
             return result;
         }
+
+        internal static Asn1Control[] Create(LdapControl[] controls)
+        {
+            if (controls == null)
+                return null;
+            if (controls.Length == 0)
+                return null;
+            var result = new Asn1Control[controls.Length];
+            for (int i = 0; i < controls.Length; i++)
+            {
+                var control = controls[i];
+                result[i] = new Asn1Control
+                {
+                    Type = Encoding.UTF8.GetBytes(control.Oid),
+                    Criticality = control.Criticality,
+                    Value = control.Value
+                };
+            }
+            return result;
+        }
     }
 }

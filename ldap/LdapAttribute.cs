@@ -1,4 +1,6 @@
-﻿using System.Text;
+﻿using System;
+using System.IO;
+using System.Text;
 using zivillian.ldap.Asn1;
 
 namespace zivillian.ldap
@@ -21,6 +23,24 @@ namespace zivillian.ldap
                     Values[i] = Encoding.UTF8.GetString(attribute.Values[i].Span);
                 }
             }
+        }
+
+        internal Asn1PartialAttribute GetAsn()
+        {
+            var result = new Asn1PartialAttribute
+            {
+                Type = Encoding.UTF8.GetBytes(Type),
+                Values = new ReadOnlyMemory<byte>[0]
+            };
+            if (Values != null && Values.Length > 0)
+            {
+                result.Values = new ReadOnlyMemory<byte>[Values.Length];
+                for (int i = 0; i < Values.Length; i++)
+                {
+                    result.Values[i] = Encoding.UTF8.GetBytes(Values[i]);
+                }
+            }
+            return result;
         }
     }
 }

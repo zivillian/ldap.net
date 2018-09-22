@@ -24,5 +24,24 @@ namespace zivillian.ldap
                 }
             }
         }
+
+        internal override void SetProtocolOp(Asn1ProtocolOp op)
+        {
+            var result = new Asn1SearchResultEntry
+            {
+                ObjectName = Encoding.UTF8.GetBytes(ObjectName),
+                Attributes = new Asn1PartialAttribute[0]
+            };
+            if (Attributes != null && Attributes.Length > 0)
+            {
+                result.Attributes = new Asn1PartialAttribute[Attributes.Length];
+                for (int i = 0; i < Attributes.Length; i++)
+                {
+                    var attribute = Attributes[i];
+                    result.Attributes[i] = attribute.GetAsn();
+                }
+            }
+            op.SearchResEntry = result;
+        }
     }
 }
