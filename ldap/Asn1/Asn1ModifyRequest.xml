@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+
+<asn:Sequence
+  xmlns:asn="http://schemas.dot.net/asnxml/201808/"
+  name="Asn1ModifyRequest"
+  namespace="zivillian.ldap.Asn1" >
+  <!--
+   SEQUENCE {
+     object          LDAPDN,
+     changes         SEQUENCE OF change SEQUENCE {
+          operation       ENUMERATED {
+           add     (0),
+           delete  (1),
+           replace (2),
+           ...  },
+          modification    PartialAttribute } }
+  -->
+  <asn:OctetString name="Object"/>
+  <asn:SequenceOf name="Changes">
+    <asn:AsnType typeName="Asn1Change"/>
+  </asn:SequenceOf>
+</asn:Sequence>

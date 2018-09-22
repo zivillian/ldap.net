@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+
+<asn:Sequence
+  xmlns:asn="http://schemas.dot.net/asnxml/201808/"
+  name="Asn1Change"
+  namespace="zivillian.ldap.Asn1" >
+  <!--
+   SEQUENCE {
+          operation       ENUMERATED {
+           add     (0),
+           delete  (1),
+           replace (2),
+           ...  },
+          modification    PartialAttribute }
+  -->
+  <asn:Enumerated name="Operation" backingType="ChangeOperation"/>
+  <asn:AsnType name="Modification" typeName="Asn1PartialAttribute"/>
+</asn:Sequence>

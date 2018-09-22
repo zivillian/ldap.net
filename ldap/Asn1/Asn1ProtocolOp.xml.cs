@@ -14,6 +14,7 @@ namespace zivillian.ldap.Asn1
         internal Asn1SearchResultEntry SearchResEntry;
         internal Asn1LDAPResult SearchResultDone;
         internal ReadOnlyMemory<byte>[] SearchResultReference;
+        internal Asn1ModifyRequest ModifyRequest;
         internal Asn1LDAPResult ModifyResponse;
         internal Asn1LDAPResult AddResponse;
         internal ReadOnlyMemory<byte>? DelRequest;
@@ -42,7 +43,8 @@ namespace zivillian.ldap.Asn1
             ensureUniqueTag(new Asn1Tag(TagClass.Application, 3), "SearchRequest");
             ensureUniqueTag(new Asn1Tag(TagClass.Application, 4), "SearchResEntry");
             ensureUniqueTag(new Asn1Tag(TagClass.Application, 5), "SearchResultDone");
-            ensureUniqueTag(new Asn1Tag(TagClass.Application, 6), "SearchResultReference");
+            ensureUniqueTag(new Asn1Tag(TagClass.Application, 19), "SearchResultReference");
+            ensureUniqueTag(new Asn1Tag(TagClass.Application, 6), "ModifyRequest");
             ensureUniqueTag(new Asn1Tag(TagClass.Application, 7), "ModifyResponse");
             ensureUniqueTag(new Asn1Tag(TagClass.Application, 9), "AddResponse");
             ensureUniqueTag(new Asn1Tag(TagClass.Application, 10), "DelRequest");
@@ -117,13 +119,22 @@ namespace zivillian.ldap.Asn1
                     throw new CryptographicException();
                 
 
-                writer.PushSequence(new Asn1Tag(TagClass.Application, 6));
+                writer.PushSequence(new Asn1Tag(TagClass.Application, 19));
                 for (int i = 0; i < SearchResultReference.Length; i++)
                 {
                     writer.WriteOctetString(SearchResultReference[i].Span); 
                 }
-                writer.PopSequence(new Asn1Tag(TagClass.Application, 6));
+                writer.PopSequence(new Asn1Tag(TagClass.Application, 19));
 
+                wroteValue = true;
+            }
+
+            if (ModifyRequest != null)
+            {
+                if (wroteValue)
+                    throw new CryptographicException();
+                
+                ModifyRequest.Encode(writer, new Asn1Tag(TagClass.Application, 6));
                 wroteValue = true;
             }
 
@@ -264,12 +275,12 @@ namespace zivillian.ldap.Asn1
                 decoded.SearchResultDone = tmpSearchResultDone;
 
             }
-            else if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.Application, 6)))
+            else if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.Application, 19)))
             {
 
                 // Decode SEQUENCE OF for SearchResultReference
                 {
-                    collectionReader = reader.ReadSequence(new Asn1Tag(TagClass.Application, 6));
+                    collectionReader = reader.ReadSequence(new Asn1Tag(TagClass.Application, 19));
                     var tmpList = new List<ReadOnlyMemory<byte>>();
                     ReadOnlyMemory<byte> tmpItem;
 
@@ -290,6 +301,13 @@ namespace zivillian.ldap.Asn1
 
                     decoded.SearchResultReference = tmpList.ToArray();
                 }
+
+            }
+            else if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.Application, 6)))
+            {
+                Asn1ModifyRequest tmpModifyRequest;
+                Asn1ModifyRequest.Decode(reader, new Asn1Tag(TagClass.Application, 6), out tmpModifyRequest);
+                decoded.ModifyRequest = tmpModifyRequest;
 
             }
             else if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.Application, 7)))

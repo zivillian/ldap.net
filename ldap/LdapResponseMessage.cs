@@ -4,31 +4,6 @@ using zivillian.ldap.Asn1;
 
 namespace zivillian.ldap
 {
-    public class LdapSearchResultDone : LdapResponseMessage
-    {
-        internal LdapSearchResultDone(Asn1LDAPResult result, Asn1LdapMessage message)
-            : base(result, message)
-        {
-        }
-
-        internal override void SetProtocolOp(Asn1ProtocolOp op, Asn1LDAPResult result)
-        {
-            op.SearchResultDone = result;
-        }
-    }
-    public class LdapDeleteResponse : LdapResponseMessage
-    {
-        internal LdapDeleteResponse(Asn1LDAPResult result, Asn1LdapMessage message)
-            : base(result, message)
-        {
-        }
-
-        internal override void SetProtocolOp(Asn1ProtocolOp op, Asn1LDAPResult result)
-        {
-            op.DelResponse = result;
-        }
-    }
-
     public abstract class LdapResponseMessage:LdapRequestMessage, ILdapResult
     {
         public ResultCode ResultCode { get; internal set; }

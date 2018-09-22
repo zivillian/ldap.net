@@ -59,6 +59,18 @@ namespace zivillian.ldap
             {
                 return new LdapSearchResultDone(message.ProtocolOp.SearchResultDone, message);
             }
+            else if (message.ProtocolOp.SearchResultReference != null)
+            {
+                throw new NotImplementedException();
+            }
+            else if (message.ProtocolOp.ModifyRequest != null)
+            {
+                return new LdapModifyRequest(message);
+            }
+            else if (message.ProtocolOp.ModifyResponse != null)
+            {
+                return new LdapModifyResponse(message.ProtocolOp.ModifyResponse, message);
+            }
             else if (message.ProtocolOp.DelResponse != null)
             {
                 return new LdapDeleteResponse(message.ProtocolOp.DelResponse, message);
