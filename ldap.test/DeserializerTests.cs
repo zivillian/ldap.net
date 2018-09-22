@@ -474,6 +474,56 @@ namespace zivillian.ldap.test
             Assert.Empty(modify.Referrals);
         }
 
+        [Fact]
+        public void CanReadModifyDNRequest()
+        {
+            var data = new byte[]
+            {
+                //CC-BY 4.0 https://ldap.com/license/ Neil Wilson
+                0x30, 0x3c, // Begin the LDAPMessage sequence
+                0x02, 0x01, 0x02, // The message ID (integer value 2)
+                0x6c, 0x37, // Begin the modify DN request protocol op
+                0x04, 0x24, 0x75, 0x69, 0x64, 0x3d, 0x6a, 0x64, 0x6f,
+                0x65, // The DN of the entry to rename (octet string
+                0x2c, 0x6f, 0x75, 0x3d, 0x50, 0x65, 0x6f, 0x70, // "uid=jdoe,ou=People,dc=example,dc=com")
+                0x6c, 0x65, 0x2c, 0x64, 0x63, 0x3d, 0x65, 0x78, 0x61, 0x6d, 0x70, 0x6c, 0x65, 0x2c, 0x64, 0x63, 0x3d,
+                0x63, 0x6f, 0x6d, 0x04, 0x0c, 0x75, 0x69, 0x64, 0x3d, 0x6a, 0x6f, 0x68,
+                0x6e, // The new RDN (octet string "uid=john.doe")
+                0x2e, 0x64, 0x6f, 0x65, 0x01, 0x01, 0xff // Delete the old RDN value (boolean true)
+            };
+            var message = Read(data);
+            Assert.Equal(2, message.Id);
+            Assert.Empty(message.Controls);
+            var modify = Assert.IsType<LdapModifyDNRequest>(message);
+            Assert.Equal("uid=jdoe,ou=People,dc=example,dc=com", modify.Entry);
+            Assert.Equal("uid=john.doe", modify.NewRDN);
+            Assert.True( modify.DeleteOldRDN);
+            Assert.Null( modify.NewSuperior);
+        }
+
+        [Fact]
+        public void CanReadModifyDNResponse()
+        {
+            var data = new byte[]
+            {
+                //CC-BY 4.0 https://ldap.com/license/ Neil Wilson
+                0x30, 0x0c, // Begin the LDAPMessage sequence
+                0x02, 0x01, 0x02, // The message ID (integer value 2)
+                0x6d, 0x07, // Begin the modify DN response protocol op
+                0x0a, 0x01, 0x00, // success result code (enumerated value 0)
+                0x04, 0x00, // No matched DN (0-byte octet string)
+                0x04, 0x00 // No diagnostic message (0-byte octet string)
+            };
+            var message = Read(data);
+            Assert.Equal(2, message.Id);
+            Assert.Empty(message.Controls);
+            var modify = Assert.IsType<LdapModifyDNResponse>(message);
+            Assert.Equal(ResultCode.Success, modify.ResultCode);
+            Assert.Equal(String.Empty, modify.MatchedDN);
+            Assert.Equal(String.Empty, modify.DiagnosticMessage);
+            Assert.Empty(modify.Referrals);
+        }
+
         private LdapRequestMessage Read(byte[] data, bool validateRoundtrip = true)
         {
             var message = LdapReader.ReadMessage(data);

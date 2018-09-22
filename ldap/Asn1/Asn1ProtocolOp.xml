@@ -44,7 +44,7 @@
   <asn:AsnType name="AddResponse" typeName="Asn1LDAPResult" implicitTag="9" tagClass="Application"/>
   <asn:OctetString name="DelRequest" implicitTag="10" tagClass="Application"/>
   <asn:AsnType name="DelResponse" typeName="Asn1LDAPResult" implicitTag="11" tagClass="Application"/>
-
+  <asn:AsnType name="ModifyDNRequest" typeName="Asn1ModifyDNRequest" implicitTag="12" tagClass="Application"/>
   <asn:AsnType name="ModifyDNResponse" typeName="Asn1LDAPResult" implicitTag="13" tagClass="Application"/>
 
   <asn:AsnType name="CompareResponse" typeName="Asn1LDAPResult" implicitTag="15" tagClass="Application"/>

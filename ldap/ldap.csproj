@@ -24,6 +24,7 @@
     <AsnXml Include="Asn1\Asn1Filter.xml" />
     <AsnXml Include="Asn1\Asn1LDAPResult.xml" />
     <AsnXml Include="Asn1\Asn1MatchingRuleAssertion.xml" />
+    <AsnXml Include="Asn1\Asn1ModifyDNRequest.xml" />
     <AsnXml Include="Asn1\Asn1ModifyRequest.xml" />
     <AsnXml Include="Asn1\Asn1PartialAttribute.xml" />
     <AsnXml Include="Asn1\Asn1ProtocolOp.xml" />
