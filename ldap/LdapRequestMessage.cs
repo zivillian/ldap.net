@@ -99,6 +99,10 @@ namespace zivillian.ldap
             {
                 return new LdapCompareResponse(message.ProtocolOp.CompareResponse, message);
             }
+            else if (message.ProtocolOp.AbandonRequest != null)
+            {
+                return new LdapAbandonMessage(message.ProtocolOp.AbandonRequest.Value, message);
+            }
             else if (message.ProtocolOp.IntermediateResponse != null)
             {
                 return new LdapIntermediateResponse(message);

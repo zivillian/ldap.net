@@ -568,6 +568,9 @@ namespace zivillian.ldap.test
             Assert.Equal(2, message.Id);
             Assert.Empty(message.Controls);
             var compare = Assert.IsType<LdapCompareResponse>(message);
+            Assert.Equal(ResultCode.CompareTrue, compare.ResultCode);
+            Assert.Equal(String.Empty, compare.MatchedDN);
+            Assert.Equal(String.Empty, compare.DiagnosticMessage);
         }
 
         [Fact]
@@ -593,6 +596,22 @@ namespace zivillian.ldap.test
             Assert.Equal("1.3.6.1.4.1.4203.1.9.1.4", intermediate.Name);
             Assert.True(intermediate.Value.HasValue);
             Assert.False(intermediate.Value.Value.IsEmpty);
+        }
+
+        [Fact]
+        public void CanReadAbandonRequest()
+        {
+            var data = new byte[]
+            {
+                0x30, 0x06, // Begin the LDAPMessage sequence
+                0x02, 0x01, 0x06, // The message ID (integer value 6)
+                0x50, 0x01, 0x05 // The abandon request protocol op (application primitive integer 5)
+            };
+            var message = Read(data);
+            Assert.Equal(6, message.Id);
+            Assert.Empty(message.Controls);
+            var abandon = Assert.IsType<LdapAbandonRequest>(message);
+            Assert.Equal(5, abandon.MessageId);
         }
 
         private LdapRequestMessage Read(byte[] data, bool validateRoundtrip = true)
