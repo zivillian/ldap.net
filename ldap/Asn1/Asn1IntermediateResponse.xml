@@ -8,6 +8,6 @@
         responseName     [0] LDAPOID OPTIONAL,
         responseValue    [1] OCTET STRING OPTIONAL }
   -->
-  <asn:OctetString name="Name" implicitTag="0"/>
+  <asn:OctetString name="Name" optional="true" implicitTag="0"/>
   <asn:OctetString name="Value" optional="true" implicitTag="1"/>
 </asn:Sequence>

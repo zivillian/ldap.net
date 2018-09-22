@@ -13,7 +13,8 @@ namespace zivillian.ldap
         internal LdapIntermediateResponse(Asn1LdapMessage message) : base(message)
         {
             var intermediate = message.ProtocolOp.IntermediateResponse;
-            Name = Encoding.UTF8.GetString(intermediate.Name.Span);
+            if (intermediate.Name.HasValue)
+                Name = Encoding.UTF8.GetString(intermediate.Name.Value.Span);
             Value = intermediate.Value;
         }
 
@@ -21,9 +22,10 @@ namespace zivillian.ldap
         {
             op.IntermediateResponse = new Asn1IntermediateResponse
             {
-                Name = Encoding.UTF8.GetBytes(Name),
                 Value = Value
             };
+            if (Name != null)
+                op.IntermediateResponse.Name = Encoding.UTF8.GetBytes(Name);
         }
     }
 }

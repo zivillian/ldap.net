@@ -4,9 +4,9 @@ using System.Security.Cryptography.Asn1;
 
 namespace zivillian.ldap.Asn1
 {
-    internal sealed partial class Asn1IntermediateResponse
+    internal sealed partial class Asn1ExtendedRequest
     {
-        internal ReadOnlyMemory<byte>? Name;
+        internal ReadOnlyMemory<byte> Name;
         internal ReadOnlyMemory<byte>? Value;
       
         internal void Encode(AsnWriter writer)
@@ -18,12 +18,7 @@ namespace zivillian.ldap.Asn1
         {
             writer.PushSequence(tag);
             
-
-            if (Name.HasValue)
-            {
-                writer.WriteOctetString(new Asn1Tag(TagClass.ContextSpecific, 0), Name.Value.Span);
-            }
-
+            writer.WriteOctetString(new Asn1Tag(TagClass.ContextSpecific, 0), Name.Span);
 
             if (Value.HasValue)
             {
@@ -33,21 +28,21 @@ namespace zivillian.ldap.Asn1
             writer.PopSequence(tag);
         }
 
-        internal static Asn1IntermediateResponse Decode(ReadOnlyMemory<byte> encoded, AsnEncodingRules ruleSet)
+        internal static Asn1ExtendedRequest Decode(ReadOnlyMemory<byte> encoded, AsnEncodingRules ruleSet)
         {
             return Decode(Asn1Tag.Sequence, encoded, ruleSet);
         }
         
-        internal static Asn1IntermediateResponse Decode(Asn1Tag expectedTag, ReadOnlyMemory<byte> encoded, AsnEncodingRules ruleSet)
+        internal static Asn1ExtendedRequest Decode(Asn1Tag expectedTag, ReadOnlyMemory<byte> encoded, AsnEncodingRules ruleSet)
         {
             AsnReader reader = new AsnReader(encoded, ruleSet);
             
-            Decode(reader, expectedTag, out Asn1IntermediateResponse decoded);
+            Decode(reader, expectedTag, out Asn1ExtendedRequest decoded);
             reader.ThrowIfNotEmpty();
             return decoded;
         }
 
-        internal static void Decode(AsnReader reader, out Asn1IntermediateResponse decoded)
+        internal static void Decode(AsnReader reader, out Asn1ExtendedRequest decoded)
         {
             if (reader == null)
                 throw new ArgumentNullException(nameof(reader));
@@ -55,27 +50,22 @@ namespace zivillian.ldap.Asn1
             Decode(reader, Asn1Tag.Sequence, out decoded);
         }
 
-        internal static void Decode(AsnReader reader, Asn1Tag expectedTag, out Asn1IntermediateResponse decoded)
+        internal static void Decode(AsnReader reader, Asn1Tag expectedTag, out Asn1ExtendedRequest decoded)
         {
             if (reader == null)
                 throw new ArgumentNullException(nameof(reader));
 
-            decoded = new Asn1IntermediateResponse();
+            decoded = new Asn1ExtendedRequest();
             AsnReader sequenceReader = reader.ReadSequence(expectedTag);
             
 
-            if (sequenceReader.HasData && sequenceReader.PeekTag().HasSameClassAndValue(new Asn1Tag(TagClass.ContextSpecific, 0)))
+            if (sequenceReader.TryGetPrimitiveOctetStringBytes(new Asn1Tag(TagClass.ContextSpecific, 0), out ReadOnlyMemory<byte> tmpName))
             {
-
-                if (sequenceReader.TryGetPrimitiveOctetStringBytes(new Asn1Tag(TagClass.ContextSpecific, 0), out ReadOnlyMemory<byte> tmpName))
-                {
-                    decoded.Name = tmpName;
-                }
-                else
-                {
-                    decoded.Name = sequenceReader.ReadOctetString(new Asn1Tag(TagClass.ContextSpecific, 0));
-                }
-
+                decoded.Name = tmpName;
+            }
+            else
+            {
+                decoded.Name = sequenceReader.ReadOctetString(new Asn1Tag(TagClass.ContextSpecific, 0));
             }
 
 

@@ -101,7 +101,15 @@ namespace zivillian.ldap
             }
             else if (message.ProtocolOp.AbandonRequest != null)
             {
-                return new LdapAbandonMessage(message.ProtocolOp.AbandonRequest.Value, message);
+                return new LdapAbandonRequest(message.ProtocolOp.AbandonRequest.Value, message);
+            }
+            else if (message.ProtocolOp.ExtendedRequest != null)
+            {
+                return new LdapExtendedRequest(message);
+            }
+            else if (message.ProtocolOp.ExtendedResponse != null)
+            {
+                return new LdapExtendedResponse(message);
             }
             else if (message.ProtocolOp.IntermediateResponse != null)
             {

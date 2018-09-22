@@ -603,6 +603,7 @@ namespace zivillian.ldap.test
         {
             var data = new byte[]
             {
+                //CC-BY 4.0 https://ldap.com/license/ Neil Wilson
                 0x30, 0x06, // Begin the LDAPMessage sequence
                 0x02, 0x01, 0x06, // The message ID (integer value 6)
                 0x50, 0x01, 0x05 // The abandon request protocol op (application primitive integer 5)
@@ -612,6 +613,56 @@ namespace zivillian.ldap.test
             Assert.Empty(message.Controls);
             var abandon = Assert.IsType<LdapAbandonRequest>(message);
             Assert.Equal(5, abandon.MessageId);
+        }
+
+        [Fact]
+        public void CanReadExtendedRequest()
+        {
+            var data = new byte[]
+            {
+                //CC-BY 4.0 https://ldap.com/license/ Neil Wilson
+                0x30, 0x1d, // Begin the LDAPMessage sequence
+                0x02 , 0x01 , 0x01, // The message ID (integer value 1)
+                0x77 , 0x18, // Begin the extended request protocol op
+                0x80 , 0x16 , 0x31 , 0x2e , 0x33 , 0x2e , 0x36 , 0x2e , 0x31 , 0x2e, // The extended request OID
+                0x34 , 0x2e , 0x31 , 0x2e , 0x31 , 0x34 , 0x36 , 0x36, // (octet string "1.3.6.1.4.1.1466.20037"
+                0x2e , 0x32 , 0x30 , 0x30 , 0x33 , 0x37,       // with type context-specific primitive zero)
+            };
+            var message = Read(data);
+            Assert.Equal(1, message.Id);
+            Assert.Empty(message.Controls);
+            var extended = Assert.IsType<LdapExtendedRequest>(message);
+            Assert.Equal("1.3.6.1.4.1.1466.20037", extended.Name);
+            Assert.False(extended.Value.HasValue);
+        }
+
+        [Fact]
+        public void CanReadExtendedResponse()
+        {
+            var data = new byte[]
+            {
+                //CC-BY 4.0 https://ldap.com/license/ Neil Wilson
+                0x30, 0x24, // Begin the LDAPMessage sequence
+                0x02, 0x01, 0x01, // The message ID (integer value 1)
+                0x78, 0x1f, // Begin the extended response protocol op
+                0x0a, 0x01, 0x00, // success result code (enumerated value 0)
+                0x04, 0x00, // No matched DN (0-byte octet string)
+                0x04, 0x00, // No diagnostic message (0-byte octet string)
+                0x8a, 0x16, 0x31, 0x2e, 0x33, 0x2e, 0x36, 0x2e, 0x31, 0x2e, // The extended response OID
+                0x34, 0x2e, 0x31, 0x2e, 0x31, 0x34, 0x36, 0x36, // (octet string "1.3.6.1.4.1.1466.20037"
+                0x2e, 0x32, 0x30, 0x30, 0x33, 0x37 // with type context-specific primitive zero)
+            };
+            var message = Read(data);
+            Assert.Equal(1, message.Id);
+            Assert.Empty(message.Controls);
+            var extended = Assert.IsType<LdapExtendedResponse>(message);
+            Assert.Equal(ResultCode.Success, extended.ResultCode);
+            Assert.Equal(String.Empty, extended.MatchedDN);
+            Assert.Equal(String.Empty, extended.DiagnosticMessage);
+            Assert.Empty(extended.Referrals);
+            Assert.Equal("1.3.6.1.4.1.1466.20037", extended.Name);
+            Assert.False(extended.Value.HasValue);
+
         }
 
         private LdapRequestMessage Read(byte[] data, bool validateRoundtrip = true)

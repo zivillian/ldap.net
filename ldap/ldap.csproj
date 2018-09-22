@@ -21,6 +21,8 @@
     <AsnXml Include="Asn1\Asn1Change.xml" />
     <AsnXml Include="Asn1\Asn1CompareRequest.xml" />
     <AsnXml Include="Asn1\Asn1Control.xml" />
+    <AsnXml Include="Asn1\Asn1ExtendedRequest.xml" />
+    <AsnXml Include="Asn1\Asn1ExtendedResponse.xml" />
     <AsnXml Include="Asn1\Asn1Filter.xml" />
     <AsnXml Include="Asn1\Asn1IntermediateResponse.xml" />
     <AsnXml Include="Asn1\Asn1LdapMessage.xml" />

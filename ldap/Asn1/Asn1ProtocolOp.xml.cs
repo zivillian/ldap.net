@@ -25,6 +25,8 @@ namespace zivillian.ldap.Asn1
         internal Asn1CompareRequest CompareRequest;
         internal Asn1LDAPResult CompareResponse;
         internal int? AbandonRequest;
+        internal Asn1ExtendedRequest ExtendedRequest;
+        internal Asn1ExtendedResponse ExtendedResponse;
         internal Asn1IntermediateResponse IntermediateResponse;
 
 #if DEBUG
@@ -59,6 +61,8 @@ namespace zivillian.ldap.Asn1
             ensureUniqueTag(new Asn1Tag(TagClass.Application, 14), "CompareRequest");
             ensureUniqueTag(new Asn1Tag(TagClass.Application, 15), "CompareResponse");
             ensureUniqueTag(new Asn1Tag(TagClass.Application, 16), "AbandonRequest");
+            ensureUniqueTag(new Asn1Tag(TagClass.Application, 23), "ExtendedRequest");
+            ensureUniqueTag(new Asn1Tag(TagClass.Application, 24), "ExtendedResponse");
             ensureUniqueTag(new Asn1Tag(TagClass.Application, 25), "IntermediateResponse");
         }
 #endif
@@ -233,6 +237,24 @@ namespace zivillian.ldap.Asn1
                     throw new CryptographicException();
                 
                 writer.WriteInteger(new Asn1Tag(TagClass.Application, 16), AbandonRequest.Value);
+                wroteValue = true;
+            }
+
+            if (ExtendedRequest != null)
+            {
+                if (wroteValue)
+                    throw new CryptographicException();
+                
+                ExtendedRequest.Encode(writer, new Asn1Tag(TagClass.Application, 23));
+                wroteValue = true;
+            }
+
+            if (ExtendedResponse != null)
+            {
+                if (wroteValue)
+                    throw new CryptographicException();
+                
+                ExtendedResponse.Encode(writer, new Asn1Tag(TagClass.Application, 24));
                 wroteValue = true;
             }
 
@@ -434,6 +456,20 @@ namespace zivillian.ldap.Asn1
                 {
                     reader.ThrowIfNotEmpty();
                 }
+
+            }
+            else if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.Application, 23)))
+            {
+                Asn1ExtendedRequest tmpExtendedRequest;
+                Asn1ExtendedRequest.Decode(reader, new Asn1Tag(TagClass.Application, 23), out tmpExtendedRequest);
+                decoded.ExtendedRequest = tmpExtendedRequest;
+
+            }
+            else if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.Application, 24)))
+            {
+                Asn1ExtendedResponse tmpExtendedResponse;
+                Asn1ExtendedResponse.Decode(reader, new Asn1Tag(TagClass.Application, 24), out tmpExtendedResponse);
+                decoded.ExtendedResponse = tmpExtendedResponse;
 
             }
             else if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.Application, 25)))
