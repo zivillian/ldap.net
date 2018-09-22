@@ -58,7 +58,7 @@ namespace zivillian.ldap
         
         private static readonly char[] _escapeChars = new[] {'\\', '*', '(', ')', '\0'};
 
-        protected static string Escape(string value)
+        public static string Escape(string value)
         {
             if (value.IndexOfAny(_escapeChars) < 0) return value;
 
@@ -76,7 +76,7 @@ namespace zivillian.ldap
             return result.ToString();
         }
 
-        protected static string Unescape(string value)
+        public static string Unescape(string value)
         {
             var index = value.IndexOf('\\');
             if (index < 0) return value;

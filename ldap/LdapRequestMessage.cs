@@ -91,6 +91,18 @@ namespace zivillian.ldap
             {
                 return new LdapModifyDNResponse(message.ProtocolOp.ModifyDNResponse, message);
             }
+            else if (message.ProtocolOp.CompareRequest != null)
+            {
+                return new LdapCompareRequest(message);
+            }
+            else if (message.ProtocolOp.CompareResponse != null)
+            {
+                return new LdapCompareResponse(message.ProtocolOp.CompareResponse, message);
+            }
+            else if (message.ProtocolOp.IntermediateResponse != null)
+            {
+                return new LdapIntermediateResponse(message);
+            }
             else
             {
                 throw new NotImplementedException();

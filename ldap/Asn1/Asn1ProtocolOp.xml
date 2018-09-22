@@ -46,8 +46,9 @@
   <asn:AsnType name="DelResponse" typeName="Asn1LDAPResult" implicitTag="11" tagClass="Application"/>
   <asn:AsnType name="ModifyDNRequest" typeName="Asn1ModifyDNRequest" implicitTag="12" tagClass="Application"/>
   <asn:AsnType name="ModifyDNResponse" typeName="Asn1LDAPResult" implicitTag="13" tagClass="Application"/>
-
+  <asn:AsnType name="CompareRequest" typeName="Asn1CompareRequest" implicitTag="14" tagClass="Application"/>
   <asn:AsnType name="CompareResponse" typeName="Asn1LDAPResult" implicitTag="15" tagClass="Application"/>
   <asn:Integer name="AbandonRequest" backingType="int" implicitTag="16" tagClass="Application"/>
 
+  <asn:AsnType name="IntermediateResponse" typeName="Asn1IntermediateResponse" implicitTag="25" tagClass="Application"/>
 </asn:Choice>

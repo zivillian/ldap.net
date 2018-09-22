@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<asn:Sequence
+  xmlns:asn="http://schemas.dot.net/asnxml/201808/"
+  name="Asn1IntermediateResponse"
+  namespace="zivillian.ldap.Asn1">
+  <!--
+    SEQUENCE {
+        responseName     [0] LDAPOID OPTIONAL,
+        responseValue    [1] OCTET STRING OPTIONAL }
+  -->
+  <asn:OctetString name="Name" implicitTag="0"/>
+  <asn:OctetString name="Value" optional="true" implicitTag="1"/>
+</asn:Sequence>

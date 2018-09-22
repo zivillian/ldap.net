@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+
+<asn:Sequence
+  xmlns:asn="http://schemas.dot.net/asnxml/201808/"
+  name="Asn1CompareRequest"
+  namespace="zivillian.ldap.Asn1" >
+  <!--
+    SEQUENCE {
+     entry           LDAPDN,
+     ava             AttributeValueAssertion }
+  -->
+  <asn:OctetString name="Entry"/>
+  <asn:AsnType name="Assertion" typeName="Asn1AttributeValueAssertion"/>
+</asn:Sequence>

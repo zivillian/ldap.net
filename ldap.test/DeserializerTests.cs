@@ -524,6 +524,77 @@ namespace zivillian.ldap.test
             Assert.Empty(modify.Referrals);
         }
 
+        [Fact]
+        public void CanReadCompareRequest()
+        {
+            var data = new byte[]
+            {
+                //CC-BY 4.0 https://ldap.com/license/ Neil Wilson
+                0x30, 0x45, // Begin the LDAPMessage sequence
+                0x02, 0x01, 0x02, // The message ID (integer value 2)
+                0x6e, 0x40, // Begin the compare request protocol op
+                0x04, 0x24, 0x75, 0x69, 0x64, 0x3d, 0x6a, 0x64, 0x6f, 0x65, // The target entry DN (octet string
+                0x2c, 0x6f, 0x75, 0x3d, 0x50, 0x65, 0x6f, 0x70, // "uid=jdoe,ou=People,dc=example,dc=com")
+                0x6c, 0x65, 0x2c, 0x64, 0x63, 0x3d, 0x65, 0x78, 0x61, 0x6d, 0x70, 0x6c, 0x65, 0x2c, 0x64, 0x63, 0x3d,
+                0x63, 0x6f, 0x6d, 0x30, 0x18, // Begin the attribute value assertion sequence
+                0x04, 0x0c, 0x65, 0x6d, 0x70, 0x6c, 0x6f, 0x79, 0x65, 0x65, // The attribute description (octet string
+                0x54, 0x79, 0x70, 0x65, // "employeeType")
+                0x04, 0x08, 0x73, 0x61, 0x6c, 0x61, 0x72, 0x69, 0x65,
+                0x64 // The assertion value (octet string "salaried")
+            };
+            var message = Read(data);
+            Assert.Equal(2, message.Id);
+            Assert.Empty(message.Controls);
+            var compare = Assert.IsType<LdapCompareRequest>(message);
+            Assert.Equal("uid=jdoe,ou=People,dc=example,dc=com", compare.Entry);
+            Assert.Equal("employeeType", compare.Assertion.Attribute);
+            Assert.Equal("salaried", compare.Assertion.Value);
+        }
+
+        [Fact]
+        public void CanReadCompareResponse()
+        {
+            var data = new byte[]
+            {
+                //CC-BY 4.0 https://ldap.com/license/ Neil Wilson
+                0x30, 0x0c, // Begin the LDAPMessage sequence
+                0x02, 0x01, 0x02, // The message ID (integer value 2)
+                0x6f, 0x07, // Begin the compare response protocol op
+                0x0a, 0x01, 0x06, // compareTrue result code (enumerated value 6)
+                0x04, 0x00, // No matched DN (0-byte octet string)
+                0x04, 0x00, // No diagnostic message (0-byte octet string)
+            };
+            var message = Read(data);
+            Assert.Equal(2, message.Id);
+            Assert.Empty(message.Controls);
+            var compare = Assert.IsType<LdapCompareResponse>(message);
+        }
+
+        [Fact]
+        public void CanReadIntermediateResponse()
+        {
+            var data = new byte[]
+            {
+                //CC-BY 4.0 https://ldap.com/license/ Neil Wilson
+                0x30, 0x2c, // Begin the LDAPMessage sequence
+                0x02, 0x01, 0x02, // The message ID (integer value 2)
+                0x79, 0x27, // Begin the intermediate response protocol op
+                0x80, 0x18, 0x31, 0x2e, 0x33, 0x2e, 0x36, 0x2e, 0x31, 0x2e, // The responseName (octet string
+                0x34, 0x2e, 0x31, 0x2e, 0x34, 0x32, 0x30, 0x33, // "1.3.6.1.4.1.4203.1.9.1.4")
+                0x2e, 0x31, 0x2e, 0x39, 0x2e, 0x31, 0x2e, 0x34,
+                0x81, 0x0b, // Begin the responseValue element
+                0x80, 0x09, 0x4e, 0x6f, 0x6d, 0x4e, 0x6f, 0x6d, 0x4e, 0x6f, // The syncCookie value
+                0x6d // (octet string "NomNomNom")
+            };
+            var message = Read(data);
+            Assert.Equal(2, message.Id);
+            Assert.Empty(message.Controls);
+            var intermediate = Assert.IsType<LdapIntermediateResponse>(message);
+            Assert.Equal("1.3.6.1.4.1.4203.1.9.1.4", intermediate.Name);
+            Assert.True(intermediate.Value.HasValue);
+            Assert.False(intermediate.Value.Value.IsEmpty);
+        }
+
         private LdapRequestMessage Read(byte[] data, bool validateRoundtrip = true)
         {
             var message = LdapReader.ReadMessage(data);
