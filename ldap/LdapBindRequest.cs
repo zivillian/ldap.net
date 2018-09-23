@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Text;
 using zivillian.ldap.Asn1;
 
 namespace zivillian.ldap
@@ -8,7 +7,7 @@ namespace zivillian.ldap
     {
         public byte Version { get; }
 
-        public string Name { get; }
+        public LdapDistinguishedName Name { get; }
 
         public ReadOnlyMemory<byte>? Simple { get; }
 
@@ -21,7 +20,9 @@ namespace zivillian.ldap
         {
             var bindRequest = message.ProtocolOp.BindRequest;
             Version = bindRequest.Version;
-            Name = Encoding.UTF8.GetString(bindRequest.Name.Span);
+            if (Version < 1 || Version > 127)
+                throw new ArgumentException("invalid LDAP version");
+            Name = new LdapDistinguishedName(bindRequest.Name.Span);
             var auth = bindRequest.Authentication;
             if (auth.Simple != null)
             {
@@ -30,7 +31,7 @@ namespace zivillian.ldap
             else if (auth.Sasl != null)
             {
                 var sasl = auth.Sasl;
-                SaslMechanism = Encoding.UTF8.GetString(sasl.Mechanism.Span);
+                SaslMechanism = sasl.Mechanism.Span.LdapString();
                 SaslCredentials = sasl.Credentials;
             }
         }
@@ -40,7 +41,7 @@ namespace zivillian.ldap
             var bindRequest = op.BindRequest = new Asn1BindRequest
             {
                 Version = Version,
-                Name = Encoding.UTF8.GetBytes(Name),
+                Name = Name.GetBytes(),
                 Authentication = new Asn1AuthenticationChoice()
             };
             if (Simple.HasValue)
@@ -51,7 +52,7 @@ namespace zivillian.ldap
             {
                 var sasl = new Asn1SaslCredentials
                 {
-                    Mechanism = Encoding.UTF8.GetBytes(SaslMechanism),
+                    Mechanism = SaslMechanism.LdapString(),
                     Credentials = SaslCredentials
                 };
                 bindRequest.Authentication.Sasl = sasl;

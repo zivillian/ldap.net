@@ -13,7 +13,7 @@ namespace zivillian.ldap
             var result = new string[referral.Length];
             for (int i = 0; i < referral.Length; i++)
             {
-                result[i] = Encoding.UTF8.GetString(referral[i].Span);
+                result[i] = referral[i].Span.LdapString();
             }
             return result;
         }
@@ -26,7 +26,7 @@ namespace zivillian.ldap
             var result = new ReadOnlyMemory<byte>[referral.Length];
             for (int i = 0; i < referral.Length; i++)
             {
-                result[i] = Encoding.UTF8.GetBytes(referral[i]);
+                result[i] = referral[i].LdapString();
             }
             return result;
         }

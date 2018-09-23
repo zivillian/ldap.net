@@ -5,7 +5,7 @@ namespace zivillian.ldap
 {
     public class LdapCompareRequest : LdapRequestMessage
     {
-        public string Entry { get; }
+        public LdapDistinguishedName Entry { get; }
 
         public LdapAttributeAssertion Assertion { get; }
 
@@ -13,7 +13,7 @@ namespace zivillian.ldap
             : base(message)
         {
             var compare = message.ProtocolOp.CompareRequest;
-            Entry = Encoding.UTF8.GetString(compare.Entry.Span);
+            Entry = new LdapDistinguishedName(compare.Entry.Span);
             Assertion = new LdapAttributeAssertion(compare.Assertion);
         }
 
@@ -21,7 +21,7 @@ namespace zivillian.ldap
         {
             op.CompareRequest = new Asn1CompareRequest
             {
-                Entry = Encoding.UTF8.GetBytes(Entry),
+                Entry = Entry.GetBytes(),
                 Assertion = Assertion.GetAsn()
             };
         }

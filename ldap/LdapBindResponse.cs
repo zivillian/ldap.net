@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Text;
 using zivillian.ldap.Asn1;
 
 namespace zivillian.ldap
@@ -8,7 +7,7 @@ namespace zivillian.ldap
     {
         public ResultCode ResultCode { get; internal set; }
 
-        public string MatchedDN { get; internal set; }
+        public LdapDistinguishedName MatchedDN { get; internal set; }
 
         public string DiagnosticMessage { get; internal set; }
         
@@ -20,8 +19,8 @@ namespace zivillian.ldap
             : base(message)
         {
             ResultCode = bindResponse.ResultCode;
-            MatchedDN = Encoding.UTF8.GetString(bindResponse.MatchedDN.Span);
-            DiagnosticMessage = Encoding.UTF8.GetString(bindResponse.DiagnosticMessage.Span);
+            MatchedDN = new LdapDistinguishedName(bindResponse.MatchedDN.Span);
+            DiagnosticMessage = bindResponse.DiagnosticMessage.Span.LdapString();
             Referrals = this.GetReferrals(bindResponse.Referral);
             ServerSaslCreds = bindResponse.ServerSaslCreds;
         }
@@ -31,8 +30,8 @@ namespace zivillian.ldap
             op.BindResponse = new Asn1BindResponse
             {
                 ResultCode = ResultCode,
-                MatchedDN = Encoding.UTF8.GetBytes(MatchedDN),
-                DiagnosticMessage = Encoding.UTF8.GetBytes(DiagnosticMessage),
+                MatchedDN = MatchedDN.GetBytes(),
+                DiagnosticMessage = DiagnosticMessage.LdapString(),
                 Referral = this.GetReferrals(Referrals),
                 ServerSaslCreds = ServerSaslCreds
             };

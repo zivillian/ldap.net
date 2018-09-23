@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Text;
 using zivillian.ldap.Asn1;
 
 namespace zivillian.ldap
@@ -14,7 +13,7 @@ namespace zivillian.ldap
             : base(message)
         {
             var extended = message.ProtocolOp.ExtendedRequest;
-            Name = Encoding.UTF8.GetString(extended.Name.Span);
+            Name = extended.Name.Span.LdapOid();
             Value = extended.Value;
         }
 
@@ -22,7 +21,7 @@ namespace zivillian.ldap
         {
             op.ExtendedRequest = new Asn1ExtendedRequest
             {
-                Name = Encoding.UTF8.GetBytes(Name),
+                Name = Name.LdapOid(),
                 Value = Value
             };
         }

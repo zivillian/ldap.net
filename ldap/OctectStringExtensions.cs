@@ -113,6 +113,18 @@ namespace zivillian.ldap
             return true;
         }
 
+        public static string LdapOid(this ReadOnlySpan<byte> data)
+        {
+            if (!data.TryParseNumericOid(out var numericoid))
+                throw new ArgumentException("invalid ldapoip");
+            return numericoid;
+        }
+
+        public static ReadOnlyMemory<byte> LdapOid(this string numericoid)
+        {
+            return Encoding.ASCII.GetBytes(numericoid);
+        }
+
         public static bool TryParseHexstring(this ReadOnlySpan<char> data, out string hexstring)
         {
             //hexstring = SHARP 1*hexpair

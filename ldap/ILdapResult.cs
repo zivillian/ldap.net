@@ -4,7 +4,7 @@
     {
         ResultCode ResultCode { get; }
 
-        string MatchedDN { get; }
+        LdapDistinguishedName MatchedDN { get; }
 
         string DiagnosticMessage { get; }
         

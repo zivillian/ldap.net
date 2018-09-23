@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 using zivillian.ldap.Asn1;
 
 namespace zivillian.ldap

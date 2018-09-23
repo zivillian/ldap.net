@@ -15,6 +15,11 @@ namespace zivillian.ldap
 
         public LdapDistinguishedName(ReadOnlySpan<char> dn)
         {
+            if (dn.IsEmpty)
+            {
+                RDNs = new LdapRelativeDistinguishedName[0];
+                return;
+            }
             var rdns = new List<LdapRelativeDistinguishedName>();
             int index;
             while ((index = dn.IndexOfUnescaped(',')) >= 0)

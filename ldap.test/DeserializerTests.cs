@@ -47,7 +47,7 @@ namespace zivillian.ldap.test
             Assert.Equal(27, message.Id);
             var bind = Assert.IsType<LdapBindRequest>(message);
             Assert.Equal(3, bind.Version);
-            Assert.Equal("cn=read-only-admin,dc=example,dc=com", bind.Name);
+            Assert.Equal("cn=read-only-admin,dc=example,dc=com", bind.Name.ToString());
             Assert.Equal("password", Encoding.UTF8.GetString(bind.Simple.Value.Span));
             Assert.Null(bind.SaslMechanism);
             Assert.Null(bind.SaslCredentials);
@@ -66,7 +66,7 @@ namespace zivillian.ldap.test
             Assert.Equal(27, message.Id);
             var bind = Assert.IsType<LdapBindResponse>(message);
             Assert.Equal(ResultCode.Success, bind.ResultCode);
-            Assert.Empty(bind.MatchedDN);
+            Assert.Empty(bind.MatchedDN.ToString());
             Assert.Empty(bind.DiagnosticMessage);
             Assert.Empty(bind.Controls);
             Assert.Empty(bind.Referrals);
@@ -299,7 +299,7 @@ namespace zivillian.ldap.test
             Assert.Equal(28, message.Id);
             var done = Assert.IsType<LdapSearchResultDone>(message);
             Assert.Equal(ResultCode.Success, done.ResultCode);
-            Assert.Equal(String.Empty, done.MatchedDN);
+            Assert.Equal(String.Empty, done.MatchedDN.ToString());
             Assert.Equal(String.Empty, done.DiagnosticMessage);
             Assert.Empty(done.Referrals);
             Assert.Empty(done.Controls);
@@ -320,7 +320,7 @@ namespace zivillian.ldap.test
             Assert.Equal(42, message.Id);
             var del = Assert.IsType<LdapDeleteResponse>(message);
             Assert.Equal(ResultCode.InsufficientAccessRights, del.ResultCode);
-            Assert.Equal(String.Empty, del.MatchedDN);
+            Assert.Equal(String.Empty, del.MatchedDN.ToString());
             Assert.Equal("no write access to parent", del.DiagnosticMessage);
             Assert.Empty(del.Referrals);
             Assert.Empty(del.Controls);
@@ -379,7 +379,7 @@ namespace zivillian.ldap.test
             Assert.Empty(message.Controls);
             var modify = Assert.IsType<LdapModifyResponse>(message);
             Assert.Equal(ResultCode.InsufficientAccessRights, modify.ResultCode);
-            Assert.Equal(String.Empty, modify.MatchedDN);
+            Assert.Equal(String.Empty, modify.MatchedDN.ToString());
             Assert.Equal(String.Empty, modify.DiagnosticMessage);
             Assert.Empty(modify.Referrals);
         }
@@ -469,7 +469,7 @@ namespace zivillian.ldap.test
             Assert.Empty(message.Controls);
             var modify = Assert.IsType<LdapAddResponse>(message);
             Assert.Equal(ResultCode.InsufficientAccessRights, modify.ResultCode);
-            Assert.Equal(String.Empty, modify.MatchedDN);
+            Assert.Equal(String.Empty, modify.MatchedDN.ToString());
             Assert.Equal("no write access to parent", modify.DiagnosticMessage);
             Assert.Empty(modify.Referrals);
         }
@@ -519,7 +519,7 @@ namespace zivillian.ldap.test
             Assert.Empty(message.Controls);
             var modify = Assert.IsType<LdapModifyDNResponse>(message);
             Assert.Equal(ResultCode.Success, modify.ResultCode);
-            Assert.Equal(String.Empty, modify.MatchedDN);
+            Assert.Equal(String.Empty, modify.MatchedDN.ToString());
             Assert.Equal(String.Empty, modify.DiagnosticMessage);
             Assert.Empty(modify.Referrals);
         }
@@ -546,7 +546,7 @@ namespace zivillian.ldap.test
             Assert.Equal(2, message.Id);
             Assert.Empty(message.Controls);
             var compare = Assert.IsType<LdapCompareRequest>(message);
-            Assert.Equal("uid=jdoe,ou=People,dc=example,dc=com", compare.Entry);
+            Assert.Equal("uid=jdoe,ou=People,dc=example,dc=com", compare.Entry.ToString());
             Assert.Equal("employeeType", compare.Assertion.Attribute.ToString());
             Assert.Equal("salaried", compare.Assertion.Value);
         }
@@ -569,7 +569,7 @@ namespace zivillian.ldap.test
             Assert.Empty(message.Controls);
             var compare = Assert.IsType<LdapCompareResponse>(message);
             Assert.Equal(ResultCode.CompareTrue, compare.ResultCode);
-            Assert.Equal(String.Empty, compare.MatchedDN);
+            Assert.Equal(String.Empty, compare.MatchedDN.ToString());
             Assert.Equal(String.Empty, compare.DiagnosticMessage);
         }
 
@@ -657,7 +657,7 @@ namespace zivillian.ldap.test
             Assert.Empty(message.Controls);
             var extended = Assert.IsType<LdapExtendedResponse>(message);
             Assert.Equal(ResultCode.Success, extended.ResultCode);
-            Assert.Equal(String.Empty, extended.MatchedDN);
+            Assert.Equal(String.Empty, extended.MatchedDN.ToString());
             Assert.Equal(String.Empty, extended.DiagnosticMessage);
             Assert.Empty(extended.Referrals);
             Assert.Equal("1.3.6.1.4.1.1466.20037", extended.Name);
