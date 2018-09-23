@@ -6,7 +6,7 @@ namespace zivillian.ldap
 {
     public class LdapAddRequest : LdapRequestMessage
     {
-        public string Entry { get; }
+        public LdapDistinguishedName Entry { get; }
 
         public LdapAttribute[] Attributes { get; }
 
@@ -14,7 +14,7 @@ namespace zivillian.ldap
             : base(message)
         {
             var add = message.ProtocolOp.AddRequest;
-            Entry = Encoding.UTF8.GetString(add.Entry.Span);
+            Entry = new LdapDistinguishedName(add.Entry.Span);
             if (add.Attributes.Length == 0)
                 throw new ArgumentException("at least one attribute required");
             Attributes = new LdapAttribute[add.Attributes.Length];
@@ -35,7 +35,7 @@ namespace zivillian.ldap
             }
             op.AddRequest = new Asn1AddRequest
             {
-                Entry = Encoding.UTF8.GetBytes(Entry),
+                Entry = Entry.GetBytes(),
                 Attributes = attributes
             };
         }

@@ -7,7 +7,7 @@ namespace zivillian.ldap
 {
     public class LdapSubstringFilter : LdapFilter
     {
-        public string Attribute { get; }
+        public LdapAttributeDescription Attribute { get; }
 
         public string StartsWith { get; }
 
@@ -17,7 +17,7 @@ namespace zivillian.ldap
 
         internal LdapSubstringFilter(Asn1SubstringFilter filter)
         {
-            Attribute = Encoding.UTF8.GetString(filter.Type.Span);
+            Attribute = new LdapAttributeDescription(filter.Type);
             var contains = new List<string>();
             foreach (var substring in filter.Substrings)
             {
@@ -53,7 +53,7 @@ namespace zivillian.ldap
             {
                 Substrings = new Asn1SubstringFilter
                 {
-                    Type = Encoding.UTF8.GetBytes(Attribute),
+                    Type = Attribute.GetBytes(),
                     Substrings = substrings.ToArray()
                 }
             };

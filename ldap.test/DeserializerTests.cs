@@ -433,7 +433,7 @@ namespace zivillian.ldap.test
             Assert.Equal(15, message.Id);
             Assert.Empty(message.Controls);
             var add = Assert.IsType<LdapAddRequest>(message);
-            Assert.Equal("uid=test.user,dc=example,dc=com", add.Entry);
+            Assert.Equal("uid=test.user,dc=example,dc=com", add.Entry.ToString());
             Assert.Equal(8, add.Attributes.Length);
             Assert.Equal("objectclass", add.Attributes[0].Type);
             Assert.Equal(new []{"posixAccount", "top", "inetOrgPerson"}, add.Attributes[0].Values);
