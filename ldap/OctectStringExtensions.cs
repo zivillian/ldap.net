@@ -14,7 +14,7 @@ namespace zivillian.ldap
             keystring = null;
             if (data.IsEmpty)
                 return false;
-            if (data[0] < 0x41 || data[0] > 0x5a)
+            if ((data[0] < 0x41 || data[0] > 0x5a) && (data[0] < 0x61 && data[0] > 0x7a))
                 return false;
             return TryParseKeychar(data, out keystring);
         }
@@ -275,6 +275,15 @@ namespace zivillian.ldap
             if (index < 0)
                 return index;
             return index + offset;
+        }
+
+        public static string Oid(this ReadOnlySpan<char> data)
+        {
+            if (data.TryParseKeystring(out var keystring))
+                return keystring;
+            if (data.TryParseNumericOid(out var numericoid))
+                return numericoid;
+            throw new ArgumentException("invalid oid");
         }
     }
 }

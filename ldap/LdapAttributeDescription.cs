@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection.Metadata.Ecma335;
 
 namespace zivillian.ldap
 {
@@ -9,31 +10,51 @@ namespace zivillian.ldap
 
         public string[] Options { get; }
 
-        public LdapAttributeDescription(ReadOnlyMemory<byte> data)
+        public LdapAttributeDescription(ReadOnlySpan<byte> data)
+        :this(data.LdapString())
         {
-            var span = data.Span;
-            var index = span.IndexOf((byte) ';');
-            throw new NotImplementedException();
-            //Oid = span.Slice(0, index).Oid();
-            //span = span.Slice(index + 1);
-            //if (span.IsEmpty) return;
-            //var options = new List<string>();
-            //while ((index = span.IndexOf((byte)';')) >= 0)
-            //{
-            //    if (index == 0)
-            //        throw new ArgumentException("invalid empty option");
-            //    options.Add(span.Slice(0, index).ParseKeychar());
-            //}
-            //Options = options.ToArray();
+        }
+
+        public LdapAttributeDescription(ReadOnlySpan<char> data)
+        {
+            var index = data.IndexOf(';');
+            if (index < 0)
+            {
+                Oid = data.Oid();
+                Options = new string[0];
+            }
+            else
+            {
+                Oid = data.Slice(0, index).Oid();
+                data = data.Slice(index + 1);
+                var options = new List<string>();
+                while ((index = data.IndexOf(';')) >= 0)
+                {
+                    if (!data.Slice(0, index).TryParseKeychar(out var option))
+                        throw new ArgumentException("invalid option");
+                    options.Add(option);
+                    data = data.Slice(index + 1);
+                } 
+
+                if (!data.TryParseKeychar(out var last))
+                    throw new ArgumentException("invalid option");
+                options.Add(last);
+                Options = options.ToArray();
+            }
+        }
+
+        public override string ToString()
+        {
+            if (Oid is null || Options is null)
+                return base.ToString();
+            if (Options.Length == 0)
+                return Oid;
+            return $"{Oid};{String.Join(';', Options)}";
         }
 
         public ReadOnlyMemory<byte> GetBytes()
         {
-            if (Options == null || Options.Length == 0)
-            {
-                throw new NotImplementedException();
-            }
-            throw new NotImplementedException();
+            return ToString().LdapString();
         }
     }
 }

@@ -17,7 +17,7 @@ namespace zivillian.ldap
 
         internal LdapSubstringFilter(Asn1SubstringFilter filter)
         {
-            Attribute = new LdapAttributeDescription(filter.Type);
+            Attribute = new LdapAttributeDescription(filter.Type.Span);
             var contains = new List<string>();
             foreach (var substring in filter.Substrings)
             {
