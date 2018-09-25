@@ -17,10 +17,9 @@ namespace zivillian.ldap
         internal LdapResponseMessage(Asn1LDAPResult result, Asn1LdapMessage message)
             : base(message)
         {
-            
             ResultCode = result.ResultCode;
             MatchedDN = new LdapDistinguishedName(result.MatchedDN.Span);
-            DiagnosticMessage = Encoding.UTF8.GetString(result.DiagnosticMessage.Span);
+            DiagnosticMessage = result.DiagnosticMessage.Span.LdapString();
             Referrals = this.GetReferrals(result.Referral);
         }
 
@@ -30,7 +29,7 @@ namespace zivillian.ldap
             {
                 ResultCode = ResultCode,
                 MatchedDN = MatchedDN.GetBytes(),
-                DiagnosticMessage = Encoding.UTF8.GetBytes(DiagnosticMessage),
+                DiagnosticMessage = DiagnosticMessage.LdapString(),
                 Referral = this.GetReferrals(Referrals),
             };
             SetProtocolOp(op, asn);

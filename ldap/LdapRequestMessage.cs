@@ -12,6 +12,8 @@ namespace zivillian.ldap
         internal LdapRequestMessage(Asn1LdapMessage message)
         {
             Id = message.MessageID;
+            if (Id < 0)
+                throw new ArgumentException("invalid messageID");
             Controls = LdapControl.Create(message.Controls);
         }
 

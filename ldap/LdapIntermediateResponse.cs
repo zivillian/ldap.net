@@ -14,7 +14,7 @@ namespace zivillian.ldap
         {
             var intermediate = message.ProtocolOp.IntermediateResponse;
             if (intermediate.Name.HasValue)
-                Name = Encoding.UTF8.GetString(intermediate.Name.Value.Span);
+                Name = intermediate.Name.Value.Span.LdapOid();
             Value = intermediate.Value;
         }
 
@@ -25,7 +25,7 @@ namespace zivillian.ldap
                 Value = Value
             };
             if (Name != null)
-                op.IntermediateResponse.Name = Encoding.UTF8.GetBytes(Name);
+                op.IntermediateResponse.Name = Name.LdapOid();
         }
     }
 }

@@ -6,7 +6,7 @@ namespace zivillian.ldap
 {
     public class LdapSearchRequest : LdapRequestMessage
     {
-        public string BaseObject { get; }
+        public LdapDistinguishedName BaseObject { get; }
 
         public SearchScope Scope { get; }
 
@@ -26,7 +26,7 @@ namespace zivillian.ldap
             : base(message)
         {
             var search = message.ProtocolOp.SearchRequest;
-            BaseObject = Encoding.UTF8.GetString(search.BaseObject.Span);
+            BaseObject = new LdapDistinguishedName(search.BaseObject.Span);
             Scope = search.Scope;
             DerefAliases = search.DerefAliases;
             SizeLimit = search.SizeLimit;
@@ -52,7 +52,7 @@ namespace zivillian.ldap
         {
             op.SearchRequest = new Asn1SearchRequest
             {
-                BaseObject =  Encoding.UTF8.GetBytes(BaseObject),
+                BaseObject =  BaseObject.GetBytes(),
                 Scope = Scope,
                 DerefAliases = DerefAliases,
                 SizeLimit = SizeLimit,

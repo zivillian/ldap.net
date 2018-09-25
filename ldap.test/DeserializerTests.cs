@@ -24,7 +24,7 @@ namespace zivillian.ldap.test
             var message = Read(data, false);
             Assert.Equal(42, message.Id);
             var delete = Assert.IsType<LdapDeleteRequest>(message);
-            Assert.Equal("ou=chemists,dc=example,dc=com", delete.DN);
+            Assert.Equal("ou=chemists,dc=example,dc=com", delete.DN.ToString());
             Assert.Empty(message.Controls);
         }
 
@@ -125,14 +125,14 @@ namespace zivillian.ldap.test
             var message = Read(data, false);
             Assert.Equal(28, message.Id);
             var search = Assert.IsType<LdapSearchRequest>(message);
-            Assert.True(String.IsNullOrEmpty(search.BaseObject));
+            Assert.True(String.IsNullOrEmpty(search.BaseObject.ToString()));
             Assert.Equal(SearchScope.BaseObject, search.Scope);
             Assert.Equal(DerefAliases.NeverDerefAliases, search.DerefAliases);
             Assert.Equal(Int32.MaxValue, search.SizeLimit);
             Assert.Equal(TimeSpan.MaxValue, search.TimeLimit);
             Assert.False(search.TypesOnly);
             var filter = Assert.IsType<LdapPresentFilter>(search.Filter);
-            Assert.Equal("objectclass", filter.Attribute);
+            Assert.Equal("objectclass", filter.Attribute.ToString());
             Assert.Equal(15, search.Attributes.Length);
             Assert.Equal("subschemaSubentry", search.Attributes[0]);
             Assert.Equal("dsServiceName", search.Attributes[1]);
@@ -178,7 +178,7 @@ namespace zivillian.ldap.test
             var message = Read(data, false);
             Assert.Equal(30, message.Id);
             var search = Assert.IsType<LdapSearchRequest>(message);
-            Assert.Equal("dc=example,dc=com", search.BaseObject);
+            Assert.Equal("dc=example,dc=com", search.BaseObject.ToString());
             Assert.Equal(SearchScope.SingleLevel, search.Scope);
             Assert.Equal(DerefAliases.NeverDerefAliases, search.DerefAliases);
             Assert.Equal(Int32.MaxValue, search.SizeLimit);
@@ -258,12 +258,12 @@ namespace zivillian.ldap.test
             Assert.Equal(4, result.Attributes.Length);
             
             var attr = result.Attributes[0];
-            Assert.Equal("namingContexts", attr.Type);
+            Assert.Equal("namingContexts", attr.Type.ToString());
             var value = Assert.Single(attr.Values);
             Assert.Equal("dc=example,dc=com", value);
             
             attr = result.Attributes[1];
-            Assert.Equal("supportedControl", attr.Type);
+            Assert.Equal("supportedControl", attr.Type.ToString());
             Assert.Equal(8, attr.Values.Length);
             Assert.Equal("2.16.840.1.113730.3.4.18", attr.Values[0]);
             Assert.Equal("2.16.840.1.113730.3.4.2", attr.Values[1]);
@@ -275,12 +275,12 @@ namespace zivillian.ldap.test
             Assert.Equal("1.3.6.1.1.12", attr.Values[7]);
             
             attr = result.Attributes[2];
-            Assert.Equal("supportedLDAPVersion", attr.Type);
+            Assert.Equal("supportedLDAPVersion", attr.Type.ToString());
             value = Assert.Single(attr.Values);
             Assert.Equal("3", value);
             
             attr = result.Attributes[3];
-            Assert.Equal("subschemaSubentry", attr.Type);
+            Assert.Equal("subschemaSubentry", attr.Type.ToString());
             value = Assert.Single(attr.Values);
             Assert.Equal("cn=Subschema", value);
 
@@ -354,14 +354,14 @@ namespace zivillian.ldap.test
             Assert.Equal(12, message.Id);
             Assert.Empty(message.Controls);
             var modify = Assert.IsType<LdapModifyRequest>(message);
-            Assert.Equal("ou=chemists,dc=example,dc=com", modify.Object);
+            Assert.Equal("ou=chemists,dc=example,dc=com", modify.Object.ToString());
             Assert.Equal(2, modify.Changes.Length);
             Assert.Equal(ChangeOperation.Add, modify.Changes[0].Operation);
-            Assert.Equal("businessCategory", modify.Changes[0].Modification.Type);
+            Assert.Equal("businessCategory", modify.Changes[0].Modification.Type.ToString());
             var value = Assert.Single(modify.Changes[0].Modification.Values);
             Assert.Equal("Baz", value);
             Assert.Equal(ChangeOperation.Add, modify.Changes[1].Operation);
-            Assert.Equal("description", modify.Changes[1].Modification.Type);
+            Assert.Equal("description", modify.Changes[1].Modification.Type.ToString());
             value = Assert.Single(modify.Changes[1].Modification.Values);
             Assert.Equal("Foobar", value);
         }
@@ -435,21 +435,21 @@ namespace zivillian.ldap.test
             var add = Assert.IsType<LdapAddRequest>(message);
             Assert.Equal("uid=test.user,dc=example,dc=com", add.Entry.ToString());
             Assert.Equal(8, add.Attributes.Length);
-            Assert.Equal("objectclass", add.Attributes[0].Type);
+            Assert.Equal("objectclass", add.Attributes[0].Type.ToString());
             Assert.Equal(new []{"posixAccount", "top", "inetOrgPerson"}, add.Attributes[0].Values);
-            Assert.Equal("gidNumber", add.Attributes[1].Type);
+            Assert.Equal("gidNumber", add.Attributes[1].Type.ToString());
             Assert.Equal(new []{"0"}, add.Attributes[1].Values);
-            Assert.Equal("givenName", add.Attributes[2].Type);
+            Assert.Equal("givenName", add.Attributes[2].Type.ToString());
             Assert.Equal(new []{"Test"}, add.Attributes[2].Values);
-            Assert.Equal("sn", add.Attributes[3].Type);
+            Assert.Equal("sn", add.Attributes[3].Type.ToString());
             Assert.Equal(new []{"User"}, add.Attributes[3].Values);
-            Assert.Equal("uid", add.Attributes[4].Type);
+            Assert.Equal("uid", add.Attributes[4].Type.ToString());
             Assert.Equal(new []{"test.user"}, add.Attributes[4].Values);
-            Assert.Equal("homeDirectory", add.Attributes[5].Type);
+            Assert.Equal("homeDirectory", add.Attributes[5].Type.ToString());
             Assert.Equal(new []{"empty"}, add.Attributes[5].Values);
-            Assert.Equal("Cn", add.Attributes[6].Type);
+            Assert.Equal("Cn", add.Attributes[6].Type.ToString());
             Assert.Equal(new []{"test.user"}, add.Attributes[6].Values);
-            Assert.Equal("uidNumber", add.Attributes[7].Type);
+            Assert.Equal("uidNumber", add.Attributes[7].Type.ToString());
             Assert.Equal(new []{"61876"}, add.Attributes[7].Values);
         }
 
@@ -495,8 +495,8 @@ namespace zivillian.ldap.test
             Assert.Equal(2, message.Id);
             Assert.Empty(message.Controls);
             var modify = Assert.IsType<LdapModifyDNRequest>(message);
-            Assert.Equal("uid=jdoe,ou=People,dc=example,dc=com", modify.Entry);
-            Assert.Equal("uid=john.doe", modify.NewRDN);
+            Assert.Equal("uid=jdoe,ou=People,dc=example,dc=com", modify.Entry.ToString());
+            Assert.Equal("uid=john.doe", modify.NewRDN.ToString());
             Assert.True( modify.DeleteOldRDN);
             Assert.Null( modify.NewSuperior);
         }

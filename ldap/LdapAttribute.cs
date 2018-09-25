@@ -7,13 +7,13 @@ namespace zivillian.ldap
 {
     public class LdapAttribute
     {
-        public string Type { get; }
+        public LdapAttributeDescription Type { get; }
 
         public string[] Values { get; }
 
         internal LdapAttribute(Asn1PartialAttribute attribute)
         {
-            Type = Encoding.UTF8.GetString(attribute.Type.Span);
+            Type = new LdapAttributeDescription(attribute.Type.Span);
             Values= new string[0];
             if (attribute.Values.Length > 0)
             {
@@ -29,7 +29,7 @@ namespace zivillian.ldap
         {
             var result = new Asn1PartialAttribute
             {
-                Type = Encoding.UTF8.GetBytes(Type),
+                Type = Type.GetBytes(),
                 Values = new ReadOnlyMemory<byte>[0]
             };
             if (Values != null && Values.Length > 0)

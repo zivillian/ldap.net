@@ -1,11 +1,10 @@
-﻿using System.Text;
-using zivillian.ldap.Asn1;
+﻿using zivillian.ldap.Asn1;
 
 namespace zivillian.ldap
 {
     public class LdapModifyRequest : LdapRequestMessage
     {
-        public string Object { get; }
+        public LdapDistinguishedName Object { get; }
 
         public LdapChange[] Changes { get; }
 
@@ -13,7 +12,7 @@ namespace zivillian.ldap
             : base(message)
         {
             var modify = message.ProtocolOp.ModifyRequest;
-            Object = Encoding.UTF8.GetString(modify.Object.Span);
+            Object = new LdapDistinguishedName(modify.Object.Span);
             Changes = new LdapChange[modify.Changes.Length];
             for (int i = 0; i < modify.Changes.Length; i++)
             {
@@ -25,35 +24,13 @@ namespace zivillian.ldap
         {
             var modify = op.ModifyRequest = new Asn1ModifyRequest
             {
-                Object = Encoding.UTF8.GetBytes(Object),
+                Object = Object.GetBytes(),
                 Changes = new Asn1Change[Changes.Length]
             };
             for (int i = 0; i < Changes.Length; i++)
             {
                 modify.Changes[i] = Changes[i].GetAsn();
             }
-        }
-    }
-
-    public class LdapChange
-    {
-        public ChangeOperation Operation { get; }
-
-        public LdapAttribute Modification { get; }
-
-        internal LdapChange(Asn1Change change)
-        {
-            Operation = change.Operation;
-            Modification = new LdapAttribute(change.Modification);
-        }
-
-        internal Asn1Change GetAsn()
-        {
-            return new Asn1Change
-            {
-                Operation = Operation,
-                Modification = Modification.GetAsn()
-            };
         }
     }
 }

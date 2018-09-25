@@ -70,6 +70,11 @@ namespace zivillian.ldap
                 return base.ToString();
             return String.Join<LdapAttributeTypeAndValue>('+', Values);
         }
+
+        public ReadOnlyMemory<byte> GetBytes()
+        {
+            return ToString().LdapString();
+        }
     }
 
     public class LdapAttributeTypeAndValue

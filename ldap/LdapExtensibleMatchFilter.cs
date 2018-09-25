@@ -5,7 +5,7 @@ namespace zivillian.ldap
 {
     public class LdapExtensibleMatchFilter : LdapFilter
     {
-        public string Attribute { get; }
+        public LdapAttributeDescription Attribute { get; }
 
         public bool IsDnAttribute { get; }
 
@@ -16,10 +16,10 @@ namespace zivillian.ldap
         internal LdapExtensibleMatchFilter(Asn1MatchingRuleAssertion assertion)
         {
             if (assertion.Type.HasValue)
-                Attribute = Encoding.UTF8.GetString(assertion.Type.Value.Span);
+                Attribute = new LdapAttributeDescription(assertion.Type.Value.Span);
             IsDnAttribute = assertion.DNAttributes;
             if (assertion.MatchingRule.HasValue)
-                MatchingRuleId = Encoding.UTF8.GetString(assertion.MatchingRule.Value.Span);
+                MatchingRuleId = assertion.MatchingRule.Value.Span.LdapString();
             Value = Unescape(Encoding.UTF8.GetString(assertion.Value.Span));
         }
 
@@ -31,9 +31,9 @@ namespace zivillian.ldap
                 Value = Encoding.UTF8.GetBytes(Escape(Value))
             };
             if (Attribute != null)
-                assertion.Type = Encoding.UTF8.GetBytes(Attribute);
+                assertion.Type = Attribute.GetBytes();
             if (MatchingRuleId != null)
-                assertion.MatchingRule = Encoding.UTF8.GetBytes(MatchingRuleId);
+                assertion.MatchingRule = MatchingRuleId.LdapString();
             return new Asn1Filter
             {
                 ExtensibleMatch = assertion

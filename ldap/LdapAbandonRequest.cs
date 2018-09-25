@@ -1,4 +1,5 @@
-﻿using zivillian.ldap.Asn1;
+﻿using System;
+using zivillian.ldap.Asn1;
 
 namespace zivillian.ldap
 {
@@ -9,6 +10,8 @@ namespace zivillian.ldap
         internal LdapAbandonRequest(int messageId, Asn1LdapMessage message) : base(message)
         {
             MessageId = messageId;
+            if (MessageId < 0)
+                throw new ArgumentException("invalid messageID");
         }
 
         internal override void SetProtocolOp(Asn1ProtocolOp op)
