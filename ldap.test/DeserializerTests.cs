@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -260,29 +261,29 @@ namespace zivillian.ldap.test
             var attr = result.Attributes[0];
             Assert.Equal("namingContexts", attr.Type.ToString());
             var value = Assert.Single(attr.Values);
-            Assert.Equal("dc=example,dc=com", value);
+            Assert.Equal("dc=example,dc=com", Encoding.UTF8.GetString(value.Span));
             
             attr = result.Attributes[1];
             Assert.Equal("supportedControl", attr.Type.ToString());
             Assert.Equal(8, attr.Values.Length);
-            Assert.Equal("2.16.840.1.113730.3.4.18", attr.Values[0]);
-            Assert.Equal("2.16.840.1.113730.3.4.2", attr.Values[1]);
-            Assert.Equal("1.3.6.1.4.1.4203.1.10.1", attr.Values[2]);
-            Assert.Equal("1.2.840.113556.1.4.319", attr.Values[3]);
-            Assert.Equal("1.2.826.0.1.3344810.2.3", attr.Values[4]);
-            Assert.Equal("1.3.6.1.1.13.2", attr.Values[5]);
-            Assert.Equal("1.3.6.1.1.13.1", attr.Values[6]);
-            Assert.Equal("1.3.6.1.1.12", attr.Values[7]);
+            Assert.Equal("2.16.840.1.113730.3.4.18", Encoding.UTF8.GetString(attr.Values[0].Span));
+            Assert.Equal("2.16.840.1.113730.3.4.2", Encoding.UTF8.GetString(attr.Values[1].Span));
+            Assert.Equal("1.3.6.1.4.1.4203.1.10.1", Encoding.UTF8.GetString(attr.Values[2].Span));
+            Assert.Equal("1.2.840.113556.1.4.319", Encoding.UTF8.GetString(attr.Values[3].Span));
+            Assert.Equal("1.2.826.0.1.3344810.2.3", Encoding.UTF8.GetString(attr.Values[4].Span));
+            Assert.Equal("1.3.6.1.1.13.2", Encoding.UTF8.GetString(attr.Values[5].Span));
+            Assert.Equal("1.3.6.1.1.13.1", Encoding.UTF8.GetString(attr.Values[6].Span));
+            Assert.Equal("1.3.6.1.1.12", Encoding.UTF8.GetString(attr.Values[7].Span));
             
             attr = result.Attributes[2];
             Assert.Equal("supportedLDAPVersion", attr.Type.ToString());
             value = Assert.Single(attr.Values);
-            Assert.Equal("3", value);
+            Assert.Equal("3", Encoding.UTF8.GetString(value.Span));
             
             attr = result.Attributes[3];
             Assert.Equal("subschemaSubentry", attr.Type.ToString());
             value = Assert.Single(attr.Values);
-            Assert.Equal("cn=Subschema", value);
+            Assert.Equal("cn=Subschema", Encoding.UTF8.GetString(value.Span));
 
             Assert.Empty(result.Controls);
         }
@@ -359,11 +360,11 @@ namespace zivillian.ldap.test
             Assert.Equal(ChangeOperation.Add, modify.Changes[0].Operation);
             Assert.Equal("businessCategory", modify.Changes[0].Modification.Type.ToString());
             var value = Assert.Single(modify.Changes[0].Modification.Values);
-            Assert.Equal("Baz", value);
+            Assert.Equal("Baz", Encoding.UTF8.GetString(value.Span));
             Assert.Equal(ChangeOperation.Add, modify.Changes[1].Operation);
             Assert.Equal("description", modify.Changes[1].Modification.Type.ToString());
             value = Assert.Single(modify.Changes[1].Modification.Values);
-            Assert.Equal("Foobar", value);
+            Assert.Equal("Foobar", Encoding.UTF8.GetString(value.Span));
         }
 
         [Fact]
@@ -436,21 +437,21 @@ namespace zivillian.ldap.test
             Assert.Equal("uid=test.user,dc=example,dc=com", add.Entry.ToString());
             Assert.Equal(8, add.Attributes.Length);
             Assert.Equal("objectclass", add.Attributes[0].Type.ToString());
-            Assert.Equal(new []{"posixAccount", "top", "inetOrgPerson"}, add.Attributes[0].Values);
+            Assert.Equal(new []{"posixAccount", "top", "inetOrgPerson"}, add.Attributes[0].Values.Select(x=>Encoding.UTF8.GetString(x.Span)));
             Assert.Equal("gidNumber", add.Attributes[1].Type.ToString());
-            Assert.Equal(new []{"0"}, add.Attributes[1].Values);
+            Assert.Equal(new []{"0"}, add.Attributes[1].Values.Select(x => Encoding.UTF8.GetString(x.Span)));
             Assert.Equal("givenName", add.Attributes[2].Type.ToString());
-            Assert.Equal(new []{"Test"}, add.Attributes[2].Values);
+            Assert.Equal(new []{"Test"}, add.Attributes[2].Values.Select(x => Encoding.UTF8.GetString(x.Span)));
             Assert.Equal("sn", add.Attributes[3].Type.ToString());
-            Assert.Equal(new []{"User"}, add.Attributes[3].Values);
+            Assert.Equal(new []{"User"}, add.Attributes[3].Values.Select(x => Encoding.UTF8.GetString(x.Span)));
             Assert.Equal("uid", add.Attributes[4].Type.ToString());
-            Assert.Equal(new []{"test.user"}, add.Attributes[4].Values);
+            Assert.Equal(new []{"test.user"}, add.Attributes[4].Values.Select(x => Encoding.UTF8.GetString(x.Span)));
             Assert.Equal("homeDirectory", add.Attributes[5].Type.ToString());
-            Assert.Equal(new []{"empty"}, add.Attributes[5].Values);
+            Assert.Equal(new []{"empty"}, add.Attributes[5].Values.Select(x => Encoding.UTF8.GetString(x.Span)));
             Assert.Equal("Cn", add.Attributes[6].Type.ToString());
-            Assert.Equal(new []{"test.user"}, add.Attributes[6].Values);
+            Assert.Equal(new []{"test.user"}, add.Attributes[6].Values.Select(x => Encoding.UTF8.GetString(x.Span)));
             Assert.Equal("uidNumber", add.Attributes[7].Type.ToString());
-            Assert.Equal(new []{"61876"}, add.Attributes[7].Values);
+            Assert.Equal(new []{"61876"}, add.Attributes[7].Values.Select(x => Encoding.UTF8.GetString(x.Span)));
         }
 
         [Fact]

@@ -9,20 +9,12 @@ namespace zivillian.ldap
     {
         public LdapAttributeDescription Type { get; }
 
-        public string[] Values { get; }
+        public ReadOnlyMemory<byte>[] Values { get; }
 
         internal LdapAttribute(Asn1PartialAttribute attribute)
         {
             Type = new LdapAttributeDescription(attribute.Type.Span);
-            Values= new string[0];
-            if (attribute.Values.Length > 0)
-            {
-                Values = new string[attribute.Values.Length];
-                for (int i = 0; i < attribute.Values.Length; i++)
-                {
-                    Values[i] = Encoding.UTF8.GetString(attribute.Values[i].Span);
-                }
-            }
+            Values = attribute.Values;
         }
 
         internal Asn1PartialAttribute GetAsn()
@@ -30,16 +22,8 @@ namespace zivillian.ldap
             var result = new Asn1PartialAttribute
             {
                 Type = Type.GetBytes(),
-                Values = new ReadOnlyMemory<byte>[0]
+                Values = Values
             };
-            if (Values != null && Values.Length > 0)
-            {
-                result.Values = new ReadOnlyMemory<byte>[Values.Length];
-                for (int i = 0; i < Values.Length; i++)
-                {
-                    result.Values[i] = Encoding.UTF8.GetBytes(Values[i]);
-                }
-            }
             return result;
         }
     }
