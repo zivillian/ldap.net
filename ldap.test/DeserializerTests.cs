@@ -134,21 +134,21 @@ namespace zivillian.ldap.test
             var filter = Assert.IsType<LdapPresentFilter>(search.Filter);
             Assert.Equal("objectclass", filter.Attribute.ToString());
             Assert.Equal(15, search.Attributes.Length);
-            Assert.Equal("subschemaSubentry", search.Attributes[0]);
-            Assert.Equal("dsServiceName", search.Attributes[1]);
-            Assert.Equal("namingContexts", search.Attributes[2]);
-            Assert.Equal("defaultNamingContext", search.Attributes[3]);
-            Assert.Equal("schemaNamingContext", search.Attributes[4]);
-            Assert.Equal("configurationNamingContext", search.Attributes[5]);
-            Assert.Equal("rootDomainNamingContext", search.Attributes[6]);
-            Assert.Equal("supportedControl", search.Attributes[7]);
-            Assert.Equal("supportedLDAPVersion", search.Attributes[8]);
-            Assert.Equal("supportedLDAPPolicies", search.Attributes[9]);
-            Assert.Equal("supportedSASLMechanisms", search.Attributes[10]);
-            Assert.Equal("dnsHostName", search.Attributes[11]);
-            Assert.Equal("ldapServiceName", search.Attributes[12]);
-            Assert.Equal("serverName", search.Attributes[13]);
-            Assert.Equal("supportedCapabilities", search.Attributes[14]);
+            Assert.Equal("subschemaSubentry", search.Attributes[0].ToString());
+            Assert.Equal("dsServiceName", search.Attributes[1].ToString());
+            Assert.Equal("namingContexts", search.Attributes[2].ToString());
+            Assert.Equal("defaultNamingContext", search.Attributes[3].ToString());
+            Assert.Equal("schemaNamingContext", search.Attributes[4].ToString());
+            Assert.Equal("configurationNamingContext", search.Attributes[5].ToString());
+            Assert.Equal("rootDomainNamingContext", search.Attributes[6].ToString());
+            Assert.Equal("supportedControl", search.Attributes[7].ToString());
+            Assert.Equal("supportedLDAPVersion", search.Attributes[8].ToString());
+            Assert.Equal("supportedLDAPPolicies", search.Attributes[9].ToString());
+            Assert.Equal("supportedSASLMechanisms", search.Attributes[10].ToString());
+            Assert.Equal("dnsHostName", search.Attributes[11].ToString());
+            Assert.Equal("ldapServiceName", search.Attributes[12].ToString());
+            Assert.Equal("serverName", search.Attributes[13].ToString());
+            Assert.Equal("supportedCapabilities", search.Attributes[14].ToString());
             Assert.Empty(search.Controls);
         }
 

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Text;
 using zivillian.ldap.Asn1;
 
 namespace zivillian.ldap
@@ -20,7 +19,7 @@ namespace zivillian.ldap
 
         public LdapFilter Filter { get; }
 
-        public string[] Attributes { get; }
+        public LdapAttributeSelection[] Attributes { get; }
 
         internal LdapSearchRequest(Asn1LdapMessage message)
             : base(message)
@@ -37,13 +36,13 @@ namespace zivillian.ldap
                 TimeLimit = TimeSpan.MaxValue;
             TypesOnly = search.TypesOnly;
             Filter = LdapFilter.Create(search.Filter);
-            Attributes = new string[0];
+            Attributes = new LdapAttributeSelection[0];
             if (search.Attributes.Length > 0)
             {
-                Attributes = new string[search.Attributes.Length];
+                Attributes = new LdapAttributeSelection[search.Attributes.Length];
                 for (int i = 0; i < search.Attributes.Length; i++)
                 {
-                    Attributes[i] = Encoding.UTF8.GetString(search.Attributes[i].Span);
+                    Attributes[i] = new LdapAttributeSelection(search.Attributes[i].Span);
                 }
             }
         }
@@ -70,7 +69,7 @@ namespace zivillian.ldap
                 var attr = op.SearchRequest.Attributes = new ReadOnlyMemory<byte>[Attributes.Length];
                 for (int i = 0; i < Attributes.Length; i++)
                 {
-                    attr[i] = Encoding.UTF8.GetBytes(Attributes[i]);
+                    attr[i] = Attributes[i].GetBytes();
                 }
             }
         }
