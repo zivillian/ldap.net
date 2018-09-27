@@ -254,7 +254,7 @@ namespace zivillian.ldap.test
             var message = Read(data);
             Assert.Equal(28, message.Id);
             var result = Assert.IsType<LdapSearchResultEntry>(message);
-            Assert.Equal(String.Empty, result.ObjectName);
+            Assert.Equal(String.Empty, result.ObjectName.ToString());
             Assert.Equal(4, result.Attributes.Length);
             
             var attr = result.Attributes[0];

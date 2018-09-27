@@ -31,9 +31,13 @@ namespace zivillian.ldap
             SizeLimit = search.SizeLimit;
             if (SizeLimit == 0)
                 SizeLimit = Int32.MaxValue;
+            else if (SizeLimit < 0)
+                throw new ArgumentException("invalid sizeLimit");
             TimeLimit = TimeSpan.FromSeconds(search.TimeLimit);
             if (TimeLimit == TimeSpan.Zero)
                 TimeLimit = TimeSpan.MaxValue;
+            else if (TimeLimit < TimeSpan.Zero)
+                throw new ArgumentException("invalid timeLimit");
             TypesOnly = search.TypesOnly;
             Filter = LdapFilter.Create(search.Filter);
             Attributes = new LdapAttributeSelection[0];

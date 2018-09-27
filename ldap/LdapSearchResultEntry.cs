@@ -5,7 +5,7 @@ namespace zivillian.ldap
 {
     public class LdapSearchResultEntry : LdapRequestMessage
     {
-        public string ObjectName { get; }
+        public LdapDistinguishedName ObjectName { get; }
 
         public LdapAttribute[] Attributes { get; }
 
@@ -13,7 +13,7 @@ namespace zivillian.ldap
             : base(message)
         {
             var search = message.ProtocolOp.SearchResEntry;
-            ObjectName = Encoding.UTF8.GetString(search.ObjectName.Span);
+            ObjectName = new LdapDistinguishedName(search.ObjectName.Span);
             Attributes = new LdapAttribute[0];
             if (search.Attributes.Length > 0)
             {
@@ -29,7 +29,7 @@ namespace zivillian.ldap
         {
             var result = new Asn1SearchResultEntry
             {
-                ObjectName = Encoding.UTF8.GetBytes(ObjectName),
+                ObjectName = ObjectName.GetBytes(),
                 Attributes = new Asn1PartialAttribute[0]
             };
             if (Attributes != null && Attributes.Length > 0)
