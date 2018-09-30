@@ -7,6 +7,13 @@ namespace zivillian.ldap
 {
     internal static class OctectStringExtensions
     {
+        public static string Keystring(this ReadOnlySpan<byte> data)
+        {
+            if (!data.TryParseKeystring(out var keystring))
+                throw new ArgumentException("invalid keystring");
+            return keystring;
+        }
+
         public static bool TryParseKeystring(this ReadOnlySpan<byte> data, out string keystring)
         {
             //keystring = leadkeychar *keychar
@@ -113,14 +120,14 @@ namespace zivillian.ldap
             return true;
         }
 
-        public static string LdapOid(this ReadOnlySpan<byte> data)
+        public static string NumericOid(this ReadOnlySpan<byte> data)
         {
             if (!data.TryParseNumericOid(out var numericoid))
                 throw new ArgumentException("invalid ldapoip");
             return numericoid;
         }
 
-        public static ReadOnlyMemory<byte> LdapOid(this string numericoid)
+        public static ReadOnlyMemory<byte> NumericOid(this string numericoid)
         {
             return Encoding.ASCII.GetBytes(numericoid);
         }
@@ -287,6 +294,11 @@ namespace zivillian.ldap
             if (index < 0)
                 return index;
             return index + offset;
+        }
+
+        public static string Oid(this ReadOnlySpan<byte> data)
+        {
+            return Oid(data.LdapString());
         }
 
         public static string Oid(this ReadOnlySpan<char> data)

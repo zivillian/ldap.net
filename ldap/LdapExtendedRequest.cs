@@ -13,7 +13,7 @@ namespace zivillian.ldap
             : base(message)
         {
             var extended = message.ProtocolOp.ExtendedRequest;
-            Name = extended.Name.Span.LdapOid();
+            Name = extended.Name.Span.NumericOid();
             Value = extended.Value;
         }
 
@@ -21,7 +21,7 @@ namespace zivillian.ldap
         {
             op.ExtendedRequest = new Asn1ExtendedRequest
             {
-                Name = Name.LdapOid(),
+                Name = Name.NumericOid(),
                 Value = Value
             };
         }

@@ -26,7 +26,7 @@ namespace zivillian.ldap
             DiagnosticMessage = extended.DiagnosticMessage.Span.LdapString();
             Referrals = this.GetReferrals(extended.Referral);
             if (extended.Name.HasValue)
-                Name = extended.Name.Value.Span.LdapOid();
+                Name = extended.Name.Value.Span.NumericOid();
             Value = extended.Value;
         }
 
@@ -42,7 +42,7 @@ namespace zivillian.ldap
             };
             if (Name != null)
             {
-                op.ExtendedResponse.Name = Name.LdapOid();
+                op.ExtendedResponse.Name = Name.NumericOid();
             }
         }
 
