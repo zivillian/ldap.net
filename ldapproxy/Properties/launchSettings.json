@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "ldapproxy": {
+      "commandName": "Project",
+      "commandLineArgs": "-b 389 -s LDAP://ldap.forumsys.com:389/"
+    }
+  }
+}
