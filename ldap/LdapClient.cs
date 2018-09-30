@@ -3,9 +3,11 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography.Asn1;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
 using zivillian.ldap.Asn1;
 
 namespace zivillian.ldap
@@ -20,10 +22,10 @@ namespace zivillian.ldap
         private Task _dispatcher;
         private bool _closed;
         private readonly Pipe _pipe;
-        private readonly AsnWriter _writer;
         private readonly SemaphoreSlim _writeLock;
         private readonly ConcurrentDictionary<int, MessageState> _receiveQueue = new ConcurrentDictionary<int, MessageState>();
         private readonly CancellationTokenSource _closeTokenSource;
+
         public LdapClient(string hostname, ushort port = 389)
         {
             _client = new TcpClient(AddressFamily.InterNetworkV6)
@@ -33,7 +35,6 @@ namespace zivillian.ldap
             Hostname = hostname;
             Port = port;
             ServerControls = new List<LdapControl>();
-            _writer = new AsnWriter(AsnEncodingRules.BER);
             _writeLock = new SemaphoreSlim(1, 1);
             _closeTokenSource = new CancellationTokenSource();
             _pipe = new Pipe();
@@ -71,20 +72,38 @@ namespace zivillian.ldap
 
         public List<LdapControl> ServerControls { get; }
 
-        public async Task SimpleBindAsync(string dn, string password, CancellationToken cancellationToken)
+        public Task SimpleBindAsync(string dn, string password, CancellationToken cancellationToken)
         {
-            var messageId = Interlocked.Increment(ref _messageId);
-            var request = new LdapBindRequest(messageId, dn, password, ServerControls.ToArray());
+            return SimpleBindAsync(dn, password, ServerControls.ToArray(), cancellationToken);
+        }
+
+        public async Task SimpleBindAsync(string dn, string password, LdapControl[] serverControls, CancellationToken cancellationToken)
+        {
+            var request = new LdapBindRequest(NextMessageId(), dn, password, serverControls);
             var response = await SendAsync(request, cancellationToken).ConfigureAwait(false);
             var bindResponse = (LdapBindResponse) response;
             if (bindResponse.ResultCode != ResultCode.Success)
                 throw new LdapServerException(bindResponse);
         }
 
+        public Task SaslBindAsync(string dn, string mechanism, ReadOnlyMemory<byte> credentials, CancellationToken cancellationToken)
+        {
+            return SaslBindAsync(dn, mechanism, credentials, ServerControls.ToArray(), cancellationToken);
+        }
+
+        public async Task<LdapBindResponse> SaslBindAsync(string dn, string mechanism, ReadOnlyMemory<byte> credentials, LdapControl[] serverControls, CancellationToken cancellationToken)
+        {
+            var request = new LdapBindRequest(NextMessageId(), dn, mechanism, credentials, serverControls);
+            var response = await SendAsync(request, cancellationToken).ConfigureAwait(false);
+            var bindResponse = (LdapBindResponse) response;
+            if (bindResponse.ResultCode != ResultCode.Success)
+                throw new LdapServerException(bindResponse);
+            return bindResponse;
+        }
+
         public async Task UnbindAsync(CancellationToken cancellationToken)
         {
-            var messageId = Interlocked.Increment(ref _messageId);
-            var request = new LdapUnbindRequest(messageId, ServerControls.ToArray());
+            var request = new LdapUnbindRequest(NextMessageId(), ServerControls.ToArray());
             await SendWithoutResponseAsync(request, cancellationToken).ConfigureAwait(false);
             Dispose(true);
         }
@@ -98,8 +117,12 @@ namespace zivillian.ldap
             try
             {
                 await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
-                asn.Encode(_writer);
-                var bytes = (ReadOnlyMemory<byte>) _writer.Encode();
+                ReadOnlyMemory<byte> bytes;
+                using (var writer = new AsnWriter(AsnEncodingRules.BER))
+                {
+                    asn.Encode(writer);
+                    bytes = writer.Encode();
+                }
                 await stream.WriteAsync(bytes, cancellationToken).ConfigureAwait(false);
                 await stream.FlushAsync(cancellationToken).ConfigureAwait(false);
             }
@@ -111,15 +134,14 @@ namespace zivillian.ldap
 
         private async Task<LdapRequestMessage> SendAsync(LdapRequestMessage request, CancellationToken cancellationToken)
         {
-            using (var state = new MessageState(request.Id))
-            {
-                _receiveQueue.AddOrUpdate(state.MessageId, state, (i, o) => throw new InvalidOperationException());
-                await SendWithoutResponseAsync(request, cancellationToken).ConfigureAwait(false);
-                var result = await state.ReceiveAsync(cancellationToken).ConfigureAwait(false);
-                if (!_receiveQueue.TryRemove(state.MessageId, out _))
-                    throw new InvalidOperationException();
-                return result;
-            }
+            var state = new MessageState(request.Id, cancellationToken);
+            _receiveQueue.AddOrUpdate(state.MessageId, state, (i, o) => throw new InvalidOperationException());
+            await SendWithoutResponseAsync(request, cancellationToken).ConfigureAwait(false);
+            var result = await state.ReceiveAsync(cancellationToken).ConfigureAwait(false);
+            state.Responses.Complete();
+            if (!_receiveQueue.TryRemove(state.MessageId, out _))
+                throw new InvalidOperationException();
+            return result;
         }
 
         private async Task ConnectAsync()
@@ -171,9 +193,10 @@ namespace zivillian.ldap
 
         private void OnMessageReceived(Asn1LdapMessage message)
         {
+            var ldapMessage = LdapRequestMessage.Create(message);
             if (_receiveQueue.TryGetValue(message.MessageID, out var state))
             {
-                state.Response = LdapRequestMessage.Create(message);
+                state.Responses.Post(ldapMessage);
             }
             else
             {
@@ -226,43 +249,31 @@ namespace zivillian.ldap
             GC.SuppressFinalize(this);
         }
 
-        private sealed class MessageState:IDisposable
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private int NextMessageId()
         {
-            private readonly SemaphoreSlim _resetEvent;
+            return Interlocked.Increment(ref _messageId);
+        }
 
-            private LdapRequestMessage _response;
-
-            private bool _disposed;
-
-            public MessageState(int messageId)
+        private sealed class MessageState
+        {
+            public BufferBlock<LdapRequestMessage> Responses { get; }
+            
+            public MessageState(int messageId, CancellationToken cancellationToken)
             {
                 MessageId = messageId;
-                _resetEvent = new SemaphoreSlim(0, 1);
+                Responses = new BufferBlock<LdapRequestMessage>(new DataflowBlockOptions
+                {
+                    CancellationToken =  cancellationToken,
+                    EnsureOrdered = true,
+                });
             }
             
             public int MessageId { get; }
 
-            public LdapRequestMessage Response
-            {
-                get { return _response; }
-                set
-                {
-                    if (_disposed) return;
-                    _response = value;
-                    _resetEvent.Release();
-                }
-            }
-
             public async Task<LdapRequestMessage> ReceiveAsync(CancellationToken cancellationToken)
             {
-                await _resetEvent.WaitAsync(cancellationToken).ConfigureAwait(false);
-                return Response;
-            }
-
-            public void Dispose()
-            {
-                _resetEvent.Dispose();
-                _disposed = true;
+                return await Responses.ReceiveAsync(cancellationToken).ConfigureAwait(false);
             }
         }
     }
