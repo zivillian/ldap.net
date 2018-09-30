@@ -65,20 +65,33 @@ namespace zivillian.ldap
             }
         }
 
+        protected virtual LdapRequestMessage OnSendToServer(Guid clientId, LdapRequestMessage message)
+        {
+            return message;
+        }
+
+        protected virtual LdapRequestMessage OnSendToClient(Guid clientId, LdapRequestMessage message)
+        {
+            return message;
+        }
+
         private async Task HandleClient(TcpClient client, CancellationToken cancellationToken)
         {
+            var clientId = Guid.NewGuid();
             using (client)
             using (var server = new TcpClient(AddressFamily.InterNetworkV6){Client = {DualMode = true}})
             {
                 await server.ConnectAsync(Hostname, Port);
                 var socket = client.Client;
+
                 var clientPipe = new Pipe(new PipeOptions(pauseWriterThreshold: MaxMessageSize));
                 var clientReader = ReadAsync(socket, clientPipe.Writer, cancellationToken);
-                var serverWriter = WriteAsync(server.Client, clientPipe.Reader, cancellationToken);
+                var serverWriter = WriteAsync(server.Client, clientPipe.Reader, x => OnSendToServer(clientId, x), cancellationToken);
+
                 var serverPipe = new Pipe(new PipeOptions(pauseWriterThreshold: MaxMessageSize));
-                
                 var serverReader = ReadAsync(server.Client, serverPipe.Writer, cancellationToken);
-                var clientWriter = WriteAsync(socket, serverPipe.Reader, cancellationToken);
+                var clientWriter = WriteAsync(socket, serverPipe.Reader, x => OnSendToClient(clientId, x), cancellationToken);
+
                 await Task.WhenAll(clientReader, serverWriter, serverReader, clientWriter);
             }
         }
@@ -107,7 +120,7 @@ namespace zivillian.ldap
             }
         }
 
-        private async Task WriteAsync(Socket socket, PipeReader reader, CancellationToken cancellationToken)
+        private async Task WriteAsync(Socket socket, PipeReader reader, Func<LdapRequestMessage, LdapRequestMessage> packetCallback, CancellationToken cancellationToken)
         {
             try
             {
@@ -125,6 +138,7 @@ namespace zivillian.ldap
                             if (buffer.Length >= tagLength)
                             {
                                 var ldap = ReadLdapMessage(buffer.Slice(0, tagLength));
+                                ldap = packetCallback(ldap);
                                 await WriteLdapMessage(socket, ldap, cancellationToken);
                                 buffer = buffer.Slice(tagLength);
                                 success = true;

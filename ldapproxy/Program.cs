@@ -26,7 +26,7 @@ namespace zivillian.ldap.proxy
                 return;
             }
             var uri = new Uri(serverUri);
-            using (var proxy = new LdapProxy(clientPort, uri.Host, (ushort) uri.Port))
+            using (var proxy = new LoggingProxy(clientPort, uri.Host, (ushort) uri.Port))
             using (var cts = new CancellationTokenSource())
             {
                 Console.CancelKeyPress += (s, e) =>
