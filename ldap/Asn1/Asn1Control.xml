@@ -13,6 +13,6 @@
     LDAPOID ::= OCTET STRING - Constrained to <numericoid>
   -->
   <asn:OctetString name="Type"/>
-  <asn:Boolean name="Criticality"/>
+  <asn:Boolean name="Criticality" optional="true"/>
   <asn:OctetString optional="true" name="Value"/>
 </asn:Sequence>

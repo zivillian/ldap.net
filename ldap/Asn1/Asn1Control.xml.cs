@@ -7,7 +7,7 @@ namespace zivillian.ldap.Asn1
     internal sealed partial class Asn1Control
     {
         internal ReadOnlyMemory<byte> Type;
-        internal bool Criticality;
+        internal bool? Criticality;
         internal ReadOnlyMemory<byte>? Value;
       
         internal void Encode(AsnWriter writer)
@@ -20,7 +20,12 @@ namespace zivillian.ldap.Asn1
             writer.PushSequence(tag);
             
             writer.WriteOctetString(Type.Span);
-            writer.WriteBoolean(Criticality);
+
+            if (Criticality.HasValue)
+            {
+                writer.WriteBoolean(Criticality.Value);
+            }
+
 
             if (Value.HasValue)
             {
@@ -70,7 +75,12 @@ namespace zivillian.ldap.Asn1
                 decoded.Type = sequenceReader.ReadOctetString();
             }
 
-            decoded.Criticality = sequenceReader.ReadBoolean();
+
+            if (sequenceReader.HasData && sequenceReader.PeekTag().HasSameClassAndValue(Asn1Tag.Boolean))
+            {
+                decoded.Criticality = sequenceReader.ReadBoolean();
+            }
+
 
             if (sequenceReader.HasData && sequenceReader.PeekTag().HasSameClassAndValue(Asn1Tag.PrimitiveOctetString))
             {

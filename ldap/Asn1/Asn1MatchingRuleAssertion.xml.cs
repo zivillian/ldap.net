@@ -9,7 +9,7 @@ namespace zivillian.ldap.Asn1
         internal ReadOnlyMemory<byte>? MatchingRule;
         internal ReadOnlyMemory<byte>? Type;
         internal ReadOnlyMemory<byte> Value;
-        internal bool DNAttributes;
+        internal bool? DNAttributes;
       
         internal void Encode(AsnWriter writer)
         {
@@ -33,7 +33,12 @@ namespace zivillian.ldap.Asn1
             }
 
             writer.WriteOctetString(new Asn1Tag(TagClass.ContextSpecific, 3), Value.Span);
-            writer.WriteBoolean(new Asn1Tag(TagClass.ContextSpecific, 4), DNAttributes);
+
+            if (DNAttributes.HasValue)
+            {
+                writer.WriteBoolean(new Asn1Tag(TagClass.ContextSpecific, 4), DNAttributes.Value);
+            }
+
             writer.PopSequence(tag);
         }
 
@@ -107,7 +112,12 @@ namespace zivillian.ldap.Asn1
                 decoded.Value = sequenceReader.ReadOctetString(new Asn1Tag(TagClass.ContextSpecific, 3));
             }
 
-            decoded.DNAttributes = sequenceReader.ReadBoolean(new Asn1Tag(TagClass.ContextSpecific, 4));
+
+            if (sequenceReader.HasData && sequenceReader.PeekTag().HasSameClassAndValue(new Asn1Tag(TagClass.ContextSpecific, 4)))
+            {
+                decoded.DNAttributes = sequenceReader.ReadBoolean(new Asn1Tag(TagClass.ContextSpecific, 4));
+            }
+
 
             sequenceReader.ThrowIfNotEmpty();
         }

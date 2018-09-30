@@ -307,6 +307,29 @@ namespace zivillian.ldap.test
         }
 
         [Fact]
+        public void CanReadSearchResultDoneWithControl()
+        {
+            var data = new byte[]
+            {
+                0x30, 0x31, 0x02, 0x01, 0x51, 0x65, 0x07, 0x0a,
+                0x01, 0x00, 0x04, 0x00, 0x04, 0x00, 0xa0, 0x23,
+                0x30, 0x21, 0x04, 0x16, 0x31, 0x2e, 0x32, 0x2e,
+                0x38, 0x34, 0x30, 0x2e, 0x31, 0x31, 0x33, 0x35,
+                0x35, 0x36, 0x2e, 0x31, 0x2e, 0x34, 0x2e, 0x33,
+                0x31, 0x39, 0x04, 0x07, 0x30, 0x05, 0x02, 0x01,
+                0x00, 0x04, 0x00
+            };
+            var message = Read(data);
+            Assert.Equal(81, message.Id);
+            var done = Assert.IsType<LdapSearchResultDone>(message);
+            Assert.Equal(ResultCode.Success, done.ResultCode);
+            Assert.Equal(String.Empty, done.MatchedDN.ToString());
+            Assert.Equal(String.Empty, done.DiagnosticMessage);
+            Assert.Empty(done.Referrals);
+            var control = Assert.Single(done.Controls);
+        }
+
+        [Fact]
         public void CanReadDeleteResponse()
         {
             var data = new byte[]

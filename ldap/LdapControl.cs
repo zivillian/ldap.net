@@ -8,7 +8,7 @@ namespace zivillian.ldap
         internal LdapControl(Asn1Control control)
         {
             Oid = control.Type.Span.NumericOid();
-            Criticality = control.Criticality;
+            Criticality = control.Criticality.GetValueOrDefault();
             Value = control.Value;
         }
 
@@ -43,9 +43,10 @@ namespace zivillian.ldap
                 result[i] = new Asn1Control
                 {
                     Type = control.Oid.NumericOid(),
-                    Criticality = control.Criticality,
                     Value = control.Value
                 };
+                if (control.Criticality)
+                    result[i].Criticality = true;
             }
             return result;
         }

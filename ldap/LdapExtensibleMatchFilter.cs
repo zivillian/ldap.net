@@ -17,7 +17,7 @@ namespace zivillian.ldap
         {
             if (assertion.Type.HasValue)
                 Attribute = new LdapAttributeDescription(assertion.Type.Value.Span);
-            IsDnAttribute = assertion.DNAttributes;
+            IsDnAttribute = assertion.DNAttributes.GetValueOrDefault();
             if (assertion.MatchingRule.HasValue)
                 //RFC 4511 4.1.8 && RFC 4520 3.4
                 MatchingRuleId = assertion.MatchingRule.Value.Span.Oid();
@@ -28,9 +28,10 @@ namespace zivillian.ldap
         {
             var assertion = new Asn1MatchingRuleAssertion
             {
-                DNAttributes = IsDnAttribute,
                 Value = Encoding.UTF8.GetBytes(Escape(Value))
             };
+            if (IsDnAttribute)
+                assertion.DNAttributes = true;
             if (Attribute != null)
                 assertion.Type = Attribute.GetBytes();
             if (MatchingRuleId != null)
