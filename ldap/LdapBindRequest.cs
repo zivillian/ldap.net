@@ -36,6 +36,14 @@ namespace zivillian.ldap
             }
         }
 
+        internal LdapBindRequest(int messageId, string dn, string password, LdapControl[] controls)
+            : base(messageId, controls)
+        {
+            Version = 3;
+            Name = new LdapDistinguishedName(dn);
+            Simple = password.LdapString();
+        }
+
         internal override void SetProtocolOp(Asn1ProtocolOp op)
         {
             var bindRequest = op.BindRequest = new Asn1BindRequest

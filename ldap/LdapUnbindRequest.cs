@@ -8,6 +8,10 @@ namespace zivillian.ldap
             : base(message)
         {
         }
+        
+        internal LdapUnbindRequest(int messageId, LdapControl[] controls)
+            :base(messageId, controls)
+        {}
 
         internal override void SetProtocolOp(Asn1ProtocolOp op)
         {

@@ -17,6 +17,14 @@ namespace zivillian.ldap
             Controls = LdapControl.Create(message.Controls);
         }
 
+        internal LdapRequestMessage(int messageId, LdapControl[] controls)
+        {
+            if (Id < 0)
+                throw new ArgumentOutOfRangeException(nameof(messageId));
+            Id = messageId;
+            Controls = controls;
+        }
+
         internal Asn1LdapMessage GetAsn()
         {
             var result = new Asn1LdapMessage

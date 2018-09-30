@@ -58,7 +58,7 @@ namespace System.Security.Cryptography.Asn1
             throw new CryptographicException("ASN1 corrupted data.");
         }
 
-        private static bool TryReadLength(
+        public static bool TryReadLength(
             ReadOnlySpan<byte> source,
             AsnEncodingRules ruleSet,
             out int? length,

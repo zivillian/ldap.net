@@ -38,5 +38,8 @@
     <AsnXml Include="Asn1\Asn1Substring.xml" />
     <AsnXml Include="Asn1\Asn1SubstringFilter.xml" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="System.IO.Pipelines" Version="4.5.1" />
+  </ItemGroup>
   <Import Project="Asn1\AsnXml.targets" />
 </Project>
