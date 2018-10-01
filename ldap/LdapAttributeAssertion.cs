@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Text;
 using zivillian.ldap.Asn1;
 
 namespace zivillian.ldap
@@ -8,12 +7,12 @@ namespace zivillian.ldap
     {
         public LdapAttributeDescription Attribute { get; }
         
-        public string Value { get; }
+        public ReadOnlyMemory<byte> Value { get; }
 
         internal LdapAttributeAssertion(Asn1AttributeValueAssertion assertion)
         {
             Attribute = new LdapAttributeDescription(assertion.Description.Span);
-            Value = LdapFilter.Unescape(Encoding.UTF8.GetString(assertion.Value.Span));
+            Value = assertion.Value;
         }
 
         internal Asn1AttributeValueAssertion GetAsn()
@@ -21,7 +20,7 @@ namespace zivillian.ldap
             return new Asn1AttributeValueAssertion
             {
                 Description = Attribute.GetBytes(),
-                Value = Encoding.UTF8.GetBytes(LdapFilter.Escape(Value))
+                Value = Value
             };
         }
     }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using System.Security.Cryptography.Asn1;
 using System.Text;
 
@@ -9,7 +10,14 @@ namespace zivillian.ldap.Asn1
     {
         internal static Asn1LdapMessage Deserialize(ReadOnlyMemory<byte> data)
         {
-            return Asn1LdapMessage.Decode(data, AsnEncodingRules.BER);
+            try
+            {
+                return Asn1LdapMessage.Decode(data, AsnEncodingRules.BER);
+            }
+            catch (CryptographicException ex)
+            {
+                throw new LdapProtocolException("invalid BER encoding", ex);
+            }
         }
 
         internal static byte[] Serialize(Asn1LdapMessage message)

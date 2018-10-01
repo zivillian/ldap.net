@@ -572,7 +572,7 @@ namespace zivillian.ldap.test
             var compare = Assert.IsType<LdapCompareRequest>(message);
             Assert.Equal("uid=jdoe,ou=People,dc=example,dc=com", compare.Entry.ToString());
             Assert.Equal("employeeType", compare.Assertion.Attribute.ToString());
-            Assert.Equal("salaried", compare.Assertion.Value);
+            Assert.Equal(Encoding.UTF8.GetBytes("salaried"), compare.Assertion.Value.ToArray());
         }
 
         [Fact]

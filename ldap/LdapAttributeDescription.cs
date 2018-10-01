@@ -31,13 +31,13 @@ namespace zivillian.ldap
                 while ((index = data.IndexOf(';')) >= 0)
                 {
                     if (!data.Slice(0, index).TryParseKeychar(out var option))
-                        throw new ArgumentException("invalid option");
+                        throw new LdapProtocolException("invalid option");
                     options.Add(option);
                     data = data.Slice(index + 1);
                 } 
 
                 if (!data.TryParseKeychar(out var last))
-                    throw new ArgumentException("invalid option");
+                    throw new LdapProtocolException("invalid option");
                 options.Add(last);
                 Options = options.ToArray();
             }

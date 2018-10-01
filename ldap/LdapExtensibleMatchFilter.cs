@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 using zivillian.ldap.Asn1;
 
 namespace zivillian.ldap
@@ -11,7 +12,7 @@ namespace zivillian.ldap
 
         public string MatchingRuleId { get; }
 
-        public string Value { get; }
+        public ReadOnlyMemory<byte> Value { get; }
 
         internal LdapExtensibleMatchFilter(Asn1MatchingRuleAssertion assertion)
         {
@@ -21,14 +22,14 @@ namespace zivillian.ldap
             if (assertion.MatchingRule.HasValue)
                 //RFC 4511 4.1.8 && RFC 4520 3.4
                 MatchingRuleId = assertion.MatchingRule.Value.Span.Oid();
-            Value = Unescape(Encoding.UTF8.GetString(assertion.Value.Span));
+            Value = assertion.Value;
         }
 
         internal override Asn1Filter GetAsn()
         {
             var assertion = new Asn1MatchingRuleAssertion
             {
-                Value = Encoding.UTF8.GetBytes(Escape(Value))
+                Value = Value
             };
             if (IsDnAttribute)
                 assertion.DNAttributes = true;

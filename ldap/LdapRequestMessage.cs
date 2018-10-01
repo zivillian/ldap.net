@@ -13,7 +13,7 @@ namespace zivillian.ldap
         {
             Id = message.MessageID;
             if (Id < 0)
-                throw new ArgumentException("invalid messageID");
+                throw new LdapProtocolException("invalid messageID");
             Controls = LdapControl.Create(message.Controls);
         }
 

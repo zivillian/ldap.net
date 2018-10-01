@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Linq;
 using System.Net;
@@ -20,7 +21,7 @@ namespace zivillian.ldap
 
         public LdapProxy(ushort localPort, string hostname, ushort port = 389)
         {
-            _listener = new TcpListener(IPAddress.IPv6Any, localPort);
+            _listener = TcpListener.Create(localPort);
             Hostname = hostname;
             Port = port;
             _clients = new List<Task>();
@@ -75,6 +76,11 @@ namespace zivillian.ldap
             return message;
         }
 
+        protected virtual void OnError(Guid clientId, LdapException exception)
+        {
+            return;
+        }
+
         private async Task HandleClient(TcpClient client, CancellationToken cancellationToken)
         {
             var clientId = Guid.NewGuid();
@@ -82,17 +88,27 @@ namespace zivillian.ldap
             using (var server = new TcpClient(AddressFamily.InterNetworkV6){Client = {DualMode = true}})
             {
                 await server.ConnectAsync(Hostname, Port);
-                var socket = client.Client;
+                var clientSocket = client.Client;
+                var serverSocket = server.Client;
 
                 var clientPipe = new Pipe(new PipeOptions(pauseWriterThreshold: MaxMessageSize));
-                var clientReader = ReadAsync(socket, clientPipe.Writer, cancellationToken);
-                var serverWriter = WriteAsync(server.Client, clientPipe.Reader, x => OnSendToServer(clientId, x), cancellationToken);
+                var clientReader = ReadAsync(clientSocket, clientPipe.Writer, cancellationToken);
+                var serverWriter = WriteAsync(serverSocket, clientPipe.Reader, x => OnSendToServer(clientId, x), OnError, cancellationToken);
 
                 var serverPipe = new Pipe(new PipeOptions(pauseWriterThreshold: MaxMessageSize));
-                var serverReader = ReadAsync(server.Client, serverPipe.Writer, cancellationToken);
-                var clientWriter = WriteAsync(socket, serverPipe.Reader, x => OnSendToClient(clientId, x), cancellationToken);
+                var serverReader = ReadAsync(serverSocket, serverPipe.Writer, cancellationToken);
+                var clientWriter = WriteAsync(clientSocket, serverPipe.Reader, x => OnSendToClient(clientId, x), OnError,cancellationToken);
 
-                await Task.WhenAll(clientReader, serverWriter, serverReader, clientWriter);
+                await Task.WhenAny(clientReader, serverWriter, serverReader, clientWriter);
+                clientPipe.Writer.Complete();
+                clientPipe.Reader.Complete();
+                serverPipe.Writer.Complete();
+                serverPipe.Reader.Complete();
+            }
+
+            void OnError(LdapException ex)
+            {
+                this.OnError(clientId, ex);
             }
         }
 
@@ -113,14 +129,19 @@ namespace zivillian.ldap
                 }
                 writer.Complete();
             }
-            catch (Exception ex)
+            catch (InvalidOperationException ex)
+            {
+                socket.Close();
+                writer.Complete(ex);
+            }
+            catch (SocketException ex)
             {
                 socket.Close();
                 writer.Complete(ex);
             }
         }
 
-        private async Task WriteAsync(Socket socket, PipeReader reader, Func<LdapRequestMessage, LdapRequestMessage> packetCallback, CancellationToken cancellationToken)
+        private async Task WriteAsync(Socket socket, PipeReader reader, Func<LdapRequestMessage, LdapRequestMessage> packetCallback, Action<LdapException> errorCallback, CancellationToken cancellationToken)
         {
             try
             {
@@ -146,24 +167,41 @@ namespace zivillian.ldap
                             else if (tagLength > MaxMessageSize)
                             {
                                 //maybe increase pipe size https://github.com/dotnet/corefx/issues/30689
-                                throw new Exception("MaxMessageSize exceeded");
+                                throw new LdapException(ResultCode.UnwillingToPerform, "MaxMessageSize exceeded");
                             }
                         }
                     } while (success && buffer.Length > 2);
-                    reader.AdvanceTo(buffer.Start, buffer.End);
                     if (result.IsCompleted)
                         break;
+                    reader.AdvanceTo(buffer.Start, buffer.End);
                 }
                 reader.Complete();
             }
-            catch (Exception ex)
+            catch (LdapException ex)
+            {
+                errorCallback(ex);
+                socket.Close();
+                reader.Complete(ex);
+            }
+            catch (SocketException ex)
             {
                 socket.Close();
                 reader.Complete(ex);
             }
+            catch (ObjectDisposedException ex)
+            {
+                if (ex.ObjectName != socket.GetType().FullName)
+                    socket.Close();
+                if (ex.ObjectName != reader.GetType().FullName)
+                    reader.Complete(ex);
+            }
+            catch (Exception ex)
+            {
+                Debug.Fail("unexpected exception");
+            }
         }
 
-        private static bool TryReadTagAndLength(ReadOnlySequence<byte> buffer, out int length)
+        private static bool TryReadTagAndLength(ReadOnlySequence<byte> buffer, out long length)
         {
             if (buffer.IsSingleSegment)
                 return TryReadTagAndLength(buffer.First, out length);
@@ -176,12 +214,14 @@ namespace zivillian.ldap
                 return false;
             if (!asnLength.HasValue)
                 return false;
-            length = asnLength.Value + lengthBytes + tagBytes;
+            length = asnLength.Value;
+            length += lengthBytes;
+            length+= tagBytes;
             return true;
         }
 
 
-        private static bool TryReadTagAndLength(ReadOnlyMemory<byte> buffer, out int length)
+        private static bool TryReadTagAndLength(ReadOnlyMemory<byte> buffer, out long length)
         {
             length = 0;
             if (!AsnReader.TryPeekTag(buffer.Span, out _, out int tagBytes))
@@ -190,7 +230,9 @@ namespace zivillian.ldap
                 return false;
             if (!asnLength.HasValue)
                 return false;
-            length = asnLength.Value + lengthBytes + tagBytes;
+            length = asnLength.Value;
+            length += lengthBytes;
+            length+= tagBytes;
             return true;
         }
 

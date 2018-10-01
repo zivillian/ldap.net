@@ -26,5 +26,11 @@ namespace zivillian.ldap.proxy
                 Console.WriteLine($"{clientId} S {message.Id:D4} : {message.GetType().Name}");
             return base.OnSendToServer(clientId, message);
         }
+
+        protected override void OnError(Guid clientId, LdapException exception)
+        {
+            Console.WriteLine($"{clientId} E {exception.Message} ({exception.ResultCode})");
+            base.OnError(clientId, exception);
+        }
     }
 }

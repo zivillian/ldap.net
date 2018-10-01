@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using zivillian.ldap.Asn1;
 
 namespace zivillian.ldap
@@ -9,29 +8,29 @@ namespace zivillian.ldap
     {
         public LdapAttributeDescription Attribute { get; }
 
-        public string StartsWith { get; }
+        public ReadOnlyMemory<byte>? StartsWith { get; }
 
-        public string EndsWith { get; }
+        public ReadOnlyMemory<byte>? EndsWith { get; }
 
-        public string[] Contains { get; }
+        public ReadOnlyMemory<byte>[] Contains { get; }
 
         internal LdapSubstringFilter(Asn1SubstringFilter filter)
         {
             Attribute = new LdapAttributeDescription(filter.Type.Span);
-            var contains = new List<string>();
+            var contains = new List<ReadOnlyMemory<byte>>();
             foreach (var substring in filter.Substrings)
             {
                 if (substring.Initial.HasValue)
                 {
-                    StartsWith = Unescape(Encoding.UTF8.GetString(substring.Initial.Value.Span));
+                    StartsWith = substring.Initial.Value;
                 }
                 else if (substring.Final.HasValue)
                 {
-                    EndsWith = Unescape(Encoding.UTF8.GetString(substring.Final.Value.Span));
+                    EndsWith = substring.Final.Value;
                 }
                 else if (substring.Any.HasValue)
                 {
-                    contains.Add(Unescape(Encoding.UTF8.GetString(substring.Any.Value.Span)));
+                    contains.Add(substring.Any.Value);
                 }
             }
             Contains = contains.ToArray();
@@ -41,13 +40,13 @@ namespace zivillian.ldap
         {
             var substrings = new List<Asn1Substring>();
             if (StartsWith != null)
-                substrings.Add(new Asn1Substring{Initial = Encoding.UTF8.GetBytes(Escape(StartsWith))});
+                substrings.Add(new Asn1Substring{Initial = StartsWith});
             foreach (var substring in Contains)
             {
-                substrings.Add(new Asn1Substring{Any = Encoding.UTF8.GetBytes(Escape(substring))});
+                substrings.Add(new Asn1Substring{Any = substring});
             }
             if (EndsWith != null)
-                substrings.Add(new Asn1Substring{Final = Encoding.UTF8.GetBytes(Escape(EndsWith))});
+                substrings.Add(new Asn1Substring{Final = EndsWith});
 
             return new Asn1Filter
             {

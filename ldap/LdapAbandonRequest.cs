@@ -11,7 +11,7 @@ namespace zivillian.ldap
         {
             MessageId = messageId;
             if (MessageId < 0)
-                throw new ArgumentException("invalid messageID");
+                throw new LdapProtocolException("invalid messageID");
         }
 
         internal override void SetProtocolOp(Asn1ProtocolOp op)

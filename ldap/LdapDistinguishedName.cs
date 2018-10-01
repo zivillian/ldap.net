@@ -52,7 +52,7 @@ namespace zivillian.ldap
         public LdapRelativeDistinguishedName(ReadOnlySpan<char> rdn)
         {
             if (rdn.IsEmpty)
-                throw new ArgumentException("invalid relativeDistinguishedName");
+                throw new InvalidDnSyntaxException("invalid relativeDistinguishedName");
             var parts = new List<LdapAttributeTypeAndValue>();
             int index;
             while ((index = rdn.IndexOfUnescaped('+')) >= 0)
@@ -90,7 +90,7 @@ namespace zivillian.ldap
         {
             var equals = typeAndValue.IndexOf('=');
             if (equals < 0)
-                throw new ArgumentException("invalid attributeTypeAndValue");
+                throw new InvalidDnSyntaxException("invalid attributeTypeAndValue");
             var type = typeAndValue.Slice(0, equals);
             if (type.TryParseNumericOid(out var numeridoid))
             {
@@ -102,7 +102,7 @@ namespace zivillian.ldap
             }
             else
             {
-                throw new ArgumentException("invalid attributeType");
+                throw new InvalidDnSyntaxException("invalid attributeType");
             }
             var value = typeAndValue.Slice(equals + 1);
             if (value.TryParseHexstring(out var hexstring))
@@ -116,7 +116,7 @@ namespace zivillian.ldap
             }
             else
             {
-                throw new ArgumentException("invalid attributeValue");
+                throw new InvalidDnSyntaxException("invalid attributeValue");
             }
         }
 

@@ -83,7 +83,7 @@ namespace zivillian.ldap
             var response = await SendAsync(request, cancellationToken).ConfigureAwait(false);
             var bindResponse = (LdapBindResponse) response;
             if (bindResponse.ResultCode != ResultCode.Success)
-                throw new LdapServerException(bindResponse);
+                throw new LdapException(bindResponse);
         }
 
         public Task SaslBindAsync(string dn, string mechanism, ReadOnlyMemory<byte> credentials, CancellationToken cancellationToken)
@@ -97,7 +97,7 @@ namespace zivillian.ldap
             var response = await SendAsync(request, cancellationToken).ConfigureAwait(false);
             var bindResponse = (LdapBindResponse) response;
             if (bindResponse.ResultCode != ResultCode.Success)
-                throw new LdapServerException(bindResponse);
+                throw new LdapException(bindResponse);
             return bindResponse;
         }
 

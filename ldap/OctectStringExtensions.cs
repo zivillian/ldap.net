@@ -307,7 +307,7 @@ namespace zivillian.ldap
                 return keystring;
             if (data.TryParseNumericOid(out var numericoid))
                 return numericoid;
-            throw new ArgumentException("invalid oid");
+            throw new LdapProtocolException("invalid oid");
         }
     }
 }

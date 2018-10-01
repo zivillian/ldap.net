@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Globalization;
-using System.Linq;
-using System.Text;
 using zivillian.ldap.Asn1;
 
 namespace zivillian.ldap
@@ -55,50 +52,8 @@ namespace zivillian.ldap
                 throw new NotImplementedException();
             }
         }
-        
-        private static readonly char[] _escapeChars = new[] {'\\', '*', '(', ')', '\0'};
 
-        public static string Escape(string value)
-        {
-            if (value.IndexOfAny(_escapeChars) < 0) return value;
-
-            var span = value.AsSpan();
-            var result = new StringBuilder();
-            int index;
-            while ((index = span.IndexOfAny(_escapeChars)) >= 0)
-            {
-                result.Append(span.Slice(0, index));
-                result.Append('\\');
-                result.Append(((int)span[index]).ToString("x2"));
-                span = span.Slice(index + 1);
-            }
-            result.Append(span);
-            return result.ToString();
-        }
-
-        public static string Unescape(string value)
-        {
-            var index = value.IndexOf('\\');
-            if (index < 0) return value;
-            var span = value.AsSpan();
-            var result = new StringBuilder();
-            do
-            {
-                result.Append(span.Slice(0, index));
-                if (!Int32.TryParse(span.Slice(index + 1, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture, out var hex))
-                    throw new ArgumentException($"Invalid encoding of '{value}'");
-                result.Append((char) hex);
-                if (span.Length >= 3)
-                    span = span.Slice(index + 3);
-            } while ((index = span.IndexOf('\\')) >= 0);
-            result.Append(span);
-            return result.ToString();
-        }
-
-        internal virtual Asn1Filter GetAsn()
-        {
-            throw new NotImplementedException();
-        }
+        internal abstract Asn1Filter GetAsn();
 
         public abstract override string ToString();
     }
