@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO.Pipelines;
@@ -39,6 +40,8 @@ namespace zivillian.ldap
             _closeTokenSource = new CancellationTokenSource();
             _pipe = new Pipe();
         }
+
+        public long MaxMessageSize { get; set; } = 1024 * 1024 * 1024;
 
         public DerefAliases Deref { get; set; }
 
@@ -101,11 +104,93 @@ namespace zivillian.ldap
             return bindResponse;
         }
 
-        public async Task UnbindAsync(CancellationToken cancellationToken)
+        public Task UnbindAsync(CancellationToken cancellationToken)
         {
-            var request = new LdapUnbindRequest(NextMessageId(), ServerControls.ToArray());
+            return UnbindAsync(ServerControls.ToArray(), cancellationToken);
+        }
+
+        public async Task UnbindAsync(LdapControl[] serverControls, CancellationToken cancellationToken)
+        {
+            var request = new LdapUnbindRequest(NextMessageId(), serverControls);
             await SendWithoutResponseAsync(request, cancellationToken).ConfigureAwait(false);
             Dispose(true);
+        }
+
+        public Task<LdapSearchResult> SearchAsync(string baseDn, SearchScope scope, string filter, CancellationToken cancellationToken)
+        {
+            return SearchAsync(baseDn, scope, filter, null, cancellationToken);
+        }
+
+        public Task<LdapSearchResult> SearchAsync(string baseDn, SearchScope scope, string filter, string[] attributes, CancellationToken cancellationToken)
+        {
+            return SearchAsync(baseDn, scope, filter, attributes, false, cancellationToken);
+        }
+
+        public Task<LdapSearchResult> SearchAsync(string baseDn, SearchScope scope, string filter, string[] attributes, bool attributeTypesOnly, CancellationToken cancellationToken)
+        {
+            return SearchInternalAsync(baseDn, scope, filter, attributes, attributeTypesOnly, TimeSpan.Zero, 0, null, cancellationToken);
+        }
+
+        public async Task<LdapSearchResult> SearchAsync(string baseDn, SearchScope scope, string filter, string[] attributes, bool attributeTypesOnly, TimeSpan timeout, CancellationToken cancellationToken)
+        {
+            using (var timeoutTokenSource = new CancellationTokenSource(timeout))
+            using (var combined = CancellationTokenSource.CreateLinkedTokenSource(timeoutTokenSource.Token, cancellationToken))
+            {
+                return await SearchInternalAsync(baseDn, scope, filter, attributes, attributeTypesOnly, TimeSpan.Zero, 0, null, combined.Token).ConfigureAwait(false);
+            }
+        }
+
+        public async Task<LdapSearchResult> SearchAsync(string baseDn, SearchScope scope, string filter, string[] attributes, bool attributeTypesOnly, TimeSpan timeout, int sizeLimit, LdapControl[] serverControls, CancellationToken cancellationToken)
+        {
+            using (var timeoutTokenSource = new CancellationTokenSource(timeout))
+            using (var combined = CancellationTokenSource.CreateLinkedTokenSource(timeoutTokenSource.Token, cancellationToken))
+            {
+                return await SearchInternalAsync(baseDn, scope, filter, attributes, attributeTypesOnly, timeout, sizeLimit, serverControls, combined.Token).ConfigureAwait(false);
+            }
+        }
+
+        private async Task<LdapSearchResult> SearchInternalAsync(string baseDn, SearchScope scope, string filter, string[] attributes, bool attributeTypesOnly, TimeSpan timeout, int sizeLimit, LdapControl[] serverControls, CancellationToken cancellationToken)
+        {
+            if (filter == null)
+                filter = "(objectclass=*)";
+
+            var request = new LdapSearchRequest(NextMessageId(), baseDn, scope, filter, attributes, attributeTypesOnly, timeout, sizeLimit, serverControls);
+            var state = new MessageState(request.Id, cancellationToken);
+            _receiveQueue.AddOrUpdate(state.MessageId, state, (i, o) => throw new InvalidOperationException());
+            var result = new LdapSearchResult();
+            try
+            {
+                await SendWithoutResponseAsync(request, cancellationToken).ConfigureAwait(false);
+                var message = await state.ReceiveAsync(cancellationToken).ConfigureAwait(false);
+                while (result.Add(message))
+                {
+                    message = await state.ReceiveAsync(cancellationToken).ConfigureAwait(false);
+                }
+                var done = (LdapSearchResultDone) message;
+                switch (done.ResultCode)
+                {
+                    case ResultCode.Success:
+                        break;
+                    case ResultCode.Referral:
+                        throw new NotImplementedException("referral");
+                    default:
+                        throw new LdapException(done.ResultCode);
+                }
+            }
+            catch(OperationCanceledException)
+            {
+                await AbandonAsync(request.Id, CancellationToken.None).ConfigureAwait(false);
+                throw;
+            }
+            state.Responses.Complete();
+            if (!_receiveQueue.TryRemove(state.MessageId, out _))
+                throw new InvalidOperationException();
+            return result;
+        }
+
+        private Task AbandonAsync(int messageId, CancellationToken cancellationToken)
+        {
+            return SendWithoutResponseAsync(new LdapAbandonRequest(messageId, NextMessageId(), ServerControls.ToArray()), cancellationToken);
         }
 
         private async Task SendWithoutResponseAsync(LdapRequestMessage request, CancellationToken cancellationToken)
@@ -151,7 +236,7 @@ namespace zivillian.ldap
             if (_client.Connected) return;
 
             if (Hostname.Contains(' '))
-                throw new NotImplementedException();
+                throw new NotImplementedException("hostname parsing");
 
             await _client.ConnectAsync(Hostname, Port).ConfigureAwait(false);
             _reader = ReadAsync(_closeTokenSource.Token);
@@ -160,35 +245,70 @@ namespace zivillian.ldap
 
         private async Task DispatchAsync(CancellationToken cancellationToken)
         {
-            while (true)
+            var reader = _pipe.Reader;
+            try
             {
-                var result = await _pipe.Reader.ReadAsync(cancellationToken).ConfigureAwait(false);
-                var buffer = result.Buffer;
-
-                if (buffer.IsSingleSegment)
+                using (var socket = _client.Client)
+                while (!_closed && socket.Connected)
                 {
-                    if (AsnReader.TryPeekTag(buffer.First.Span, out var tag, out var bytesRead))
+                    var result = await reader.ReadAsync(cancellationToken).ConfigureAwait(false);
+                    var buffer = result.Buffer;
+
+                    bool success;
+                    do
                     {
-                        if (AsnReader.TryReadLength(buffer.First.Span.Slice(bytesRead), AsnEncodingRules.BER, out var length, out var lengthBytesRead))
+                        success = false;
+                        if (LdapProxy.TryReadTagAndLength(buffer, out var tagLength))
                         {
-                            if (length.HasValue && buffer.Length > length)
+                            if (buffer.Length >= tagLength)
                             {
-                                var tagLength = length.Value + bytesRead + lengthBytesRead;
-                                var message = Asn1Serializer.Deserialize(buffer.First.Slice(0, tagLength));
-                                OnMessageReceived(message);
+                                var ldap = ReadLdapMessage(buffer.Slice(0, tagLength));
+                                OnMessageReceived(ldap);
+                                buffer = buffer.Slice(tagLength);
+                                success = true;
+                            }
+                            else if (tagLength > MaxMessageSize)
+                            {
+                                //maybe increase pipe size https://github.com/dotnet/corefx/issues/30689
+                                throw new LdapException(ResultCode.UnwillingToPerform, "MaxMessageSize exceeded");
                             }
                         }
-                    }
+                    } while (success && buffer.Length > 2);
+                    if (result.IsCompleted)
+                        break;
+                    reader.AdvanceTo(buffer.Start, buffer.End);
                 }
-                else
-                {
-                    throw new NotImplementedException();
-                }
-                    
-
-                if (result.IsCompleted)
-                    break;
+                reader.Complete();
             }
+            catch (LdapException ex)
+            {
+                reader.Complete(ex);
+            }
+            catch (SocketException ex)
+            {
+                reader.Complete(ex);
+            }
+            catch (OperationCanceledException ex)
+            {
+                reader.Complete(ex);
+            }
+            catch (ObjectDisposedException ex)
+            {
+                if (ex.ObjectName != reader.GetType().FullName)
+                    reader.Complete(ex);
+            }
+        }
+
+        private static Asn1LdapMessage ReadLdapMessage(ReadOnlySequence<byte> buffer)
+        {
+            if (buffer.IsSingleSegment)
+                return ReadLdapMessage(buffer.First);
+            return ReadLdapMessage(buffer.ToArray());
+        }
+
+        private static Asn1LdapMessage ReadLdapMessage(ReadOnlyMemory<byte> buffer)
+        {
+            return Asn1Serializer.Deserialize(buffer);
         }
 
         private void OnMessageReceived(Asn1LdapMessage message)
@@ -198,31 +318,42 @@ namespace zivillian.ldap
             {
                 state.Responses.Post(ldapMessage);
             }
+            else if (message.MessageID == 0)
+            {
+                throw new NotImplementedException("Unsolicited Notification");
+            }
             else
             {
-                throw new NotImplementedException();
+                throw new NotImplementedException("unexpected messageId");
             }
         }
         
         private async Task ReadAsync(CancellationToken cancellationToken)
         {
+            var writer = _pipe.Writer;
             try
             {
-                using (var stream = _client.GetStream())
-                while (!_closed)
+                using (var socket = _client.Client)
+                while (!_closed && socket.Connected)
                 {
-                    var buffer = _pipe.Writer.GetMemory(1024);
-                    var read = await stream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
+                    var buffer = writer.GetMemory(1024);
+                    var read = await socket.ReceiveAsync(buffer, SocketFlags.None, cancellationToken).ConfigureAwait(false);
                     if (read == 0)
                         break;
-                    _pipe.Writer.Advance(read);
-                    await _pipe.Writer.FlushAsync(cancellationToken).ConfigureAwait(false);
+                    writer.Advance(read);
+                    var flushed = await writer.FlushAsync(cancellationToken).ConfigureAwait(false);
+                    if (flushed.IsCompleted)
+                        break;
                 }
-                _pipe.Writer.Complete();
+                writer.Complete();
             }
-            catch (Exception ex)
+            catch (OperationCanceledException ex)
             {
-                _pipe.Writer.Complete(ex);
+                writer.Complete(ex);
+            }
+            catch (SocketException ex)
+            {
+                writer.Complete(ex);
             }
         }
 
@@ -235,9 +366,9 @@ namespace zivillian.ldap
                 _closed = true;
                 _closeTokenSource.Cancel();
                 _client.Dispose();
-                if (_reader.IsCompleted)
+                if (_reader != null && _reader.IsCompleted)
                     _reader.Dispose();
-                if (_dispatcher.IsCompleted)
+                if (_dispatcher != null && _dispatcher.IsCompleted)
                     _dispatcher.Dispose();
                 _disposed = true;
             }
@@ -258,7 +389,7 @@ namespace zivillian.ldap
         private sealed class MessageState
         {
             public BufferBlock<LdapRequestMessage> Responses { get; }
-            
+
             public MessageState(int messageId, CancellationToken cancellationToken)
             {
                 MessageId = messageId;

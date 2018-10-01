@@ -53,6 +53,29 @@ namespace zivillian.ldap
             }
         }
 
+        internal LdapSearchRequest(int messageId, string baseDn, SearchScope scope, string filter, string[] attributes, bool attributesOnly, TimeSpan timeout, int sizeLimit, LdapControl[] controls)
+            : base(messageId, controls)
+        {
+            if (timeout < TimeSpan.Zero)
+                throw new LdapProtocolException("invalid timeLimit");
+            if (sizeLimit < 0)
+                throw new LdapProtocolException("invalid sizeLimit");
+            BaseObject = new LdapDistinguishedName(baseDn);
+            Scope = scope;
+            Filter = LdapFilter.Parse(filter);
+            if (attributes != null && attributes.Length > 0)
+            {
+                Attributes = new LdapAttributeSelection[attributes.Length];
+                for (int i = 0; i < attributes.Length; i++)
+                {
+                    Attributes[i] = new LdapAttributeSelection(attributes[i]);
+                }
+            }
+            TypesOnly = attributesOnly;
+            TimeLimit = timeout;
+            SizeLimit = sizeLimit;
+        }
+
         internal override void SetProtocolOp(Asn1ProtocolOp op)
         {
             op.SearchRequest = new Asn1SearchRequest

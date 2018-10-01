@@ -47,7 +47,7 @@ namespace zivillian.ldap
             }
             else if (message.ProtocolOp.BindResponse != null)
             {
-                return new LdapBindResponse(message.ProtocolOp.BindResponse, message);
+                return new LdapBindResponse(message);
             }
             else if (message.ProtocolOp.DelRequest != null)
             {
@@ -67,11 +67,11 @@ namespace zivillian.ldap
             }
             else if (message.ProtocolOp.SearchResultDone != null)
             {
-                return new LdapSearchResultDone(message.ProtocolOp.SearchResultDone, message);
+                return new LdapSearchResultDone(message);
             }
             else if (message.ProtocolOp.SearchResultReference != null)
             {
-                throw new NotImplementedException();
+                return new LdapSearchResultReference(message);
             }
             else if (message.ProtocolOp.ModifyRequest != null)
             {
@@ -79,7 +79,7 @@ namespace zivillian.ldap
             }
             else if (message.ProtocolOp.ModifyResponse != null)
             {
-                return new LdapModifyResponse(message.ProtocolOp.ModifyResponse, message);
+                return new LdapModifyResponse(message);
             }
             else if (message.ProtocolOp.AddRequest != null)
             {
@@ -87,11 +87,11 @@ namespace zivillian.ldap
             }
             else if (message.ProtocolOp.AddResponse != null)
             {
-                return new LdapAddResponse(message.ProtocolOp.AddResponse, message);
+                return new LdapAddResponse(message);
             }
             else if (message.ProtocolOp.DelResponse != null)
             {
-                return new LdapDeleteResponse(message.ProtocolOp.DelResponse, message);
+                return new LdapDeleteResponse(message);
             }
             else if (message.ProtocolOp.ModifyDNRequest != null)
             {
@@ -99,7 +99,7 @@ namespace zivillian.ldap
             }
             else if (message.ProtocolOp.ModifyDNResponse != null)
             {
-                return new LdapModifyDNResponse(message.ProtocolOp.ModifyDNResponse, message);
+                return new LdapModifyDNResponse(message);
             }
             else if (message.ProtocolOp.CompareRequest != null)
             {
@@ -107,11 +107,11 @@ namespace zivillian.ldap
             }
             else if (message.ProtocolOp.CompareResponse != null)
             {
-                return new LdapCompareResponse(message.ProtocolOp.CompareResponse, message);
+                return new LdapCompareResponse(message);
             }
             else if (message.ProtocolOp.AbandonRequest != null)
             {
-                return new LdapAbandonRequest(message.ProtocolOp.AbandonRequest.Value, message);
+                return new LdapAbandonRequest(message);
             }
             else if (message.ProtocolOp.ExtendedRequest != null)
             {
@@ -127,7 +127,7 @@ namespace zivillian.ldap
             }
             else
             {
-                throw new NotImplementedException();
+                throw new NotSupportedException("unsupported protocolOp");
             }
         }
     }

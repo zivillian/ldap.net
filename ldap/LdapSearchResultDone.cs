@@ -4,8 +4,8 @@ namespace zivillian.ldap
 {
     public class LdapSearchResultDone : LdapResponseMessage
     {
-        internal LdapSearchResultDone(Asn1LDAPResult result, Asn1LdapMessage message)
-            : base(result, message)
+        internal LdapSearchResultDone(Asn1LdapMessage message)
+            : base(message.ProtocolOp.SearchResultDone, message)
         {
         }
 

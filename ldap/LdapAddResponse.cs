@@ -4,8 +4,8 @@ namespace zivillian.ldap
 {
     public class LdapAddResponse : LdapResponseMessage
     {
-        internal LdapAddResponse(Asn1LDAPResult result, Asn1LdapMessage message)
-            : base(result, message)
+        internal LdapAddResponse(Asn1LdapMessage message)
+            : base(message.ProtocolOp.AddResponse, message)
         {
         }
 

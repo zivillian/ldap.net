@@ -213,7 +213,7 @@ namespace zivillian.ldap
             }
         }
 
-        private static bool TryReadTagAndLength(ReadOnlySequence<byte> buffer, out long length)
+        internal static bool TryReadTagAndLength(ReadOnlySequence<byte> buffer, out long length)
         {
             if (buffer.IsSingleSegment)
                 return TryReadTagAndLength(buffer.First, out length);

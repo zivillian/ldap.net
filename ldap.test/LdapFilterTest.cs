@@ -5,6 +5,7 @@ namespace zivillian.ldap.test
     public class LdapFilterTest
     {
         [Theory]
+        [InlineData("(objectclass=*)")]
         [InlineData("(cn=Babs Jensen)")]
         [InlineData("(!(cn=Tim Howes))")]
         [InlineData("(&(objectClass=Person)(|(sn=Jensen)(cn=Babs J*)))")]
@@ -22,6 +23,9 @@ namespace zivillian.ldap.test
         [InlineData(@"(bin=\00\00\00\04)", "(bin=\\00\\00\\00\u0004)")]
         [InlineData(@"(sn=Lu\c4\8di\c4\87)", "(sn=Lučić)")]
         [InlineData(@"(1.3.6.1.4.1.1466.0=\04\02\48\69)", "(1.3.6.1.4.1.1466.0=\u0004\u0002Hi)")]
+        [InlineData("(sn>=asdf)")]
+        [InlineData("(sn<=asdf)")]
+        [InlineData("(sn~=asdf)")]
         public void CanParseFilter(string filter, string expected = null)
         {
             var ldapFilter = LdapFilter.Parse(filter);

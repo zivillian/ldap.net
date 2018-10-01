@@ -7,6 +7,11 @@ namespace zivillian.ldap
     {
         public static string[] GetReferrals(this ILdapResult source, ReadOnlyMemory<byte>[] referral)
         {
+            return GetReferrals(referral);
+        }
+
+        public static string[] GetReferrals(ReadOnlyMemory<byte>[] referral)
+        {
             if (referral == null || referral.Length == 0) 
                 return new string[0];
 
@@ -19,6 +24,11 @@ namespace zivillian.ldap
         }
 
         public static ReadOnlyMemory<byte>[] GetReferrals(this ILdapResult source, string[] referral)
+        {
+            return GetReferrals(referral);
+        }
+
+        public static ReadOnlyMemory<byte>[] GetReferrals(string[] referral)
         {
             if (referral == null || referral.Length == 0)
                 return null;

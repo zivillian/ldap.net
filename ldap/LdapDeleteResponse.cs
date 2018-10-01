@@ -4,8 +4,8 @@ namespace zivillian.ldap
 {
     public class LdapDeleteResponse : LdapResponseMessage
     {
-        internal LdapDeleteResponse(Asn1LDAPResult result, Asn1LdapMessage message)
-            : base(result, message)
+        internal LdapDeleteResponse(Asn1LdapMessage message)
+            : base(message.ProtocolOp.DelResponse, message)
         {
         }
 

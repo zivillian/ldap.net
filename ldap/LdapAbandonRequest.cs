@@ -7,11 +7,17 @@ namespace zivillian.ldap
     {
         public int MessageId { get; }
 
-        internal LdapAbandonRequest(int messageId, Asn1LdapMessage message) : base(message)
+        internal LdapAbandonRequest(Asn1LdapMessage message) : base(message)
         {
-            MessageId = messageId;
+            MessageId = message.ProtocolOp.AbandonRequest.Value;
             if (MessageId < 0)
                 throw new LdapProtocolException("invalid messageID");
+        }
+
+        internal LdapAbandonRequest(int abandonId, int messageId, LdapControl[] controls)
+            : base(messageId, controls)
+        {
+            MessageId = abandonId;
         }
 
         internal override void SetProtocolOp(Asn1ProtocolOp op)

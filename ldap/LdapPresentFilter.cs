@@ -13,6 +13,11 @@ namespace zivillian.ldap
             Attribute = new LdapAttributeDescription(attribute.Span);
         }
 
+        internal LdapPresentFilter(ReadOnlySpan<char> attribute)
+        {
+            Attribute = new LdapAttributeDescription(attribute);
+        }
+
         internal override Asn1Filter GetAsn()
         {
             return new Asn1Filter

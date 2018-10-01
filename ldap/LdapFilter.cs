@@ -50,7 +50,7 @@ namespace zivillian.ldap
             }
             else
             {
-                throw new NotImplementedException();
+                throw new NotSupportedException("unsupported filter");
             }
         }
 
@@ -77,7 +77,8 @@ namespace zivillian.ldap
             int index;
             if (filter.EndsWith("=*"))
             {
-                throw new NotImplementedException("present");
+                var attr = filter.Slice(0, filter.Length-2);
+                return new LdapPresentFilter(attr);
             }
             else if ((index = filter.IndexOf('=')) >= 0)
             {
@@ -89,15 +90,18 @@ namespace zivillian.ldap
                 }
                 else if (index > 0 && filter[index - 1] == '~')
                 {
-                    throw new NotImplementedException("approx");
+                    var attr = filter.Slice(0, index-1);
+                    return new LdapApproxMatchFilter(new LdapAttributeAssertion(attr, assertion));
                 }
                 else if (index > 0 && filter[index - 1] == '>')
                 {
-                    throw new NotImplementedException("greaterorequal");
+                    var attr = filter.Slice(0, index-1);
+                    return new LdapGreaterOrEqualFilter(new LdapAttributeAssertion(attr, assertion));
                 }
                 else if (index > 0 && filter[index - 1] == '<')
                 {
-                    throw new NotImplementedException("lessorequal");
+                    var attr = filter.Slice(0, index-1);
+                    return new LdapLessOrEqualFilter(new LdapAttributeAssertion(attr, assertion));
                 }
                 else if (index > 0 && filter[index - 1] == ':')
                 {
