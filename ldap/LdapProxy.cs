@@ -48,8 +48,16 @@ namespace zivillian.ldap
                     await Task.WhenAny(_clients.Concat(new []{accept, cancellationTask}));
                     if (accept.IsCompleted)
                     {
-                        var client = accept.Result;
-                        _clients.Add(HandleClient(client, combined.Token));
+                        TcpClient client;
+                        try
+                        {
+                            client = await accept;
+                            _clients.Add(HandleClient(client, combined.Token));
+                        }
+                        catch (SocketException)
+                        {
+                            //client may hav disconnected
+                        }
                         accept = _listener.AcceptTcpClientAsync();
                     }
                     else
@@ -84,6 +92,8 @@ namespace zivillian.ldap
         private async Task HandleClient(TcpClient client, CancellationToken cancellationToken)
         {
             var clientId = Guid.NewGuid();
+            using(var cts = new CancellationTokenSource())
+            using (var combined = CancellationTokenSource.CreateLinkedTokenSource(cts.Token, cancellationToken))
             using (client)
             using (var server = new TcpClient(AddressFamily.InterNetworkV6){Client = {DualMode = true}})
             {
@@ -92,18 +102,15 @@ namespace zivillian.ldap
                 var serverSocket = server.Client;
 
                 var clientPipe = new Pipe(new PipeOptions(pauseWriterThreshold: MaxMessageSize));
-                var clientReader = ReadAsync(clientSocket, clientPipe.Writer, cancellationToken);
-                var serverWriter = WriteAsync(serverSocket, clientPipe.Reader, x => OnSendToServer(clientId, x), OnError, cancellationToken);
+                var clientReader = ReadAsync(clientSocket, clientPipe.Writer, combined.Token);
+                var serverWriter = WriteAsync(serverSocket, clientPipe.Reader, x => OnSendToServer(clientId, x), OnError, combined.Token);
 
                 var serverPipe = new Pipe(new PipeOptions(pauseWriterThreshold: MaxMessageSize));
-                var serverReader = ReadAsync(serverSocket, serverPipe.Writer, cancellationToken);
-                var clientWriter = WriteAsync(clientSocket, serverPipe.Reader, x => OnSendToClient(clientId, x), OnError,cancellationToken);
+                var serverReader = ReadAsync(serverSocket, serverPipe.Writer, combined.Token);
+                var clientWriter = WriteAsync(clientSocket, serverPipe.Reader, x => OnSendToClient(clientId, x), OnError, combined.Token);
 
                 await Task.WhenAny(clientReader, serverWriter, serverReader, clientWriter);
-                clientPipe.Writer.Complete();
-                clientPipe.Reader.Complete();
-                serverPipe.Writer.Complete();
-                serverPipe.Reader.Complete();
+                cts.Cancel();
             }
 
             void OnError(LdapException ex)
@@ -129,7 +136,7 @@ namespace zivillian.ldap
                 }
                 writer.Complete();
             }
-            catch (InvalidOperationException ex)
+            catch (OperationCanceledException ex)
             {
                 socket.Close();
                 writer.Complete(ex);
@@ -184,6 +191,11 @@ namespace zivillian.ldap
                 reader.Complete(ex);
             }
             catch (SocketException ex)
+            {
+                socket.Close();
+                reader.Complete(ex);
+            }
+            catch (OperationCanceledException ex)
             {
                 socket.Close();
                 reader.Complete(ex);
