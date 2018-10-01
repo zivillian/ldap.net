@@ -28,6 +28,8 @@ namespace zivillian.ldap
             BaseObject = new LdapDistinguishedName(search.BaseObject.Span);
             Scope = search.Scope;
             DerefAliases = search.DerefAliases;
+            if (DerefAliases < DerefAliases.NeverDerefAliases || DerefAliases > DerefAliases.DerefAlways)
+                throw new LdapProtocolException("invalid derefAliases");
             SizeLimit = search.SizeLimit;
             if (SizeLimit == 0)
                 SizeLimit = Int32.MaxValue;
