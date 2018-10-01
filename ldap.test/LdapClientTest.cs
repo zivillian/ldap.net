@@ -86,5 +86,21 @@ namespace zivillian.ldap.test
                 }
             }
         }
+
+        [Fact]
+        public async Task CanCompare()
+        {
+            using (var client = new LdapClient(Hostname))
+            {
+                var result = await client.CompareAsync("ou=chemists,dc=example,dc=com", "cn", "Chemists", CancellationToken.None);
+                Assert.True(result);
+                result = await client.CompareAsync("ou=chemists,dc=example,dc=com", "cn", "ChemistS", CancellationToken.None);
+                Assert.True(result);
+                result = await client.CompareAsync("ou=chemists,dc=example,dc=com", "cn", "Foo", CancellationToken.None);
+                Assert.False(result);
+                var ex = await Assert.ThrowsAsync<LdapException>(() => client.CompareAsync("ou=chemists,dc=example,dc=com", "ad", "void", CancellationToken.None));
+                Assert.Equal(ResultCode.UndefinedAttributeType, ex.ResultCode);
+            }
+        }
     }
 }

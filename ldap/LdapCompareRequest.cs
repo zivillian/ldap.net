@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 using zivillian.ldap.Asn1;
 
 namespace zivillian.ldap
@@ -15,6 +16,13 @@ namespace zivillian.ldap
             var compare = message.ProtocolOp.CompareRequest;
             Entry = new LdapDistinguishedName(compare.Entry.Span);
             Assertion = new LdapAttributeAssertion(compare.Assertion);
+        }
+
+        internal LdapCompareRequest(int messageId, string dn, LdapAttributeAssertion assertion, LdapControl[] controls)
+            : base(messageId, controls)
+        {
+            Entry = new LdapDistinguishedName(dn);
+            Assertion = assertion;
         }
 
         internal override void SetProtocolOp(Asn1ProtocolOp op)

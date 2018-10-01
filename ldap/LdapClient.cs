@@ -149,6 +149,44 @@ namespace zivillian.ldap
             }
         }
 
+        public Task<bool> CompareAsync(string dn, string attribute, string value, CancellationToken cancellationToken)
+        {
+            return CompareAsync(dn, attribute, value, ServerControls.ToArray(), cancellationToken);
+        }
+
+        public Task<bool> CompareAsync(string dn, string attribute, ReadOnlyMemory<byte> value, CancellationToken cancellationToken)
+        {
+            return CompareAsync(dn, attribute, value, ServerControls.ToArray(), cancellationToken);
+        }
+
+        public Task<bool> CompareAsync(string dn, string attribute, string value, LdapControl[] serverControls, CancellationToken cancellationToken)
+        {
+            var assertion = new LdapAttributeAssertion(attribute, value);
+            return CompareAsync(dn, assertion, serverControls, cancellationToken);
+        }
+
+        public Task<bool> CompareAsync(string dn, string attribute, ReadOnlyMemory<byte> value, LdapControl[] serverControls, CancellationToken cancellationToken)
+        {
+            var assertion = new LdapAttributeAssertion(attribute, value);
+            return CompareAsync(dn, assertion, serverControls, cancellationToken);
+        }
+
+        private async Task<bool> CompareAsync(string dn, LdapAttributeAssertion assertion, LdapControl[] serverControls, CancellationToken cancellationToken)
+        {
+            var request = new LdapCompareRequest(NextMessageId(), dn, assertion, serverControls);
+            var response = await SendAsync(request, cancellationToken).ConfigureAwait(false);
+            var compareResponse = (LdapCompareResponse) response;
+            switch (compareResponse.ResultCode)
+            {
+                case ResultCode.CompareTrue:
+                    return true;
+                case ResultCode.CompareFalse:
+                    return false;
+                default:
+                    throw new LdapException(compareResponse.ResultCode, compareResponse.DiagnosticMessage ?? "unexpected compare response code");
+            }
+        }
+
         private async Task<LdapSearchResult> SearchInternalAsync(string baseDn, SearchScope scope, string filter, string[] attributes, bool attributeTypesOnly, TimeSpan timeout, int sizeLimit, LdapControl[] serverControls, CancellationToken cancellationToken)
         {
             if (filter == null)

@@ -16,9 +16,14 @@ namespace zivillian.ldap
         }
 
         internal LdapAttributeAssertion(ReadOnlySpan<char> description, ReadOnlySpan<char> value)
+            :this(description, value.UnescapeString().LdapString())
+        {
+        }
+
+        internal LdapAttributeAssertion(ReadOnlySpan<char> description, ReadOnlyMemory<byte> value)
         {
             Attribute = new LdapAttributeDescription(description);
-            Value = value.UnescapeString().LdapString();
+            Value = value;
         }
 
         internal Asn1AttributeValueAssertion GetAsn()
