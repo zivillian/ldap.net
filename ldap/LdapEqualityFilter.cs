@@ -9,6 +9,11 @@ namespace zivillian.ldap
         {
         }
 
+        internal LdapEqualityFilter(LdapAttributeAssertion assertion)
+            : base(assertion)
+        {
+        }
+
         protected override string Operator { get; } = "=";
 
         internal override Asn1Filter GetAsn()

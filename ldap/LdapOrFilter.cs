@@ -16,6 +16,14 @@ namespace zivillian.ldap
             }
         }
 
+        internal LdapOrFilter(LdapFilter[] inner)
+        {
+            if (inner is null)
+                throw new ArgumentNullException(nameof(inner));
+            
+            Filter = inner;
+        }
+
         internal override Asn1Filter GetAsn()
         {
             var filter = new Asn1Filter[Filter.Length];

@@ -1,4 +1,5 @@
-﻿using zivillian.ldap.Asn1;
+﻿using System;
+using zivillian.ldap.Asn1;
 
 namespace zivillian.ldap
 {
@@ -9,6 +10,14 @@ namespace zivillian.ldap
         internal LdapNotFilter(Asn1Filter filter)
         {
             Filter = Create(filter);
+        }
+
+        internal LdapNotFilter(LdapFilter filter)
+        {
+            if (filter is null)
+                throw new ArgumentNullException(nameof(filter));
+
+            Filter = filter;
         }
 
         internal override Asn1Filter GetAsn()

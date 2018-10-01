@@ -36,6 +36,17 @@ namespace zivillian.ldap
             Contains = contains.ToArray();
         }
 
+        internal LdapSubstringFilter(ReadOnlySpan<char> description, ReadOnlyMemory<byte>? initial, ReadOnlyMemory<byte>[] any, ReadOnlyMemory<byte>? final)
+        {
+            if (!initial.HasValue && !final.HasValue && any.Length == 0)
+                throw new ArgumentException("at least one part must be set");
+
+            Attribute = new LdapAttributeDescription(description);
+            StartsWith = initial;
+            Contains = any;
+            EndsWith = final;
+        }
+
         internal override Asn1Filter GetAsn()
         {
             var substrings = new List<Asn1Substring>();
@@ -60,9 +71,20 @@ namespace zivillian.ldap
 
         public override string ToString()
         {
+            var initial = String.Empty;
+            if (StartsWith.HasValue)
+                initial = StartsWith.Value.Span.EscapeAssertionValue();
+            var final = String.Empty;
+            if (EndsWith.HasValue)
+                final = EndsWith.Value.Span.EscapeAssertionValue();
             if (Contains.Length == 0)
-                return $"({StartsWith}*{EndsWith})";
-            return $"({StartsWith}*{String.Join('*', Contains)}*{EndsWith})";
+                return $"({Attribute}={initial}*{final})";
+            var any = new string[Contains.Length];
+            for (int i = 0; i < Contains.Length; i++)
+            {
+                any[i] = Contains[i].Span.EscapeAssertionValue();
+            }
+            return $"({Attribute}={initial}*{String.Join('*', any)}*{final})";
         }
     }
 }

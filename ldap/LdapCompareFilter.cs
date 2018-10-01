@@ -13,6 +13,11 @@ namespace zivillian.ldap
             Assertion = new LdapAttributeAssertion(assertion);
         }
 
+        internal LdapCompareFilter(LdapAttributeAssertion assertion)
+        {
+            Assertion = assertion;
+        }
+
         internal Asn1AttributeValueAssertion GetAssertion()
         {
             return Assertion.GetAsn();
@@ -20,7 +25,7 @@ namespace zivillian.ldap
 
         public override string ToString()
         {
-            return $"({Assertion.Attribute}{Operator}{Assertion.Value})";
+            return $"({Assertion.Attribute}{Operator}{Assertion.Value.Span.EscapeAssertionValue()})";
         }
     }
 }

@@ -25,6 +25,16 @@ namespace zivillian.ldap
             Value = assertion.Value;
         }
 
+        internal LdapExtensibleMatchFilter(ReadOnlySpan<char> description, bool isDn, ReadOnlySpan<char> matchingRule, ReadOnlySpan<char> assertion)
+        {
+            if (!description.IsEmpty)
+                Attribute = new LdapAttributeDescription(description);
+            IsDnAttribute = isDn;
+            if (!matchingRule.IsEmpty)
+            MatchingRuleId = matchingRule.Oid();
+            Value = assertion.LdapString();
+        }
+
         internal override Asn1Filter GetAsn()
         {
             var assertion = new Asn1MatchingRuleAssertion
@@ -45,7 +55,8 @@ namespace zivillian.ldap
 
         public override string ToString()
         {
-            var result = new StringBuilder('(');
+            var result = new StringBuilder();
+            result.Append('(');
             if (Attribute != null)
                 result.Append(Attribute);
             if (IsDnAttribute)
@@ -56,6 +67,7 @@ namespace zivillian.ldap
                 result.Append(MatchingRuleId);
             }
             result.Append(":=");
+            result.Append(Value.Span.EscapeAssertionValue());
             result.Append(')');
             return result.ToString();
         }

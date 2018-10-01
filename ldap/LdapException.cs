@@ -58,4 +58,12 @@ namespace zivillian.ldap
         {
         }
     }
+
+    public class LdapFilterParseException : LdapException
+    {
+        public LdapFilterParseException(string message)
+            : base(ResultCode.ProtocolError, message)
+        {
+        }
+    }
 }

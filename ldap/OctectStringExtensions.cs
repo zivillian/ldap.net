@@ -33,7 +33,7 @@ namespace zivillian.ldap
             keystring = null;
             if (data.IsEmpty)
                 return false;
-            if ((data[0] < 0x41 || data[0] > 0x5a) && (data[0] < 0x61 && data[0] > 0x7a))
+            if ((data[0] < 0x41 || data[0] > 0x5a) && (data[0] < 0x61 || data[0] > 0x7a))
                 return false;
             return TryParseKeychar(data, out keystring);
         }
@@ -53,7 +53,7 @@ namespace zivillian.ldap
                 return false;
             for (int i = 0; i < data.Length; i++)
             {
-                if ((data[i] < 0x41 || data[i] > 0x5a) && (data[0] < 0x61 && data[0] > 0x7a) && (data[i] < 0x30 || data[i] > 0x39) && (data[i] != 0x2d))
+                if ((data[i] < 0x41 || data[i] > 0x5a) && (data[i] < 0x61 || data[i] > 0x7a) && (data[i] < 0x30 || data[i] > 0x39) && (data[i] != 0x2d))
                     return false;
             }
             keychar = Encoding.ASCII.GetString(data);
@@ -68,7 +68,7 @@ namespace zivillian.ldap
                 return false;
             for (int i = 0; i < data.Length; i++)
             {
-                if ((data[i] < 0x41 || data[i] > 0x5a) && (data[0] < 0x61 && data[0] > 0x7a) && (data[i] < 0x30 || data[i] > 0x39) && (data[i] != 0x2d))
+                if ((data[i] < 0x41 || data[i] > 0x5a) && (data[i] < 0x61 || data[i] > 0x7a) && (data[i] < 0x30 || data[i] > 0x39) && (data[i] != 0x2d))
                     return false;
             }
             keychar = new string(data);
@@ -79,6 +79,11 @@ namespace zivillian.ldap
         {
             //LDAPString ::= OCTET STRING -- UTF-8 encoded
             return Encoding.UTF8.GetString(data);
+        }
+
+        public static ReadOnlyMemory<byte> LdapString(this ReadOnlySpan<char> ldapstring)
+        {
+            return Encoding.UTF8.GetBytes(ldapstring.ToArray());
         }
 
         public static ReadOnlyMemory<byte> LdapString(this string ldapstring)
@@ -174,17 +179,7 @@ namespace zivillian.ldap
             //special = escaped / SPACE / SHARP / EQUALS
             ' ', '#', '='
         };
-
-        private static readonly char[] _leadingescaped = new[]
-        {
-            ' ', '#'
-        };
-
-        private static readonly char[] _trailingescaped = new[]
-        {
-            ' '
-        };
-
+        
         public static bool TryUnescapeString(this ReadOnlySpan<char> data, out string unescaped)
         {
             //todo handle multi byte hex
@@ -239,6 +234,13 @@ namespace zivillian.ldap
             result.Append(data);
             unescaped = result.ToString();
             return true;
+        }
+
+        public static string UnescapeString(this ReadOnlySpan<char> data)
+        {
+            if (!data.TryUnescapeString(out var unescaped))
+                throw new LdapException(ResultCode.InvalidAttributeSyntax, "invalid escaping");
+            return unescaped;
         }
 
         public static string EscapeString(this ReadOnlySpan<char> text)
@@ -308,6 +310,29 @@ namespace zivillian.ldap
             if (data.TryParseNumericOid(out var numericoid))
                 return numericoid;
             throw new LdapProtocolException("invalid oid");
+        }
+
+        public static string EscapeAssertionValue(this ReadOnlySpan<byte> data)
+        {
+            return data.LdapString().AsSpan().EscapeAssertionValue();
+        }
+        
+        private static readonly char[] AssertionValueEscaping = { '\0', '(', ')', '*', '\\'};
+
+        public static string EscapeAssertionValue(this ReadOnlySpan<char> data)
+        {
+            var builder = new StringBuilder();
+            int index;
+            while ((index = data.IndexOfAny(AssertionValueEscaping)) >= 0)
+            {
+                builder.Append(data.Slice(0, index));
+                builder.Append('\\');
+                builder.Append(((int) data[index]).ToString("x2"));
+                data = data.Slice(index + 1);
+            }
+            if (!data.IsEmpty)
+                builder.Append(data);
+            return builder.ToString();
         }
     }
 }
