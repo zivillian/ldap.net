@@ -26,6 +26,15 @@ namespace zivillian.ldap
             ServerSaslCreds = bindResponse.ServerSaslCreds;
         }
 
+        internal LdapBindResponse(int id, ResultCode resultCode, LdapDistinguishedName matchedDN, string message, string[] referrals)
+            :base(id, new LdapControl[0])
+        {
+            ResultCode = resultCode;
+            MatchedDN = matchedDN;
+            DiagnosticMessage = message;
+            Referrals = referrals;
+        }
+
         internal override void SetProtocolOp(Asn1ProtocolOp op)
         {
             op.BindResponse = new Asn1BindResponse

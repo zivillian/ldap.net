@@ -75,5 +75,10 @@ namespace zivillian.ldap
                 bindRequest.Authentication.Sasl = sasl;
             }
         }
+
+        public LdapRequestMessage Response(ResultCode resultCode, string message)
+        {
+            return new LdapBindResponse(Id, resultCode, new LdapDistinguishedName(String.Empty), message, new string[0]);
+        }
     }
 }

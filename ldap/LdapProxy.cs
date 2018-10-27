@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Linq;
-using System.Net;
 using System.Net.Sockets;
 using System.Security.Cryptography.Asn1;
 using System.Threading;
@@ -92,8 +91,7 @@ namespace zivillian.ldap
         private async Task HandleClient(TcpClient client, CancellationToken cancellationToken)
         {
             var clientId = Guid.NewGuid();
-            using(var cts = new CancellationTokenSource())
-            using (var combined = CancellationTokenSource.CreateLinkedTokenSource(cts.Token, cancellationToken))
+            using(var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken))
             using (client)
             using (var server = new TcpClient(AddressFamily.InterNetworkV6){Client = {DualMode = true}})
             {
@@ -102,12 +100,12 @@ namespace zivillian.ldap
                 var serverSocket = server.Client;
 
                 var clientPipe = new Pipe(new PipeOptions(pauseWriterThreshold: MaxMessageSize));
-                var clientReader = ReadAsync(clientSocket, clientPipe.Writer, combined.Token);
-                var serverWriter = WriteAsync(serverSocket, clientPipe.Reader, x => OnSendToServer(clientId, x), OnError, combined.Token);
+                var clientReader = ReadAsync(clientSocket, clientPipe.Writer, cts.Token);
+                var serverWriter = WriteAsync(serverSocket, clientPipe.Reader, x => OnSendToServer(clientId, x), OnError, cts.Token);
 
                 var serverPipe = new Pipe(new PipeOptions(pauseWriterThreshold: MaxMessageSize));
-                var serverReader = ReadAsync(serverSocket, serverPipe.Writer, combined.Token);
-                var clientWriter = WriteAsync(clientSocket, serverPipe.Reader, x => OnSendToClient(clientId, x), OnError, combined.Token);
+                var serverReader = ReadAsync(serverSocket, serverPipe.Writer, cts.Token);
+                var clientWriter = WriteAsync(clientSocket, serverPipe.Reader, x => OnSendToClient(clientId, x), OnError, cts.Token);
 
                 await Task.WhenAny(clientReader, serverWriter, serverReader, clientWriter);
                 cts.Cancel();
@@ -207,10 +205,6 @@ namespace zivillian.ldap
                 if (ex.ObjectName != reader.GetType().FullName)
                     reader.Complete(ex);
             }
-            catch (Exception ex)
-            {
-                Debug.Fail("unexpected exception");
-            }
         }
 
         internal static bool TryReadTagAndLength(ReadOnlySequence<byte> buffer, out long length)
@@ -231,7 +225,6 @@ namespace zivillian.ldap
             length+= tagBytes;
             return true;
         }
-
 
         private static bool TryReadTagAndLength(ReadOnlyMemory<byte> buffer, out long length)
         {
