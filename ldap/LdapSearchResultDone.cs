@@ -9,6 +9,13 @@ namespace zivillian.ldap
         {
         }
 
+        internal LdapSearchResultDone(int id, ResultCode resultCode, LdapDistinguishedName matchedDN, string message,
+            string[] referrals, LdapControl[] controls)
+        :base(id, resultCode, matchedDN, message, referrals, controls)
+        {
+
+        }
+
         internal override void SetProtocolOp(Asn1ProtocolOp op, Asn1LDAPResult result)
         {
             op.SearchResultDone = result;

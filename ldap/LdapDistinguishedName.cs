@@ -8,6 +8,16 @@ namespace zivillian.ldap
     {
         public LdapRelativeDistinguishedName[] RDNs { get; }
 
+        public LdapDistinguishedName(LdapRelativeDistinguishedName rdn, LdapDistinguishedName parent)
+        {
+            RDNs = new LdapRelativeDistinguishedName[parent.RDNs.Length+1];
+            RDNs[0] = rdn;
+            for (int i = 0; i < parent.RDNs.Length; i++)
+            {
+                RDNs[i + 1] = parent.RDNs[i];
+            }
+        }
+
         public LdapDistinguishedName(ReadOnlySpan<byte> data)
             : this(data.LdapString())
         {
@@ -49,6 +59,11 @@ namespace zivillian.ldap
     {
         public LdapAttributeTypeAndValue[] Values { get; }
 
+        public LdapRelativeDistinguishedName(LdapAttributeTypeAndValue value)
+        {
+            Values = new[] {value};
+        }
+
         public LdapRelativeDistinguishedName(ReadOnlySpan<char> rdn)
         {
             if (rdn.IsEmpty)
@@ -85,6 +100,19 @@ namespace zivillian.ldap
         public string Value { get; }
 
         public bool IsHexstring { get; }
+
+        public LdapAttributeTypeAndValue(string type, string value, bool isHex)
+        {
+            if (String.IsNullOrEmpty(type))
+                throw new ArgumentNullException(nameof(type));
+
+            if (value == null)
+                throw new ArgumentNullException(nameof(value));
+
+            Type = type;
+            Value = value;
+            IsHexstring = isHex;
+        }
 
         public LdapAttributeTypeAndValue(ReadOnlySpan<char> typeAndValue)
         {

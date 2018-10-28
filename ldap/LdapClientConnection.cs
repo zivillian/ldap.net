@@ -20,6 +20,7 @@ namespace zivillian.ldap
             Client = client;
             Pipe = pipe;
             _cts = cts;
+            CancellationToken = _cts.Token;
             _pending = new ConcurrentDictionary<int, LdapRequest>();
             _lock = new SemaphoreSlim(1, 1);
             _bindLock = new SemaphoreSlim(1, 1);
@@ -47,10 +48,7 @@ namespace zivillian.ldap
             get { return Pipe.Writer; }
         }
 
-        public CancellationToken CancellationToken
-        {
-            get { return _cts.Token; }
-        }
+        public CancellationToken CancellationToken { get; }
 
         internal async Task<bool> TryAddPendingAsync(LdapRequestMessage message)
         {

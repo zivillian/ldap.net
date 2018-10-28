@@ -8,6 +8,8 @@ using System.Security.Cryptography.Asn1;
 using System.Threading;
 using System.Threading.Tasks;
 using zivillian.ldap.Asn1;
+using zivillian.ldap.Attributes;
+using zivillian.ldap.ObjectClasses;
 
 namespace zivillian.ldap
 {
@@ -16,12 +18,19 @@ namespace zivillian.ldap
         private readonly TcpListener _listener;
         private readonly CancellationTokenSource _cts;
         private readonly List<Task> _clients;
+        private readonly TopObjectClass _rootDse;
+        private readonly HashSet<string> _controls;
 
-        protected LdapServer(ushort port)
+        protected LdapServer(ushort port, TopObjectClass rootDse)
         {
             _listener = TcpListener.Create(port);
             _clients = new List<Task>();
             _cts = new CancellationTokenSource();
+            _rootDse = rootDse;
+            _controls = _rootDse.GetAttributes()
+                .OfType<SupportedControlAttribute>()
+                .Select(x => x.Oid)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
         }
         
         public long MaxMessageSize { get; set; } = 1024 * 1024 * 1024;
@@ -71,9 +80,24 @@ namespace zivillian.ldap
             return;
         }
 
-        protected virtual Task<LdapRequestMessage> OnBindAsync(LdapBindRequest request, LdapClientConnection connection)
+        protected virtual void OnClientDisconnected(Guid connectionId)
+        {
+
+        }
+
+        protected virtual Task<LdapBindResponse> OnBindAsync(LdapBindRequest request, LdapClientConnection connection)
         {
             return Task.FromResult(request.Response(ResultCode.Other, "Not Implemented"));
+        }
+
+        protected virtual Task<IEnumerable<LdapRequestMessage>> OnSearchAsync(LdapSearchRequest request, LdapClientConnection connection, CancellationToken cancellationToken)
+        {
+            return Task.FromResult(Enumerable.Empty<LdapRequestMessage>());
+        }
+
+        protected virtual Task<IList<LdapAttribute>> OnGetRootDSEAsync(IList<LdapAttribute> attributes, LdapClientConnection connection, CancellationToken cancellationToken)
+        {
+            return Task.FromResult(attributes);
         }
 
         private async Task OnRequestAsync(LdapRequestMessage message, LdapClientConnection connection)
@@ -85,7 +109,9 @@ namespace zivillian.ldap
 
                 if (message is LdapAbandonRequest abandon)
                 {
-                    connection.AbandonRequest(abandon.MessageId);
+
+                    if (CriticalControlsSupported(abandon.Controls))
+                        connection.AbandonRequest(abandon.MessageId);
                 }
                 if (message is LdapBindRequest bind)
                 {
@@ -95,6 +121,10 @@ namespace zivillian.ldap
                         var response = await BindRequestAsync(bind, connection);
                         await WriteAsync(response, connection);
                     }
+                    catch(Exception ex)
+                    {
+                        await WriteAsync(bind.Response(ResultCode.Other, ex.Message), connection);
+                    }
                     finally
                     {
                         connection.FinishBind();
@@ -103,6 +133,10 @@ namespace zivillian.ldap
                 else if (message is LdapUnbindRequest)
                 {
                     UnbindRequest(connection);
+                }
+                else if (message is LdapSearchRequest search)
+                {
+                    await SearchRequestAsync(search, connection);
                 }
                 else
                 {
@@ -115,11 +149,20 @@ namespace zivillian.ldap
             }
         }
 
-        private Task<LdapRequestMessage> BindRequestAsync(LdapBindRequest request, LdapClientConnection connection)
+        private Task<LdapBindResponse> BindRequestAsync(LdapBindRequest request, LdapClientConnection connection)
         {
             if (request.Version != 3)
             {
                 return Task.FromResult(request.Response(ResultCode.ProtocolError, "only version 3 is supported"));
+            }
+            if (!CriticalControlsSupported(request.Controls))
+            {
+                return Task.FromResult(request.Response(ResultCode.UnavailableCriticalExtension, String.Empty));
+            }
+            if (request.Simple.HasValue && request.Simple.Value.Length == 0 && request.Name.RDNs.Length > 0)
+            {
+                //https://tools.ietf.org/html/rfc4513#section-5.1.2
+                return Task.FromResult(request.Response(ResultCode.UnwillingToPerform, "Unauthenticated Bind"));
             }
             return OnBindAsync(request, connection);
         }
@@ -127,6 +170,69 @@ namespace zivillian.ldap
         private void UnbindRequest(LdapClientConnection connection)
         {
             connection.CloseConnection();
+        }
+
+        private async Task SearchRequestAsync(LdapSearchRequest request, LdapClientConnection connection)
+        {
+            if (request.TimeLimit != TimeSpan.Zero)
+            {
+                using(var cts = new CancellationTokenSource(request.TimeLimit))
+                using (var combined = CancellationTokenSource.CreateLinkedTokenSource(connection.CancellationToken, cts.Token))
+                {
+                    await SearchRequestAsync(request, connection, combined.Token);
+                }
+            }
+            else
+            {
+                await SearchRequestAsync(request, connection, connection.CancellationToken);
+            }
+        }
+
+        private async Task SearchRequestAsync(LdapSearchRequest request, LdapClientConnection connection, CancellationToken cancellationToken)
+        {
+            try
+            {
+                if (request.BaseObject.RDNs.Length == 0 &&
+                    request.Scope == SearchScope.BaseObject &&
+                    request.Filter is LdapPresentFilter filter &&
+                    (filter.Attribute.Oid.Equals("objectClass", StringComparison.OrdinalIgnoreCase) || filter.Attribute.Oid == "2.5.4.0"))
+                {
+                    var selected = request.Attributes
+                        .Where(x => !x.AllUserAttributes)
+                        .Where(x => !x.NoAttributes)
+                        .Select(x => x.Selector)
+                        .ToList();
+
+                    IList<LdapAttribute> attributes = _rootDse.GetAttributes(request.Attributes, request.TypesOnly).ToList();
+                    attributes = await OnGetRootDSEAsync(attributes, connection, cancellationToken);
+                    var entry = request.Result(new LdapDistinguishedName(String.Empty), attributes.ToArray(), new LdapControl[0]);
+                    await WriteAsync(entry, connection);
+                    await WriteAsync(request.Done(), connection);
+                }
+                else
+                {
+                    var results = await OnSearchAsync(request, connection, cancellationToken);
+                    bool done = false;
+                    foreach (var response in results)
+                    {
+                        await WriteAsync(response, connection);
+                        if (response is LdapSearchResultDone)
+                        {
+                            done = true;
+                            break;
+                        }
+                    }
+                    if (!done)
+                    {
+                        await WriteAsync(request.Done(), connection);
+                    }
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                var done = request.Done(ResultCode.TimeLimitExceeded);
+                await WriteAsync(done, connection);
+            }
         }
 
         private async Task HandleClient(TcpClient client, CancellationToken cancellationToken)
@@ -137,10 +243,17 @@ namespace zivillian.ldap
                 var pipe = new Pipe(new PipeOptions(pauseWriterThreshold: MaxMessageSize));
                 using (var connection = new LdapClientConnection(client, pipe, cts))
                 {
-                    var writing = FillPipeAsync(connection);
-                    var reading = ReadPipeAsync(connection);
-                    await Task.WhenAny(reading, writing);
-                    cts.Cancel();
+                    try
+                    {
+                        var writing = FillPipeAsync(connection);
+                        var reading = ReadPipeAsync(connection);
+                        await Task.WhenAny(reading, writing);
+                    }
+                    finally
+                    {
+                        cts.Cancel();
+                        OnClientDisconnected(connection.Id);
+                    }
                 }
             }
         }
@@ -313,6 +426,19 @@ namespace zivillian.ldap
         {
             var message = Asn1Serializer.Deserialize(buffer);
             return LdapRequestMessage.Create(message);
+        }
+
+        private bool CriticalControlsSupported(LdapControl[] controls)
+        {
+            foreach (var control in controls)
+            {
+                if (control.Criticality)
+                {
+                    if (!_controls.Contains(control.Oid))
+                        return false;
+                }
+            }
+            return true;
         }
 
         protected virtual void Dispose(bool disposing)
