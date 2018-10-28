@@ -12,6 +12,5 @@
         public override string Oid => "2.5.4.7";
 
         public override string Name => _name;
-
     }
 }

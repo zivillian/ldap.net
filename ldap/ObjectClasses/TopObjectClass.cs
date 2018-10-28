@@ -13,6 +13,8 @@ namespace zivillian.ldap.ObjectClasses
             ObjectClass.Entries.Add("top");
         }
 
+        public LdapDistinguishedName Parent { get; set; }
+
         public ObjectClassAttribute ObjectClass { get; }
 
         public LdapAttribute[] GetAttributes(LdapAttributeSelection[] selection, bool typesOnly)

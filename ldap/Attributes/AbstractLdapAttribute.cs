@@ -74,6 +74,18 @@ namespace zivillian.ldap.Attributes
         }
 
     }
+    
+    public abstract class PrintableStringLdapAttribute : AbstractLdapAttribute<string>
+    {
+        protected PrintableStringLdapAttribute(string nameOrOid):base(nameOrOid)
+        {
+        }
+
+        protected override ReadOnlyMemory<byte> Serialize(string entry)
+        {
+            return Encoding.ASCII.GetBytes(entry);
+        }
+    }
 
     public abstract class AbstractLdapAttribute<T> : AbstractLdapAttribute
     {

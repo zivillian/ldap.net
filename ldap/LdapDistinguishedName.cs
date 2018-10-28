@@ -8,6 +8,11 @@ namespace zivillian.ldap
     {
         public LdapRelativeDistinguishedName[] RDNs { get; }
 
+        public LdapDistinguishedName(string type, string value, LdapDistinguishedName parent)
+        :this(new LdapRelativeDistinguishedName(new LdapAttributeTypeAndValue(type, value, false)), parent)
+        {
+        }
+
         public LdapDistinguishedName(LdapRelativeDistinguishedName rdn, LdapDistinguishedName parent)
         {
             RDNs = new LdapRelativeDistinguishedName[parent.RDNs.Length+1];
