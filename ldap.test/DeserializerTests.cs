@@ -130,7 +130,7 @@ namespace zivillian.ldap.test
             Assert.Equal(SearchScope.BaseObject, search.Scope);
             Assert.Equal(DerefAliases.NeverDerefAliases, search.DerefAliases);
             Assert.Equal(Int32.MaxValue, search.SizeLimit);
-            Assert.Equal(TimeSpan.MaxValue, search.TimeLimit);
+            Assert.Equal(TimeSpan.Zero, search.TimeLimit);
             Assert.False(search.TypesOnly);
             var filter = Assert.IsType<LdapPresentFilter>(search.Filter);
             Assert.Equal("objectclass", filter.Attribute.ToString());

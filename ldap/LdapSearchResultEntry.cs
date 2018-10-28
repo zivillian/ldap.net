@@ -25,6 +25,13 @@ namespace zivillian.ldap
             }
         }
 
+        internal LdapSearchResultEntry(int messageId, LdapDistinguishedName objectName, LdapAttribute[] attributes, LdapControl[] controls)
+        :base(messageId, controls)
+        {
+            ObjectName = objectName;
+            Attributes = attributes;
+        }
+
         internal override void SetProtocolOp(Asn1ProtocolOp op)
         {
             var result = new Asn1SearchResultEntry

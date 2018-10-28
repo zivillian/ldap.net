@@ -36,9 +36,7 @@ namespace zivillian.ldap
             else if (SizeLimit < 0)
                 throw new LdapProtocolException("invalid sizeLimit");
             TimeLimit = TimeSpan.FromSeconds(search.TimeLimit);
-            if (TimeLimit == TimeSpan.Zero)
-                TimeLimit = TimeSpan.MaxValue;
-            else if (TimeLimit < TimeSpan.Zero)
+            if (TimeLimit < TimeSpan.Zero)
                 throw new LdapProtocolException("invalid timeLimit");
             TypesOnly = search.TypesOnly;
             Filter = LdapFilter.Create(search.Filter);
@@ -91,8 +89,6 @@ namespace zivillian.ldap
             };
             if (SizeLimit == Int32.MaxValue)
                 op.SearchRequest.SizeLimit = 0;
-            if (TimeLimit == TimeSpan.MaxValue)
-                op.SearchRequest.TimeLimit = 0;
             if (Attributes != null && Attributes.Length > 0)
             {
                 var attr = op.SearchRequest.Attributes = new ReadOnlyMemory<byte>[Attributes.Length];
@@ -101,6 +97,21 @@ namespace zivillian.ldap
                     attr[i] = Attributes[i].GetBytes();
                 }
             }
+        }
+
+        public LdapSearchResultEntry Result(LdapDistinguishedName objectName, LdapAttribute[] attributes, LdapControl[] controls)
+        {
+            return new LdapSearchResultEntry(Id, objectName, attributes, controls);
+        }
+
+        public LdapSearchResultDone Done(ResultCode resultCode = ResultCode.Success)
+        {
+            return Done(resultCode, new string[0]);
+        }
+
+        public LdapSearchResultDone Done(ResultCode resultCode, string[] referrals)
+        {
+            return new LdapSearchResultDone(Id, resultCode, new LdapDistinguishedName(String.Empty), String.Empty, referrals, new LdapControl[0] );
         }
     }
 }
