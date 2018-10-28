@@ -28,7 +28,7 @@
   <!--(Implementor's note: the
    'not' filter is an example of a tagged choice in an implicitly-tagged
    module.  In BER this is treated as if the tag were explicit.)-->
-  <asn:AsnType name="Not" typeName="Asn1Filter" implicitTag="2"/>
+  <asn:AsnType name="Not" typeName="Asn1Filter" explicitTag="2"/>
   <asn:AsnType name="EqualityMatch" typeName="Asn1AttributeValueAssertion" implicitTag="3" />
   <asn:AsnType name="Substrings" typeName="Asn1SubstringFilter" implicitTag="4" />
   <asn:AsnType name="GreaterOrEqual" typeName="Asn1AttributeValueAssertion" implicitTag="5" />

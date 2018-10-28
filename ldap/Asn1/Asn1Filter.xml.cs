@@ -87,9 +87,11 @@ namespace zivillian.ldap.Asn1
                     throw new CryptographicException();
                 
                 writer.PushSequence(new Asn1Tag(TagClass.ContextSpecific, 2));
+                writer.PushSequence();
                 Not.Encode(writer);
                 writer.PopSequence();
       
+                writer.PopSequence(new Asn1Tag(TagClass.ContextSpecific, 2));
                 wroteValue = true;
             }
 
@@ -187,6 +189,7 @@ namespace zivillian.ldap.Asn1
 
             decoded = new Asn1Filter();
             Asn1Tag tag = reader.PeekTag();
+            AsnReader explicitReader;
             AsnReader collectionReader;
             
             if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.ContextSpecific, 0)))
@@ -229,10 +232,12 @@ namespace zivillian.ldap.Asn1
             }
             else if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.ContextSpecific, 2)))
             {
+                explicitReader = reader.ReadSequence(new Asn1Tag(TagClass.ContextSpecific, 2));
                 Asn1Filter tmpNot;
-                Asn1Filter.Decode(reader, new Asn1Tag(TagClass.ContextSpecific, 2), out tmpNot);
+                Asn1Filter.Decode(explicitReader, out tmpNot);
                 decoded.Not = tmpNot;
 
+                explicitReader.ThrowIfNotEmpty();
             }
             else if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.ContextSpecific, 3)))
             {
