@@ -6,7 +6,7 @@ namespace zivillian.ldap
     //RFC 4514
     public class LdapDistinguishedName
     {
-        public LdapRelativeDistinguishedName[] RDNs { get; }
+        public IReadOnlyList<LdapRelativeDistinguishedName> RDNs { get; }
 
         public LdapDistinguishedName(string type, string value, LdapDistinguishedName parent)
         :this(new LdapRelativeDistinguishedName(new LdapAttributeTypeAndValue(type, value, false)), parent)
@@ -15,12 +15,13 @@ namespace zivillian.ldap
 
         public LdapDistinguishedName(LdapRelativeDistinguishedName rdn, LdapDistinguishedName parent)
         {
-            RDNs = new LdapRelativeDistinguishedName[parent.RDNs.Length+1];
-            RDNs[0] = rdn;
-            for (int i = 0; i < parent.RDNs.Length; i++)
+            var rdns = new LdapRelativeDistinguishedName[parent.RDNs.Count+1];
+            rdns[0] = rdn;
+            for (int i = 0; i < parent.RDNs.Count; i++)
             {
-                RDNs[i + 1] = parent.RDNs[i];
+                rdns[i + 1] = parent.RDNs[i];
             }
+            RDNs = rdns;
         }
 
         public LdapDistinguishedName(ReadOnlySpan<byte> data)
@@ -32,7 +33,7 @@ namespace zivillian.ldap
         {
             if (dn.IsEmpty)
             {
-                RDNs = new LdapRelativeDistinguishedName[0];
+                RDNs = Array.Empty<LdapRelativeDistinguishedName>();
                 return;
             }
             var rdns = new List<LdapRelativeDistinguishedName>();
@@ -62,7 +63,7 @@ namespace zivillian.ldap
 
     public class LdapRelativeDistinguishedName
     {
-        public LdapAttributeTypeAndValue[] Values { get; }
+        public IReadOnlyList<LdapAttributeTypeAndValue> Values { get; }
 
         public LdapRelativeDistinguishedName(LdapAttributeTypeAndValue value)
         {
@@ -81,7 +82,7 @@ namespace zivillian.ldap
                 rdn = rdn.Slice(index + 1);
             }
             parts.Add(new LdapAttributeTypeAndValue(rdn));
-            Values = parts.ToArray();
+            Values = parts;
         }
 
         public override string ToString()
@@ -111,7 +112,7 @@ namespace zivillian.ldap
             if (String.IsNullOrEmpty(type))
                 throw new ArgumentNullException(nameof(type));
 
-            if (value == null)
+            if (value is null)
                 throw new ArgumentNullException(nameof(value));
 
             Type = type;

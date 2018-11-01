@@ -83,7 +83,7 @@ namespace zivillian.ldap
 
         public LdapBindResponse Response(ResultCode resultCode, string message)
         {
-            return new LdapBindResponse(Id, resultCode, new LdapDistinguishedName(String.Empty), message, new string[0]);
+            return new LdapBindResponse(Id, resultCode, new LdapDistinguishedName(String.Empty), message, Array.Empty<string>());
         }
     }
 }

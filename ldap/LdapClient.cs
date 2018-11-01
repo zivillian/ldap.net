@@ -51,7 +51,7 @@ namespace zivillian.ldap
             set
             {
                 if (_sizeLimit < 0)
-                    throw new ArgumentOutOfRangeException();
+                    throw new ArgumentOutOfRangeException(nameof(value));
                 _sizeLimit = value;
             }
         }
@@ -62,7 +62,7 @@ namespace zivillian.ldap
             set
             {
                 if (_timeLimit < TimeSpan.Zero)
-                    throw new ArgumentOutOfRangeException();
+                    throw new ArgumentOutOfRangeException(nameof(value));
                 _timeLimit = value;
             }
         }
@@ -189,7 +189,7 @@ namespace zivillian.ldap
 
         private async Task<LdapSearchResult> SearchInternalAsync(string baseDn, SearchScope scope, string filter, string[] attributes, bool attributeTypesOnly, TimeSpan timeout, int sizeLimit, LdapControl[] serverControls, CancellationToken cancellationToken)
         {
-            if (filter == null)
+            if (filter is null)
                 filter = "(objectclass=*)";
 
             var request = new LdapSearchRequest(NextMessageId(), baseDn, scope, filter, attributes, attributeTypesOnly, timeout, sizeLimit, serverControls);
@@ -273,7 +273,7 @@ namespace zivillian.ldap
                 throw new ObjectDisposedException(GetType().FullName);
             if (_client.Connected) return;
 
-            if (Hostname.Contains(' '))
+            if (Hostname.Contains(' ', StringComparison.Ordinal))
                 throw new NotImplementedException("hostname parsing");
 
             await _client.ConnectAsync(Hostname, Port).ConfigureAwait(false);

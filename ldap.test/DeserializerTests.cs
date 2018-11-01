@@ -134,7 +134,7 @@ namespace zivillian.ldap.test
             Assert.False(search.TypesOnly);
             var filter = Assert.IsType<LdapPresentFilter>(search.Filter);
             Assert.Equal("objectclass", filter.Attribute.ToString());
-            Assert.Equal(15, search.Attributes.Length);
+            Assert.Equal(15, search.Attributes.Count);
             Assert.Equal("subschemaSubentry", search.Attributes[0].ToString());
             Assert.Equal("dsServiceName", search.Attributes[1].ToString());
             Assert.Equal("namingContexts", search.Attributes[2].ToString());
@@ -303,7 +303,7 @@ namespace zivillian.ldap.test
             Assert.Equal(28, message.Id);
             var result = Assert.IsType<LdapSearchResultEntry>(message);
             Assert.Equal(String.Empty, result.ObjectName.ToString());
-            Assert.Equal(4, result.Attributes.Length);
+            Assert.Equal(4, result.Attributes.Count);
             
             var attr = result.Attributes[0];
             Assert.Equal("namingContexts", attr.Type.ToString());
@@ -312,7 +312,7 @@ namespace zivillian.ldap.test
             
             attr = result.Attributes[1];
             Assert.Equal("supportedControl", attr.Type.ToString());
-            Assert.Equal(8, attr.Values.Length);
+            Assert.Equal(8, attr.Values.Count);
             Assert.Equal("2.16.840.1.113730.3.4.18", Encoding.UTF8.GetString(attr.Values[0].Span));
             Assert.Equal("2.16.840.1.113730.3.4.2", Encoding.UTF8.GetString(attr.Values[1].Span));
             Assert.Equal("1.3.6.1.4.1.4203.1.10.1", Encoding.UTF8.GetString(attr.Values[2].Span));
@@ -425,8 +425,8 @@ namespace zivillian.ldap.test
             Assert.Equal(12, message.Id);
             Assert.Empty(message.Controls);
             var modify = Assert.IsType<LdapModifyRequest>(message);
-            Assert.Equal("ou=chemists,dc=example,dc=com", modify.Object.ToString());
-            Assert.Equal(2, modify.Changes.Length);
+            Assert.Equal("ou=chemists,dc=example,dc=com", modify.ObjectDN.ToString());
+            Assert.Equal(2, modify.Changes.Count);
             Assert.Equal(ChangeOperation.Add, modify.Changes[0].Operation);
             Assert.Equal("businessCategory", modify.Changes[0].Modification.Type.ToString());
             var value = Assert.Single(modify.Changes[0].Modification.Values);
@@ -505,7 +505,7 @@ namespace zivillian.ldap.test
             Assert.Empty(message.Controls);
             var add = Assert.IsType<LdapAddRequest>(message);
             Assert.Equal("uid=test.user,dc=example,dc=com", add.Entry.ToString());
-            Assert.Equal(8, add.Attributes.Length);
+            Assert.Equal(8, add.Attributes.Count);
             Assert.Equal("objectclass", add.Attributes[0].Type.ToString());
             Assert.Equal(new []{"posixAccount", "top", "inetOrgPerson"}, add.Attributes[0].Values.Select(x=>Encoding.UTF8.GetString(x.Span)));
             Assert.Equal("gidNumber", add.Attributes[1].Type.ToString());

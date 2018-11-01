@@ -54,7 +54,7 @@ namespace zivillian.ldap
         {
             try
             {
-                await _bindLock.WaitAsync(CancellationToken);
+                await _bindLock.WaitAsync(CancellationToken).ConfigureAwait(false);
                 return _pending.TryAdd(message.Id, new LdapRequest(message, CancellationToken));
             }
             finally
@@ -75,7 +75,7 @@ namespace zivillian.ldap
         {
             try
             {
-                await _lock.WaitAsync(CancellationToken);
+                await _lock.WaitAsync(CancellationToken).ConfigureAwait(false);
                 await Socket.SendAsync(data, SocketFlags.None, CancellationToken);
             }
             finally
@@ -98,10 +98,11 @@ namespace zivillian.ldap
 
         internal async Task BeginBindAsync()
         {
-            await _bindLock.WaitAsync(CancellationToken);
+            await _bindLock.WaitAsync(CancellationToken).ConfigureAwait(false);
             foreach (var request in _pending.Values)
             {
                 AbandonRequest(request.Request.Id);
+                CancellationToken.ThrowIfCancellationRequested();
             }
         }
 

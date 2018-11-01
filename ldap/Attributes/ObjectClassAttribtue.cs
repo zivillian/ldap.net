@@ -2,7 +2,7 @@
 {
     public class ObjectClassAttribute : OidSyntaxLdapAttribute
     {
-        private static readonly string _name = "objectClass";
+        private const string _name = "objectClass";
 
         public ObjectClassAttribute()
             : base(_name)

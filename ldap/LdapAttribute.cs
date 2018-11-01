@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using zivillian.ldap.Asn1;
 
 namespace zivillian.ldap
@@ -7,7 +9,7 @@ namespace zivillian.ldap
     {
         public LdapAttributeDescription Type { get; }
 
-        public virtual ReadOnlyMemory<byte>[] Values { get; }
+        public virtual IReadOnlyList<ReadOnlyMemory<byte>> Values { get; }
 
         internal LdapAttribute(Asn1PartialAttribute attribute)
         {
@@ -22,7 +24,7 @@ namespace zivillian.ldap
 
         public LdapAttribute(LdapAttributeDescription type, ReadOnlyMemory<byte>[] values)
         {
-            if (values == null)
+            if (values is null)
                 throw new ArgumentNullException(nameof(values));
 
             Type = type;
@@ -34,7 +36,7 @@ namespace zivillian.ldap
             var result = new Asn1PartialAttribute
             {
                 Type = Type.GetBytes(),
-                Values = Values
+                Values = Values.ToArray()
             };
             return result;
         }

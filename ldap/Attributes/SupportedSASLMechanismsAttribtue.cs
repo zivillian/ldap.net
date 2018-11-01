@@ -4,7 +4,7 @@ namespace zivillian.ldap.Attributes
 {
     public class SupportedSASLMechanismsAttribute : DirectoryStringSyntaxLdapAttribute
     {
-        private static readonly string _name = "supportedSASLMechanisms";
+        private const string _name = "supportedSASLMechanisms";
 
         public SupportedSASLMechanismsAttribute()
             : base(_name)

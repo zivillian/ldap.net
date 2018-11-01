@@ -18,7 +18,7 @@ namespace zivillian.ldap.test
         public void CanParseDN(string dn, string expected = null)
         {
             var parsed = new LdapDistinguishedName(dn);
-            if (expected == null)
+            if (expected is null)
                 expected = dn;
             Assert.Equal(expected, parsed.ToString());
         }
@@ -28,7 +28,7 @@ namespace zivillian.ldap.test
         {
             var dn = "CN=test=user,DC=example,DC=ne=t";
             var parsed = new LdapDistinguishedName(dn);
-            Assert.Equal(3, parsed.RDNs.Length);
+            Assert.Equal(3, parsed.RDNs.Count);
             var value = Assert.Single(parsed.RDNs[0].Values);
             Assert.Equal("CN", value.Type);
             Assert.Equal("test=user", value.Value);

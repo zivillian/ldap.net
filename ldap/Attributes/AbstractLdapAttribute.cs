@@ -8,7 +8,7 @@ namespace zivillian.ldap.Attributes
     public abstract class AbstractLdapAttribute: LdapAttribute
     {
         protected AbstractLdapAttribute(ReadOnlySpan<char> type) 
-            : base(type, new ReadOnlyMemory<byte>[0])
+            : base(type, Array.Empty<ReadOnlyMemory<byte>>())
         {
         }
 
@@ -95,7 +95,7 @@ namespace zivillian.ldap.Attributes
             Entries = new List<T>();
         }
 
-        public override ReadOnlyMemory<byte>[] Values
+        public override IReadOnlyList<ReadOnlyMemory<byte>> Values
         {
             get
             {

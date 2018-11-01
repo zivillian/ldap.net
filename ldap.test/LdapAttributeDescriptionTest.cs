@@ -20,7 +20,7 @@ namespace zivillian.ldap.test
             var descr = "cn;lang-de;lang-en";
             var parsed = new LdapAttributeDescription(descr);
             Assert.Equal("cn", parsed.Oid);
-            Assert.Equal(2, parsed.Options.Length);
+            Assert.Equal(2, parsed.Options.Count);
             Assert.Equal("lang-de", parsed.Options[0]);
             Assert.Equal("lang-en", parsed.Options[1]);
         }

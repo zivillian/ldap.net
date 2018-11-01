@@ -4,7 +4,7 @@ namespace zivillian.ldap.Attributes
 {
     public class SupportedExtensionAttribute : OidSyntaxLdapAttribute
     {
-        private static readonly string _name = "supportedExtension";
+        private const string _name = "supportedExtension";
 
         public SupportedExtensionAttribute()
             : base(_name)

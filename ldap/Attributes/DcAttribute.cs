@@ -2,7 +2,7 @@
 {
     public class DcAttribute : IA5StringSyntaxLdapAttribute
     {
-        private static readonly string _name = "dc";
+        private const string _name = "dc";
 
         public DcAttribute()
             :base(_name)

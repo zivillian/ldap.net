@@ -4,7 +4,7 @@ namespace zivillian.ldap.Attributes
 {
     public class NamingContextsAttribute : AbstractLdapAttribute<LdapDistinguishedName>
     {
-        private static readonly string _name = "namingContexts";
+        private const string _name = "namingContexts";
 
         public NamingContextsAttribute() : base(_name)
         {

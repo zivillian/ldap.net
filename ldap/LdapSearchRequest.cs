@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using zivillian.ldap.Asn1;
 
 namespace zivillian.ldap
@@ -19,7 +20,7 @@ namespace zivillian.ldap
 
         public LdapFilter Filter { get; }
 
-        public LdapAttributeSelection[] Attributes { get; }
+        public IReadOnlyList<LdapAttributeSelection> Attributes { get; }
 
         internal LdapSearchRequest(Asn1LdapMessage message)
             : base(message)
@@ -40,14 +41,18 @@ namespace zivillian.ldap
                 throw new LdapProtocolException("invalid timeLimit");
             TypesOnly = search.TypesOnly;
             Filter = LdapFilter.Create(search.Filter);
-            Attributes = new LdapAttributeSelection[0];
             if (search.Attributes.Length > 0)
             {
-                Attributes = new LdapAttributeSelection[search.Attributes.Length];
+                var attributes = new LdapAttributeSelection[search.Attributes.Length];
                 for (int i = 0; i < search.Attributes.Length; i++)
                 {
-                    Attributes[i] = new LdapAttributeSelection(search.Attributes[i].Span);
+                    attributes[i] = new LdapAttributeSelection(search.Attributes[i].Span);
                 }
+                Attributes = attributes;
+            }
+            else
+            {
+                Attributes = Array.Empty<LdapAttributeSelection>();
             }
         }
 
@@ -63,11 +68,16 @@ namespace zivillian.ldap
             Filter = LdapFilter.Parse(filter);
             if (attributes != null && attributes.Length > 0)
             {
-                Attributes = new LdapAttributeSelection[attributes.Length];
+                var ldapAttributes = new LdapAttributeSelection[attributes.Length];
                 for (int i = 0; i < attributes.Length; i++)
                 {
-                    Attributes[i] = new LdapAttributeSelection(attributes[i]);
+                    ldapAttributes[i] = new LdapAttributeSelection(attributes[i]);
                 }
+                Attributes = ldapAttributes;
+            }
+            else
+            {
+                Attributes = Array.Empty<LdapAttributeSelection>();
             }
             TypesOnly = attributesOnly;
             TimeLimit = timeout;
@@ -81,21 +91,27 @@ namespace zivillian.ldap
                 BaseObject =  BaseObject.GetBytes(),
                 Scope = Scope,
                 DerefAliases = DerefAliases,
-                SizeLimit = SizeLimit,
                 TimeLimit = (int) TimeLimit.TotalSeconds,
                 TypesOnly = TypesOnly,
                 Filter = Filter.GetAsn(),
-                Attributes = new ReadOnlyMemory<byte>[0]
             };
+
             if (SizeLimit == Int32.MaxValue)
                 op.SearchRequest.SizeLimit = 0;
-            if (Attributes != null && Attributes.Length > 0)
+            else
+                op.SearchRequest.SizeLimit = SizeLimit;
+            
+            if (Attributes != null && Attributes.Count > 0)
             {
-                var attr = op.SearchRequest.Attributes = new ReadOnlyMemory<byte>[Attributes.Length];
-                for (int i = 0; i < Attributes.Length; i++)
+                var attr = op.SearchRequest.Attributes = new ReadOnlyMemory<byte>[Attributes.Count];
+                for (int i = 0; i < Attributes.Count; i++)
                 {
                     attr[i] = Attributes[i].GetBytes();
                 }
+            }
+            else
+            {
+                op.SearchRequest.Attributes = Array.Empty<ReadOnlyMemory<byte>>();
             }
         }
 
@@ -106,12 +122,12 @@ namespace zivillian.ldap
 
         public LdapSearchResultDone Done(ResultCode resultCode = ResultCode.Success)
         {
-            return Done(resultCode, new string[0]);
+            return Done(resultCode, Array.Empty<string>());
         }
 
         public LdapSearchResultDone Done(ResultCode resultCode, string[] referrals)
         {
-            return new LdapSearchResultDone(Id, resultCode, new LdapDistinguishedName(String.Empty), String.Empty, referrals, new LdapControl[0] );
+            return new LdapSearchResultDone(Id, resultCode, new LdapDistinguishedName(String.Empty), String.Empty, referrals, Array.Empty<LdapControl>());
         }
     }
 }

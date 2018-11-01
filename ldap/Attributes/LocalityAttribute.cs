@@ -2,8 +2,8 @@
 {
     public class LocalityAttribute : NameAttribute
     {
-        private static readonly string _name = "l";
-        
+        private const string _name = "l";
+
         public LocalityAttribute()
         :base(_name)
         {

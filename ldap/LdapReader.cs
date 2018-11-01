@@ -1,10 +1,9 @@
 ﻿using System;
-using System.Security.Cryptography.Asn1;
 using zivillian.ldap.Asn1;
 
 namespace zivillian.ldap
 {
-    public class LdapReader
+    public static class LdapReader
     {
         public static LdapRequestMessage ReadMessage(ReadOnlyMemory<byte> source)
         {

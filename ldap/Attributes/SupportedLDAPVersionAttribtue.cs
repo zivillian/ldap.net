@@ -1,11 +1,12 @@
 ﻿using System;
+using System.Globalization;
 using System.Text;
 
 namespace zivillian.ldap.Attributes
 {
     public class SupportedLDAPVersionAttribute : AbstractLdapAttribute<long>
     {
-        private static readonly string _name = "supportedLDAPVersion";
+        private const string _name = "supportedLDAPVersion";
 
         public SupportedLDAPVersionAttribute()
             : base(_name)
@@ -20,7 +21,7 @@ namespace zivillian.ldap.Attributes
 
         protected override ReadOnlyMemory<byte> Serialize(long entry)
         {
-            return entry.ToString().LdapString();
+            return entry.ToString(CultureInfo.InvariantCulture).LdapString();
         }
     }
 }

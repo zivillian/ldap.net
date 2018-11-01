@@ -327,7 +327,7 @@ namespace zivillian.ldap
             {
                 builder.Append(data.Slice(0, index));
                 builder.Append('\\');
-                builder.Append(((int) data[index]).ToString("x2"));
+                builder.Append(((int) data[index]).ToString("x2", CultureInfo.InvariantCulture));
                 data = data.Slice(index + 1);
             }
             if (!data.IsEmpty)

@@ -4,7 +4,7 @@ namespace zivillian.ldap.Attributes
 {
     public class SupportedControlAttribute : OidSyntaxLdapAttribute
     {
-        private static readonly string _name = "supportedControl";
+        private const string _name = "supportedControl";
 
         public SupportedControlAttribute()
             : base(_name)

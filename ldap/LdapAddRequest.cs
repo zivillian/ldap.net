@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using zivillian.ldap.Asn1;
 
 namespace zivillian.ldap
@@ -7,7 +8,7 @@ namespace zivillian.ldap
     {
         public LdapDistinguishedName Entry { get; }
 
-        public LdapAttribute[] Attributes { get; }
+        public IReadOnlyList<LdapAttribute> Attributes { get; }
 
         internal LdapAddRequest(Asn1LdapMessage message)
             : base(message)
@@ -16,19 +17,20 @@ namespace zivillian.ldap
             Entry = new LdapDistinguishedName(add.Entry.Span);
             if (add.Attributes.Length == 0)
                 throw new ArgumentException("at least one attribute required");
-            Attributes = new LdapAttribute[add.Attributes.Length];
+            var attributes = new LdapAttribute[add.Attributes.Length];
             for (int i = 0; i < add.Attributes.Length; i++)
             {
-                Attributes[i] = new LdapAttribute(add.Attributes[i]);
+                attributes[i] = new LdapAttribute(add.Attributes[i]);
             }
+            Attributes = attributes;
         }
 
         internal override void SetProtocolOp(Asn1ProtocolOp op)
         {
-            var attributes = new Asn1PartialAttribute[Attributes.Length];
+            var attributes = new Asn1PartialAttribute[Attributes.Count];
             if (attributes.Length == 0)
                 throw new ArgumentException("at least one attribute required");
-            for (int i = 0; i < Attributes.Length; i++)
+            for (int i = 0; i < Attributes.Count; i++)
             {
                 attributes[i] = Attributes[i].GetAsn();
             }

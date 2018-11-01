@@ -2,7 +2,7 @@
 {
     public class DescriptionAttribute : DirectoryStringSyntaxLdapAttribute
     {
-        private static readonly string _name = "description";
+        private const string _name = "description";
 
         public DescriptionAttribute()
             : base(_name)

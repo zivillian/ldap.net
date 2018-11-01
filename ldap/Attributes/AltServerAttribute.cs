@@ -5,7 +5,7 @@ namespace zivillian.ldap.Attributes
 {
     public class AltServerAttribute:AbstractLdapAttribute<Uri>
     {
-        private static readonly string _name = "altServer";
+        private const string _name = "altServer";
 
         public AltServerAttribute() : base(_name)
         {

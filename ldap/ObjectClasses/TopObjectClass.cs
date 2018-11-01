@@ -17,13 +17,13 @@ namespace zivillian.ldap.ObjectClasses
 
         public ObjectClassAttribute ObjectClass { get; }
 
-        public LdapAttribute[] GetAttributes(LdapAttributeSelection[] selection, bool typesOnly)
+        public LdapAttribute[] GetAttributes(IReadOnlyList<LdapAttributeSelection> selection, bool typesOnly)
         {
-            if (selection.Length == 1 && selection[0].NoAttributes)
-                return new LdapAttribute[0];
+            if (selection.Count == 1 && selection[0].NoAttributes)
+                return Array.Empty<LdapAttribute>();
 
             var attributes = GetAttributes();
-            if (selection.Length == 0)
+            if (selection.Count == 0)
             {
                 attributes = attributes.Where(x => x.Usage == LdapAttributeTypeUsage.UserApplication);
             }
@@ -47,9 +47,9 @@ namespace zivillian.ldap.ObjectClasses
             }
             if (typesOnly)
             {
-                return attributes.Select(x => new LdapAttribute(x.Type, new ReadOnlyMemory<byte>[0])).ToArray();
+                return attributes.Select(x => new LdapAttribute(x.Type, Array.Empty<ReadOnlyMemory<byte>>())).ToArray();
             }
-            return attributes.ToArray();
+            return attributes.ToArray<LdapAttribute>();
         }
 
         public IEnumerable<AbstractLdapAttribute> GetAttributes()

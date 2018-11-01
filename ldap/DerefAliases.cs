@@ -1,5 +1,8 @@
-﻿namespace zivillian.ldap
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace zivillian.ldap
 {
+    [SuppressMessage("Naming", "CA1717:Only FlagsAttribute enums should have plural names", Justification = "rfc4511 section 4.5.1")]
     public enum DerefAliases
     {
         /*

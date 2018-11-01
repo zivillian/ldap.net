@@ -4,7 +4,7 @@ namespace zivillian.ldap.Attributes
 {
     public class NameAttribute : DirectoryStringSyntaxLdapAttribute
     {
-        private static readonly string _name = "name";
+        private const string _name = "name";
 
         protected NameAttribute(string nameOrOid)
             :base(nameOrOid)

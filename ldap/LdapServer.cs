@@ -46,13 +46,13 @@ namespace zivillian.ldap
                 var accept = _listener.AcceptTcpClientAsync();
                 while (running)
                 {
-                    await Task.WhenAny(_clients.Concat(new []{accept, cancellationTask}));
+                    await Task.WhenAny(_clients.Concat(new []{accept, cancellationTask})).ConfigureAwait(false);
                     if (accept.IsCompleted)
                     {
                         TcpClient client;
                         try
                         {
-                            client = await accept;
+                            client = await accept.ConfigureAwait(false);
                             _clients.Add(HandleClient(client, combined.Token));
                         }
                         catch (SocketException)
@@ -67,7 +67,7 @@ namespace zivillian.ldap
                         var finished = _clients.Where(x => x.IsCompleted).ToArray();
                         foreach (var client in finished)
                         {
-                            await client;
+                            await client.ConfigureAwait(false);
                             _clients.Remove(client);
                         }
                     }
@@ -102,7 +102,7 @@ namespace zivillian.ldap
 
         private async Task OnRequestAsync(LdapRequestMessage message, LdapClientConnection connection)
         {
-            if (!await connection.TryAddPendingAsync(message))
+            if (!await connection.TryAddPendingAsync(message).ConfigureAwait(false))
                 return;
             try
             {
@@ -117,13 +117,13 @@ namespace zivillian.ldap
                 {
                     try
                     {
-                        await connection.BeginBindAsync();
-                        var response = await BindRequestAsync(bind, connection);
-                        await WriteAsync(response, connection);
+                        await connection.BeginBindAsync().ConfigureAwait(false);
+                        var response = await BindRequestAsync(bind, connection).ConfigureAwait(false);
+                        await WriteAsync(response, connection).ConfigureAwait(false);
                     }
                     catch(Exception ex)
                     {
-                        await WriteAsync(bind.Response(ResultCode.Other, ex.Message), connection);
+                        await WriteAsync(bind.Response(ResultCode.Other, ex.Message), connection).ConfigureAwait(false);
                     }
                     finally
                     {
@@ -136,7 +136,7 @@ namespace zivillian.ldap
                 }
                 else if (message is LdapSearchRequest search)
                 {
-                    await SearchRequestAsync(search, connection);
+                    await SearchRequestAsync(search, connection).ConfigureAwait(false);
                 }
                 else
                 {
@@ -159,7 +159,7 @@ namespace zivillian.ldap
             {
                 return Task.FromResult(request.Response(ResultCode.UnavailableCriticalExtension, String.Empty));
             }
-            if (request.Simple.HasValue && request.Simple.Value.Length == 0 && request.Name.RDNs.Length > 0)
+            if (request.Simple.HasValue && request.Simple.Value.Length == 0 && request.Name.RDNs.Count > 0)
             {
                 //https://tools.ietf.org/html/rfc4513#section-5.1.2
                 return Task.FromResult(request.Response(ResultCode.UnwillingToPerform, "Unauthenticated Bind"));
@@ -167,7 +167,7 @@ namespace zivillian.ldap
             return OnBindAsync(request, connection);
         }
 
-        private void UnbindRequest(LdapClientConnection connection)
+        private static void UnbindRequest(LdapClientConnection connection)
         {
             connection.CloseConnection();
         }
@@ -179,12 +179,12 @@ namespace zivillian.ldap
                 using(var cts = new CancellationTokenSource(request.TimeLimit))
                 using (var combined = CancellationTokenSource.CreateLinkedTokenSource(connection.CancellationToken, cts.Token))
                 {
-                    await SearchRequestAsync(request, connection, combined.Token);
+                    await SearchRequestAsync(request, connection, combined.Token).ConfigureAwait(false);
                 }
             }
             else
             {
-                await SearchRequestAsync(request, connection, connection.CancellationToken);
+                await SearchRequestAsync(request, connection, connection.CancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -192,30 +192,24 @@ namespace zivillian.ldap
         {
             try
             {
-                if (request.BaseObject.RDNs.Length == 0 &&
+                if (request.BaseObject.RDNs.Count == 0 &&
                     request.Scope == SearchScope.BaseObject &&
                     request.Filter is LdapPresentFilter filter &&
                     (filter.Attribute.Oid.Equals("objectClass", StringComparison.OrdinalIgnoreCase) || filter.Attribute.Oid == "2.5.4.0"))
                 {
-                    var selected = request.Attributes
-                        .Where(x => !x.AllUserAttributes)
-                        .Where(x => !x.NoAttributes)
-                        .Select(x => x.Selector)
-                        .ToList();
-
                     IList<LdapAttribute> attributes = _rootDse.GetAttributes(request.Attributes, request.TypesOnly).ToList();
-                    attributes = await OnGetRootDSEAsync(attributes, connection, cancellationToken);
-                    var entry = request.Result(new LdapDistinguishedName(String.Empty), attributes.ToArray(), new LdapControl[0]);
-                    await WriteAsync(entry, connection);
-                    await WriteAsync(request.Done(), connection);
+                    attributes = await OnGetRootDSEAsync(attributes, connection, cancellationToken).ConfigureAwait(false);
+                    var entry = request.Result(new LdapDistinguishedName(String.Empty), attributes.ToArray(), Array.Empty<LdapControl>());
+                    await WriteAsync(entry, connection).ConfigureAwait(false);
+                    await WriteAsync(request.Done(), connection).ConfigureAwait(false);
                 }
                 else
                 {
-                    var results = await OnSearchAsync(request, connection, cancellationToken);
+                    var results = await OnSearchAsync(request, connection, cancellationToken).ConfigureAwait(false);
                     bool done = false;
                     foreach (var response in results)
                     {
-                        await WriteAsync(response, connection);
+                        await WriteAsync(response, connection).ConfigureAwait(false);
                         if (response is LdapSearchResultDone)
                         {
                             done = true;
@@ -224,14 +218,14 @@ namespace zivillian.ldap
                     }
                     if (!done)
                     {
-                        await WriteAsync(request.Done(), connection);
+                        await WriteAsync(request.Done(), connection).ConfigureAwait(false);
                     }
                 }
             }
             catch (OperationCanceledException)
             {
                 var done = request.Done(ResultCode.TimeLimitExceeded);
-                await WriteAsync(done, connection);
+                await WriteAsync(done, connection).ConfigureAwait(false);
             }
         }
 
@@ -247,7 +241,7 @@ namespace zivillian.ldap
                     {
                         var writing = FillPipeAsync(connection);
                         var reading = ReadPipeAsync(connection);
-                        await Task.WhenAny(reading, writing);
+                        await Task.WhenAny(reading, writing).ConfigureAwait(false);
                     }
                     finally
                     {
@@ -258,7 +252,7 @@ namespace zivillian.ldap
             }
         }
 
-        private async Task FillPipeAsync(LdapClientConnection connection)
+        private static async Task FillPipeAsync(LdapClientConnection connection)
         {
             try
             {
@@ -302,20 +296,20 @@ namespace zivillian.ldap
                         tasks.Add(readTask);
                         while (!read.IsCompleted)
                         {
-                            await Task.WhenAny(tasks);
+                            await Task.WhenAny(tasks).ConfigureAwait(false);
                             if (!read.IsCompleted)
                             {
                                 //remove finished messages
                                 var finished = tasks.Where(x => x.IsCompleted).ToList();
                                 foreach (var task in finished)
                                 {
-                                    await task;
+                                    await task.ConfigureAwait(false);
                                     tasks.Remove(task);
                                 }
                             }
                         }
                         tasks.Remove(readTask);
-                        result = await readTask;
+                        result = await readTask.ConfigureAwait(false);
                     }
                     else
                     {
@@ -370,14 +364,14 @@ namespace zivillian.ldap
             }
         }
 
-        private async Task WriteAsync(LdapRequestMessage message, LdapClientConnection connection)
+        private static async Task WriteAsync(LdapRequestMessage message, LdapClientConnection connection)
         {
             var asn = message.GetAsn();
             using (var asnwriter = new AsnWriter(AsnEncodingRules.BER))
             {
                 asn.Encode(asnwriter);
                 var bytes = asnwriter.Encode();
-                await connection.WriteAsync(bytes);
+                await connection.WriteAsync(bytes).ConfigureAwait(false);
             }
         }
 
@@ -428,7 +422,7 @@ namespace zivillian.ldap
             return LdapRequestMessage.Create(message);
         }
 
-        private bool CriticalControlsSupported(LdapControl[] controls)
+        private bool CriticalControlsSupported(IEnumerable<LdapControl> controls)
         {
             foreach (var control in controls)
             {

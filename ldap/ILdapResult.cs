@@ -1,4 +1,7 @@
-﻿namespace zivillian.ldap
+﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+
+namespace zivillian.ldap
 {
     public interface ILdapResult
     {
@@ -8,7 +11,7 @@
 
         string DiagnosticMessage { get; }
         
-        string[] Referrals { get; }
+        IReadOnlyList<string> Referrals { get; }
 
     }
 }

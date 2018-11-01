@@ -2,7 +2,7 @@
 {
     public class TelephoneNumberAttribute : PrintableStringLdapAttribute
     {
-        private static readonly string _name = "telephoneNumber";
+        private const string _name = "telephoneNumber";
 
         public TelephoneNumberAttribute()
             : base(_name)

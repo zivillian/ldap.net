@@ -15,7 +15,7 @@ namespace zivillian.ldap
         {
         }
 
-        protected override string Operator { get; } = "<=";
+        protected override string CompareOperator { get; } = "<=";
 
         internal override Asn1Filter GetAsn()
         {

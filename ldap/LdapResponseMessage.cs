@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using zivillian.ldap.Asn1;
 
 namespace zivillian.ldap
@@ -11,7 +12,7 @@ namespace zivillian.ldap
 
         public string DiagnosticMessage { get; internal set; }
         
-        public string[] Referrals { get; internal set; }
+        public IReadOnlyList<string> Referrals { get; internal set; }
 
         internal LdapResponseMessage(Asn1LDAPResult result, Asn1LdapMessage message)
             : base(message)

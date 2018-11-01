@@ -2,7 +2,7 @@
 {
     public class SnAttribute : NameAttribute
     {
-        private static readonly string _name = "sn";
+        private const string _name = "sn";
 
         public SnAttribute()
             :base(_name)

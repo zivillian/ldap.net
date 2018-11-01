@@ -12,7 +12,7 @@ namespace zivillian.ldap
 
         public ReadOnlyMemory<byte>? EndsWith { get; }
 
-        public ReadOnlyMemory<byte>[] Contains { get; }
+        public IReadOnlyList<ReadOnlyMemory<byte>> Contains { get; }
 
         internal LdapSubstringFilter(Asn1SubstringFilter filter)
         {
@@ -33,7 +33,7 @@ namespace zivillian.ldap
                     contains.Add(substring.Any.Value);
                 }
             }
-            Contains = contains.ToArray();
+            Contains = contains;
         }
 
         internal LdapSubstringFilter(ReadOnlySpan<char> description, ReadOnlyMemory<byte>? initial, ReadOnlyMemory<byte>[] any, ReadOnlyMemory<byte>? final)
@@ -77,10 +77,10 @@ namespace zivillian.ldap
             var final = String.Empty;
             if (EndsWith.HasValue)
                 final = EndsWith.Value.Span.EscapeAssertionValue();
-            if (Contains.Length == 0)
+            if (Contains.Count == 0)
                 return $"({Attribute}={initial}*{final})";
-            var any = new string[Contains.Length];
-            for (int i = 0; i < Contains.Length; i++)
+            var any = new string[Contains.Count];
+            for (int i = 0; i < Contains.Count; i++)
             {
                 any[i] = Contains[i].Span.EscapeAssertionValue();
             }

@@ -2,8 +2,8 @@
 {
     public class OAttribute : NameAttribute
     {
-        private static readonly string _name = "o";
-        
+        private const string _name = "o";
+
         public OAttribute()
             :base(_name)
         {
