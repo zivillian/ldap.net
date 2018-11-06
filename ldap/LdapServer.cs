@@ -109,11 +109,10 @@ namespace zivillian.ldap
 
                 if (message is LdapAbandonRequest abandon)
                 {
-
                     if (CriticalControlsSupported(abandon.Controls))
                         connection.AbandonRequest(abandon.MessageId);
                 }
-                if (message is LdapBindRequest bind)
+                else if (message is LdapBindRequest bind)
                 {
                     try
                     {

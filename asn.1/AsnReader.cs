@@ -405,7 +405,7 @@ namespace System.Security.Cryptography.Asn1
             ReadOnlySpan<byte> contentSpan = contents.Span;
 
             // T-REC-X.690-201508 sec 8.3.2
-            if (contents.Length > 1)
+            if (contents.Length > 1 && _ruleSet != AsnEncodingRules.BERFlexible)
             {
                 ushort bigEndianValue = (ushort)(contentSpan[0] << 8 | contentSpan[1]);
                 const ushort RedundancyMask = 0b1111_1111_1000_0000;
@@ -2975,7 +2975,8 @@ namespace System.Security.Cryptography.Asn1
         {
             if (ruleSet != AsnEncodingRules.BER &&
                 ruleSet != AsnEncodingRules.CER &&
-                ruleSet != AsnEncodingRules.DER)
+                ruleSet != AsnEncodingRules.DER &&
+                ruleSet != AsnEncodingRules.BERFlexible)
             {
                 throw new ArgumentOutOfRangeException(nameof(ruleSet));
             }

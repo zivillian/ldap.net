@@ -12,7 +12,7 @@ namespace zivillian.ldap.Asn1
         {
             try
             {
-                return Asn1LdapMessage.Decode(data, AsnEncodingRules.BER);
+                return Asn1LdapMessage.Decode(data, AsnEncodingRules.BERFlexible);
             }
             catch (CryptographicException ex)
             {
