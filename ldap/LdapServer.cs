@@ -3,6 +3,7 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Linq;
+using System.Net;
 using System.Net.Sockets;
 using System.Security.Cryptography.Asn1;
 using System.Threading;
@@ -22,8 +23,18 @@ namespace zivillian.ldap
         private readonly HashSet<string> _controls;
 
         protected LdapServer(ushort port, TopObjectClass rootDse)
+            : this(TcpListener.Create(port), rootDse)
         {
-            _listener = TcpListener.Create(port);
+        }
+
+        protected LdapServer(IPEndPoint endPoint, TopObjectClass rootDse)
+            : this(new TcpListener(endPoint), rootDse)
+        {
+        }
+
+        private LdapServer(TcpListener listener, TopObjectClass rootDse)
+        {
+            _listener = listener;
             _clients = new List<Task>();
             _cts = new CancellationTokenSource();
             _rootDse = rootDse;
