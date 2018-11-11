@@ -36,7 +36,7 @@ namespace zivillian.ldap
             }
         }
 
-        internal LdapBindRequest(int messageId, string dn, string password, LdapControl[] controls)
+        public LdapBindRequest(int messageId, string dn, string password, LdapControl[] controls)
             : base(messageId, controls)
         {
             Version = 3;

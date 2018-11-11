@@ -56,7 +56,7 @@ namespace zivillian.ldap
             }
         }
 
-        internal LdapSearchRequest(int messageId, string baseDn, SearchScope scope, string filter, string[] attributes, bool attributesOnly, TimeSpan timeout, int sizeLimit, LdapControl[] controls)
+        public LdapSearchRequest(int messageId, string baseDn, SearchScope scope, string filter, string[] attributes, bool attributesOnly, TimeSpan timeout, int sizeLimit, LdapControl[] controls)
             : base(messageId, controls)
         {
             if (timeout < TimeSpan.Zero)
