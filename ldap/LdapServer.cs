@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.IO;
 using System.IO.Pipelines;
 using System.Linq;
 using System.Net;
+using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Cryptography.Asn1;
 using System.Threading;
@@ -21,6 +23,8 @@ namespace zivillian.ldap
         private readonly List<Task> _clients;
         private readonly TopObjectClass _rootDse;
         private readonly HashSet<string> _controls;
+        private SslServerAuthenticationOptions _sslOptions;
+        private TcpListener _sslListener;
 
         protected LdapServer(ushort port, TopObjectClass rootDse)
             : this(TcpListener.Create(port), rootDse)
@@ -46,6 +50,18 @@ namespace zivillian.ldap
         
         public long MaxMessageSize { get; set; } = 1024 * 1024 * 1024;
 
+        public void UseSsl(SslServerAuthenticationOptions sslOptions)
+        {
+            UseSsl(636, sslOptions);
+        }
+
+        public void UseSsl(ushort port, SslServerAuthenticationOptions sslOptions)
+        {
+            _sslOptions = sslOptions;
+            var endPoint = (IPEndPoint) _listener.LocalEndpoint;
+            _sslListener = new TcpListener(endPoint.Address, port);
+        }
+
         public async Task RunAsync(CancellationToken cancellationToken)
         {
             _listener.Start();
@@ -55,22 +71,44 @@ namespace zivillian.ldap
                 cancellationToken.Register(() => running = false);
                 var cancellationTask = Task.Delay(Timeout.Infinite, combined.Token);
                 var accept = _listener.AcceptTcpClientAsync();
+                Task<TcpClient> sslAccept;
+                if (_sslOptions != null)
+                {
+                    _sslListener.Start();
+                    sslAccept = _sslListener.AcceptTcpClientAsync();
+                }
+                else
+                {
+                    sslAccept = Task.Delay(-1, combined.Token).ContinueWith(x => (TcpClient) null, combined.Token,
+                        TaskContinuationOptions.LongRunning, TaskScheduler.Current);
+                }
                 while (running)
                 {
-                    await Task.WhenAny(_clients.Concat(new []{accept, cancellationTask})).ConfigureAwait(false);
-                    if (accept.IsCompleted)
+                    await Task.WhenAny(_clients.Concat(new []{accept, sslAccept, cancellationTask})).ConfigureAwait(false);
+                    if (accept.IsCompleted || sslAccept.IsCompleted)
                     {
-                        TcpClient client;
                         try
                         {
-                            client = await accept.ConfigureAwait(false);
-                            _clients.Add(HandleClient(client, combined.Token));
+                            TcpClient client;
+                            bool ssl;
+                            if (accept.IsCompleted)
+                            {
+                                client = await accept.ConfigureAwait(false);
+                                accept = _listener.AcceptTcpClientAsync();
+                                ssl = false;
+                            }
+                            else
+                            {
+                                client = await sslAccept.ConfigureAwait(false);
+                                sslAccept = _sslListener.AcceptTcpClientAsync();
+                                ssl = true;
+                            }
+                            _clients.Add(HandleClient(client, ssl, combined.Token));
                         }
                         catch (SocketException)
                         {
-                            //client may hav disconnected
+                            //client may have disconnected
                         }
-                        accept = _listener.AcceptTcpClientAsync();
                     }
                     else
                     {
@@ -239,13 +277,20 @@ namespace zivillian.ldap
             }
         }
 
-        private async Task HandleClient(TcpClient client, CancellationToken cancellationToken)
+        private async Task HandleClient(TcpClient client, bool useSsl, CancellationToken cancellationToken)
         {
             using(var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken))
             using (client)
             {
                 var pipe = new Pipe(new PipeOptions(pauseWriterThreshold: MaxMessageSize));
-                using (var connection = new LdapClientConnection(client, pipe, cts))
+                Stream stream = client.GetStream();
+                if (useSsl)
+                {
+                    var ssl = new SslStream(stream);
+                    await ssl.AuthenticateAsServerAsync(_sslOptions, cancellationToken).ConfigureAwait(false);
+                    stream = ssl;
+                }
+                using (var connection = new LdapClientConnection(client, stream, pipe, cts))
                 {
                     try
                     {
@@ -266,10 +311,10 @@ namespace zivillian.ldap
         {
             try
             {
-                while (connection.Socket.Connected)
+                while (connection.IsConnected)
                 {
                     var buffer = connection.Writer.GetMemory(1024);
-                    var read = await connection.Socket.ReceiveAsync(buffer, SocketFlags.None, connection.CancellationToken);
+                    var read = await connection.Stream.ReadAsync(buffer, connection.CancellationToken);
                     if (read == 0)
                         break;
                     connection.Writer.Advance(read);
@@ -281,12 +326,12 @@ namespace zivillian.ldap
             }
             catch (OperationCanceledException ex)
             {
-                connection.Socket.Close();
+                connection.Stream.Close();
                 connection.Writer.Complete(ex);
             }
             catch (SocketException ex)
             {
-                connection.Socket?.Close();
+                connection.Stream?.Close();
                 connection.Writer.Complete(ex);
             }
         }
@@ -450,6 +495,7 @@ namespace zivillian.ldap
             if (disposing)
             {
                 _listener.Stop();
+                _sslListener?.Stop();
                 _cts.Cancel();
                 _cts.Dispose();
             }

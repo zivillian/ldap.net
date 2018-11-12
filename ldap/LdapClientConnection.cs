@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.IO;
 using System.IO.Pipelines;
+using System.Net.Security;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,11 +15,14 @@ namespace zivillian.ldap
         private readonly ConcurrentDictionary<int, LdapRequest> _pending;
         private readonly SemaphoreSlim _lock;
         private readonly SemaphoreSlim _bindLock;
+        private readonly TcpClient _client;
+        private readonly Stream _stream;
 
-        public LdapClientConnection(TcpClient client, Pipe pipe, CancellationTokenSource cts)
+        public LdapClientConnection(TcpClient client, Stream stream, Pipe pipe, CancellationTokenSource cts)
         {
             Id = Guid.NewGuid();
-            Client = client;
+            _client = client;
+            _stream = stream;
             Pipe = pipe;
             _cts = cts;
             CancellationToken = _cts.Token;
@@ -27,15 +32,13 @@ namespace zivillian.ldap
         }
 
         public Guid Id { get; }
-
-        public TcpClient Client { get; }
-
+        
         public Pipe Pipe { get; }
 
 
-        public Socket Socket
+        public Stream Stream
         {
-            get { return Client.Client; }
+            get { return _stream; }
         }
 
         public PipeReader Reader
@@ -46,6 +49,11 @@ namespace zivillian.ldap
         public PipeWriter Writer
         {
             get { return Pipe.Writer; }
+        }
+
+        public bool IsConnected
+        {
+            get { return _client.Connected; }
         }
 
         public CancellationToken CancellationToken { get; }
@@ -76,7 +84,7 @@ namespace zivillian.ldap
             try
             {
                 await _lock.WaitAsync(CancellationToken).ConfigureAwait(false);
-                await Socket.SendAsync(data, SocketFlags.None, CancellationToken);
+                await Stream.WriteAsync(data, CancellationToken);
             }
             finally
             {
