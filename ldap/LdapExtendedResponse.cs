@@ -31,6 +31,21 @@ namespace zivillian.ldap
             Value = extended.Value;
         }
 
+        internal LdapExtendedResponse(int id, string name):
+            this(id, ResultCode.Success, String.Empty, Array.Empty<LdapControl>())
+        {
+            Name = name;
+        }
+
+        internal LdapExtendedResponse(int id, ResultCode resultCode, string message, LdapControl[] controls)
+            : base(id, controls)
+        {
+            ResultCode = resultCode;
+            DiagnosticMessage = message;
+            MatchedDN = LdapDistinguishedName.Empty;
+            Referrals = Array.Empty<string>();
+        }
+
         internal override void SetProtocolOp(Asn1ProtocolOp op)
         {
             op.ExtendedResponse = new Asn1ExtendedResponse

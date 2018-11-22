@@ -5,6 +5,8 @@ namespace zivillian.ldap
 {
     public class LdapExtendedRequest : LdapRequestMessage
     {
+        public const string StartTLS = "1.3.6.1.4.1.1466.20037";
+
         public string Name { get; }
 
         public ReadOnlyMemory<byte>? Value { get; }
@@ -24,6 +26,16 @@ namespace zivillian.ldap
                 Name = Name.NumericOid(),
                 Value = Value
             };
+        }
+
+        public LdapExtendedResponse NotSupported()
+        {
+            return new LdapExtendedResponse(Id, ResultCode.ProtocolError, String.Empty, Array.Empty<LdapControl>());
+        }
+
+        public LdapExtendedResponse StartTlsResponse()
+        {
+            return new LdapExtendedResponse(Id, StartTLS);
         }
     }
 }

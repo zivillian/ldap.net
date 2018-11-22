@@ -15,20 +15,22 @@ namespace zivillian.ldap
         private readonly ConcurrentDictionary<int, LdapRequest> _pending;
         private readonly SemaphoreSlim _lock;
         private readonly SemaphoreSlim _bindLock;
+        private readonly SemaphoreSlim _readLock;
         private readonly TcpClient _client;
-        private readonly Stream _stream;
+        private Stream _stream;
 
-        public LdapClientConnection(TcpClient client, Stream stream, Pipe pipe, CancellationTokenSource cts)
+        public LdapClientConnection(TcpClient client, Pipe pipe, CancellationTokenSource cts)
         {
             Id = Guid.NewGuid();
             _client = client;
-            _stream = stream;
+            _stream = client?.GetStream();
             Pipe = pipe;
             _cts = cts;
             CancellationToken = _cts.Token;
             _pending = new ConcurrentDictionary<int, LdapRequest>();
             _lock = new SemaphoreSlim(1, 1);
             _bindLock = new SemaphoreSlim(1, 1);
+            _readLock = new SemaphoreSlim(1, 1);
         }
 
         public Guid Id { get; }
@@ -56,7 +58,49 @@ namespace zivillian.ldap
             get { return _client.Connected; }
         }
 
+        public bool HasSSL { get; private set; }
+
         public CancellationToken CancellationToken { get; }
+
+        internal async Task UseSSLAsync(SslServerAuthenticationOptions sslOptions)
+        {
+            if (!await BeginStartSSL().ConfigureAwait(false))
+                return;
+            try
+            {
+                await StartSSLAsync(sslOptions).ConfigureAwait(false);
+            }
+            finally
+            {
+                FinishStartSSL();
+            }
+        }
+
+        internal async Task<bool> BeginStartSSL()
+        {
+            if (HasSSL)
+                return false;
+            await _bindLock.WaitAsync(CancellationToken).ConfigureAwait(false);
+            if (_pending.Count > 1)
+            {
+                _bindLock.Release();
+                return false;
+            }
+            return true;
+        }
+
+        internal async Task StartSSLAsync(SslServerAuthenticationOptions sslOptions)
+        {
+            var ssl = new SslStream(_stream);
+            await ssl.AuthenticateAsServerAsync(sslOptions, CancellationToken).ConfigureAwait(false);
+            _stream = ssl;
+            HasSSL = true;
+        }
+
+        internal void FinishStartSSL()
+        {
+            _bindLock.Release();
+        }
 
         internal async Task<bool> TryAddPendingAsync(LdapRequestMessage message)
         {
@@ -90,6 +134,17 @@ namespace zivillian.ldap
             {
                 _lock.Release();
             }
+        }
+
+        internal void ContinueRead()
+        {
+            _readLock.Release();
+        }
+
+        internal async Task<int> ReadAsync(Memory<byte> buffer)
+        {
+            await _readLock.WaitAsync(CancellationToken).ConfigureAwait(false);
+            return await Stream.ReadAsync(buffer, CancellationToken).ConfigureAwait(false);
         }
 
         internal void AbandonRequest(int messageId)
@@ -134,6 +189,7 @@ namespace zivillian.ldap
                 {
                     request.Dispose();
                 }
+                _stream.Dispose();
             }
         }
 
