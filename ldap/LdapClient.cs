@@ -237,9 +237,9 @@ namespace zivillian.ldap
 
             var asn = request.GetAsn();
             var stream = _client.GetStream();
+            await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
-                await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
                 ReadOnlyMemory<byte> bytes;
                 using (var writer = new AsnWriter(AsnEncodingRules.BER))
                 {

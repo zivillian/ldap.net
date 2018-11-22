@@ -6,6 +6,8 @@ namespace zivillian.ldap
     //RFC 4514
     public class LdapDistinguishedName
     {
+        public static readonly LdapDistinguishedName Empty = new LdapDistinguishedName(String.Empty);
+
         public IReadOnlyList<LdapRelativeDistinguishedName> RDNs { get; }
 
         public LdapDistinguishedName(string type, string value, LdapDistinguishedName parent)

@@ -60,9 +60,9 @@ namespace zivillian.ldap
 
         internal async Task<bool> TryAddPendingAsync(LdapRequestMessage message)
         {
+            await _bindLock.WaitAsync(CancellationToken).ConfigureAwait(false);
             try
             {
-                await _bindLock.WaitAsync(CancellationToken).ConfigureAwait(false);
                 return _pending.TryAdd(message.Id, new LdapRequest(message, CancellationToken));
             }
             finally
@@ -81,9 +81,9 @@ namespace zivillian.ldap
 
         internal async Task WriteAsync(byte[] data)
         {
+            await _lock.WaitAsync(CancellationToken).ConfigureAwait(false);
             try
             {
-                await _lock.WaitAsync(CancellationToken).ConfigureAwait(false);
                 await Stream.WriteAsync(data, CancellationToken);
             }
             finally
@@ -121,7 +121,8 @@ namespace zivillian.ldap
 
         internal void CloseConnection()
         {
-            _cts.Cancel();
+            if (!_cts.IsCancellationRequested)
+                _cts.Cancel();
         }
 
         protected virtual void Dispose(bool disposing)

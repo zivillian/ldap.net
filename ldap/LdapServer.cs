@@ -247,7 +247,7 @@ namespace zivillian.ldap
                 {
                     IList<LdapAttribute> attributes = _rootDse.GetAttributes(request.Attributes, request.TypesOnly).ToList();
                     attributes = await OnGetRootDSEAsync(attributes, connection, cancellationToken).ConfigureAwait(false);
-                    var entry = request.Result(new LdapDistinguishedName(String.Empty), attributes.ToArray(), Array.Empty<LdapControl>());
+                    var entry = request.Result(LdapDistinguishedName.Empty, attributes.ToArray(), Array.Empty<LdapControl>());
                     await WriteAsync(entry, connection).ConfigureAwait(false);
                     await WriteAsync(request.Done(), connection).ConfigureAwait(false);
                 }

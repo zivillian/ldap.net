@@ -127,7 +127,7 @@ namespace zivillian.ldap
 
         public LdapSearchResultDone Done(ResultCode resultCode, string[] referrals)
         {
-            return new LdapSearchResultDone(Id, resultCode, new LdapDistinguishedName(String.Empty), String.Empty, referrals, Array.Empty<LdapControl>());
+            return new LdapSearchResultDone(Id, resultCode, LdapDistinguishedName.Empty, String.Empty, referrals, Array.Empty<LdapControl>());
         }
     }
 }
