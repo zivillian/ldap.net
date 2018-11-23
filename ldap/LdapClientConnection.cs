@@ -4,6 +4,7 @@ using System.IO;
 using System.IO.Pipelines;
 using System.Net.Security;
 using System.Net.Sockets;
+using System.Security.Claims;
 using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
@@ -31,6 +32,7 @@ namespace zivillian.ldap
             _lock = new SemaphoreSlim(1, 1);
             _bindLock = new SemaphoreSlim(1, 1);
             _readLock = new SemaphoreSlim(1, 1);
+            Principal = new ClaimsPrincipal();
         }
 
         public Guid Id { get; }
