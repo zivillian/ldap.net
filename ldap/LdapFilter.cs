@@ -185,7 +185,6 @@ namespace zivillian.ldap
         {
             var children = new List<LdapFilter>();
             var state = 0;
-            var start = 0;
             var end = inner.IndexOfAny('(', ')');
             while (inner.Length > 0)
             {

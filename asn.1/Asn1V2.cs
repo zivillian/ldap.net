@@ -14,6 +14,7 @@ namespace System.Security.Cryptography.Asn1
         BER,
         CER,
         DER,
+        BERFlexible
     }
 
     // Uses a masked overlay of the tag class encoding.

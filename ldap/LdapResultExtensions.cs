@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text;
 
 namespace zivillian.ldap
@@ -12,8 +13,8 @@ namespace zivillian.ldap
 
         public static string[] GetReferrals(ReadOnlyMemory<byte>[] referral)
         {
-            if (referral == null || referral.Length == 0) 
-                return new string[0];
+            if (referral is null || referral.Length == 0) 
+                return Array.Empty<string>();
 
             var result = new string[referral.Length];
             for (int i = 0; i < referral.Length; i++)
@@ -23,18 +24,18 @@ namespace zivillian.ldap
             return result;
         }
 
-        public static ReadOnlyMemory<byte>[] GetReferrals(this ILdapResult source, string[] referral)
+        public static ReadOnlyMemory<byte>[] GetReferrals(this ILdapResult source, IReadOnlyList<string> referral)
         {
             return GetReferrals(referral);
         }
 
-        public static ReadOnlyMemory<byte>[] GetReferrals(string[] referral)
+        public static ReadOnlyMemory<byte>[] GetReferrals(IReadOnlyList<string> referral)
         {
-            if (referral == null || referral.Length == 0)
+            if (referral is null || referral.Count == 0)
                 return null;
 
-            var result = new ReadOnlyMemory<byte>[referral.Length];
-            for (int i = 0; i < referral.Length; i++)
+            var result = new ReadOnlyMemory<byte>[referral.Count];
+            for (int i = 0; i < referral.Count; i++)
             {
                 result[i] = referral[i].LdapString();
             }

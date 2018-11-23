@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using zivillian.ldap.Asn1;
 
 namespace zivillian.ldap
@@ -7,7 +8,7 @@ namespace zivillian.ldap
     {
         public int Id { get; }
 
-        public LdapControl[] Controls { get; set; }
+        public IReadOnlyList<LdapControl> Controls { get; set; }
 
         internal LdapRequestMessage(Asn1LdapMessage message)
         {

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reflection.Metadata.Ecma335;
 
 namespace zivillian.ldap
 {
@@ -8,7 +7,7 @@ namespace zivillian.ldap
     {
         public string Oid { get; }
 
-        public string[] Options { get; }
+        public IReadOnlyList<string> Options { get; }
 
         public LdapAttributeDescription(ReadOnlySpan<byte> data)
         :this(data.LdapString())
@@ -21,7 +20,7 @@ namespace zivillian.ldap
             if (index < 0)
             {
                 Oid = data.Oid();
-                Options = new string[0];
+                Options = Array.Empty<string>();
             }
             else
             {
@@ -39,7 +38,7 @@ namespace zivillian.ldap
                 if (!data.TryParseKeychar(out var last))
                     throw new LdapProtocolException("invalid option");
                 options.Add(last);
-                Options = options.ToArray();
+                Options = options;
             }
         }
 
@@ -47,7 +46,7 @@ namespace zivillian.ldap
         {
             if (Oid is null || Options is null)
                 return base.ToString();
-            if (Options.Length == 0)
+            if (Options.Count == 0)
                 return Oid;
             return $"{Oid};{String.Join(';', Options)}";
         }

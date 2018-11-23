@@ -6,7 +6,7 @@ namespace zivillian.ldap
     {
         public LdapAttributeAssertion Assertion { get; }
 
-        protected abstract string Operator { get; }
+        protected abstract string CompareOperator { get; }
 
         internal LdapCompareFilter(Asn1AttributeValueAssertion assertion)
         {
@@ -25,7 +25,7 @@ namespace zivillian.ldap
 
         public override string ToString()
         {
-            return $"({Assertion.Attribute}{Operator}{Assertion.Value.Span.EscapeAssertionValue()})";
+            return $"({Assertion.Attribute}{CompareOperator}{Assertion.Value.Span.EscapeAssertionValue()})";
         }
     }
 }

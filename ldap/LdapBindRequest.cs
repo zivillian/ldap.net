@@ -36,7 +36,7 @@ namespace zivillian.ldap
             }
         }
 
-        internal LdapBindRequest(int messageId, string dn, string password, LdapControl[] controls)
+        public LdapBindRequest(int messageId, string dn, string password, LdapControl[] controls)
             : base(messageId, controls)
         {
             Version = 3;
@@ -74,6 +74,16 @@ namespace zivillian.ldap
                 };
                 bindRequest.Authentication.Sasl = sasl;
             }
+        }
+
+        public LdapBindResponse Response()
+        {
+            return Response(ResultCode.Success, String.Empty);
+        }
+
+        public LdapBindResponse Response(ResultCode resultCode, string message)
+        {
+            return new LdapBindResponse(Id, resultCode, LdapDistinguishedName.Empty, message, Array.Empty<string>());
         }
     }
 }

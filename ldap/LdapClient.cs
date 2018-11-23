@@ -22,7 +22,7 @@ namespace zivillian.ldap
         private Task _reader;
         private Task _dispatcher;
         private bool _closed;
-        private readonly Pipe _pipe;
+        private Pipe _pipe;
         private readonly SemaphoreSlim _writeLock;
         private readonly ConcurrentDictionary<int, MessageState> _receiveQueue = new ConcurrentDictionary<int, MessageState>();
         private readonly CancellationTokenSource _closeTokenSource;
@@ -38,7 +38,6 @@ namespace zivillian.ldap
             ServerControls = new List<LdapControl>();
             _writeLock = new SemaphoreSlim(1, 1);
             _closeTokenSource = new CancellationTokenSource();
-            _pipe = new Pipe();
         }
 
         public long MaxMessageSize { get; set; } = 1024 * 1024 * 1024;
@@ -51,7 +50,7 @@ namespace zivillian.ldap
             set
             {
                 if (_sizeLimit < 0)
-                    throw new ArgumentOutOfRangeException();
+                    throw new ArgumentOutOfRangeException(nameof(value));
                 _sizeLimit = value;
             }
         }
@@ -62,7 +61,7 @@ namespace zivillian.ldap
             set
             {
                 if (_timeLimit < TimeSpan.Zero)
-                    throw new ArgumentOutOfRangeException();
+                    throw new ArgumentOutOfRangeException(nameof(value));
                 _timeLimit = value;
             }
         }
@@ -189,7 +188,7 @@ namespace zivillian.ldap
 
         private async Task<LdapSearchResult> SearchInternalAsync(string baseDn, SearchScope scope, string filter, string[] attributes, bool attributeTypesOnly, TimeSpan timeout, int sizeLimit, LdapControl[] serverControls, CancellationToken cancellationToken)
         {
-            if (filter == null)
+            if (filter is null)
                 filter = "(objectclass=*)";
 
             var request = new LdapSearchRequest(NextMessageId(), baseDn, scope, filter, attributes, attributeTypesOnly, timeout, sizeLimit, serverControls);
@@ -237,9 +236,9 @@ namespace zivillian.ldap
 
             var asn = request.GetAsn();
             var stream = _client.GetStream();
+            await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
-                await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
                 ReadOnlyMemory<byte> bytes;
                 using (var writer = new AsnWriter(AsnEncodingRules.BER))
                 {
@@ -273,10 +272,11 @@ namespace zivillian.ldap
                 throw new ObjectDisposedException(GetType().FullName);
             if (_client.Connected) return;
 
-            if (Hostname.Contains(' '))
+            if (Hostname.Contains(' ', StringComparison.Ordinal))
                 throw new NotImplementedException("hostname parsing");
 
             await _client.ConnectAsync(Hostname, Port).ConfigureAwait(false);
+            _pipe = new Pipe(new PipeOptions(pauseWriterThreshold:MaxMessageSize));
             _reader = ReadAsync(_closeTokenSource.Token);
             _dispatcher = DispatchAsync(_closeTokenSource.Token);
         }

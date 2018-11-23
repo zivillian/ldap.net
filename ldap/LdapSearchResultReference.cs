@@ -1,10 +1,11 @@
-﻿using zivillian.ldap.Asn1;
+﻿using System.Collections.Generic;
+using zivillian.ldap.Asn1;
 
 namespace zivillian.ldap
 {
     public class LdapSearchResultReference : LdapRequestMessage
     {
-        public string[] Uris { get; }
+        public IReadOnlyList<string> Uris { get; }
 
         internal LdapSearchResultReference(Asn1LdapMessage message)
             : base(message)

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using zivillian.ldap.Asn1;
 
 namespace zivillian.ldap
@@ -11,7 +12,7 @@ namespace zivillian.ldap
 
         public string DiagnosticMessage { get; internal set; }
         
-        public string[] Referrals { get; internal set; }
+        public IReadOnlyList<string> Referrals { get; internal set; }
 
         public ReadOnlyMemory<byte>? ServerSaslCreds { get; }
 
@@ -24,6 +25,15 @@ namespace zivillian.ldap
             DiagnosticMessage = bindResponse.DiagnosticMessage.Span.LdapString();
             Referrals = this.GetReferrals(bindResponse.Referral);
             ServerSaslCreds = bindResponse.ServerSaslCreds;
+        }
+
+        internal LdapBindResponse(int id, ResultCode resultCode, LdapDistinguishedName matchedDN, string message, string[] referrals)
+            :base(id, Array.Empty<LdapControl>())
+        {
+            ResultCode = resultCode;
+            MatchedDN = matchedDN;
+            DiagnosticMessage = message;
+            Referrals = referrals;
         }
 
         internal override void SetProtocolOp(Asn1ProtocolOp op)

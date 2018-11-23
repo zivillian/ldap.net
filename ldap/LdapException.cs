@@ -15,15 +15,29 @@ namespace zivillian.ldap
         }
 
         public LdapException(ResultCode resultCode, string message)
-            : base(message)
+            : this(message)
         {
             ResultCode = resultCode;
         }
 
         public LdapException(ResultCode resultCode, string message, Exception innerException)
-            : base(message, innerException)
+            : this(message, innerException)
         {
             ResultCode = resultCode;
+        }
+
+        public LdapException()
+        {
+        }
+
+        public LdapException(string message)
+            : base(message)
+        {
+        }
+
+        public LdapException(string message, Exception innerException)
+            : base(message, innerException)
+        {
         }
 
         public ResultCode ResultCode { get; }
@@ -35,8 +49,14 @@ namespace zivillian.ldap
             : base(ResultCode.InvalidDnSyntax)
         {
         }
+
         public InvalidDnSyntaxException(string message)
             : base(ResultCode.InvalidDnSyntax, message)
+        {
+        }
+
+        public InvalidDnSyntaxException(string message, Exception innerException)
+            : base(message, innerException)
         {
         }
     }
@@ -61,8 +81,17 @@ namespace zivillian.ldap
 
     public class LdapFilterParseException : LdapException
     {
+        public LdapFilterParseException()
+        {
+        }
+
         public LdapFilterParseException(string message)
             : base(ResultCode.ProtocolError, message)
+        {
+        }
+
+        public LdapFilterParseException(string message, Exception innerException)
+            : base(message, innerException)
         {
         }
     }

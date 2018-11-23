@@ -1,19 +1,21 @@
 ﻿using System;
+using System.Collections.Generic;
 using zivillian.ldap.Asn1;
 
 namespace zivillian.ldap
 {
     public class LdapOrFilter : LdapFilter
     {
-        public LdapFilter[] Filter { get; }
+        public IReadOnlyList<LdapFilter> Filter { get; }
 
         internal LdapOrFilter(Asn1Filter[] filter)
         {
-            Filter = new LdapFilter[filter.Length];
+            var ldapFilter = new LdapFilter[filter.Length];
             for (int i = 0; i < filter.Length; i++)
             {
-                Filter[i] = LdapFilter.Create(filter[i]);
+                ldapFilter[i] = LdapFilter.Create(filter[i]);
             }
+            Filter = ldapFilter;
         }
 
         internal LdapOrFilter(LdapFilter[] inner)
@@ -26,8 +28,8 @@ namespace zivillian.ldap
 
         internal override Asn1Filter GetAsn()
         {
-            var filter = new Asn1Filter[Filter.Length];
-            for (int i = 0; i < Filter.Length; i++)
+            var filter = new Asn1Filter[Filter.Count];
+            for (int i = 0; i < Filter.Count; i++)
             {
                 filter[i] = Filter[i].GetAsn();
             }
@@ -39,8 +41,7 @@ namespace zivillian.ldap
 
         public override string ToString()
         {
-            object[] objects = Filter;
-            return $"(|{String.Join(String.Empty, objects)})";
+            return $"(|{String.Join(String.Empty, Filter)})";
         }
     }
 }
