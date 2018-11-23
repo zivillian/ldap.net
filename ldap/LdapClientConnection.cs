@@ -4,6 +4,7 @@ using System.IO;
 using System.IO.Pipelines;
 using System.Net.Security;
 using System.Net.Sockets;
+using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -36,7 +37,6 @@ namespace zivillian.ldap
         
         public Pipe Pipe { get; }
 
-
         public Stream Stream { get; private set; }
 
         public PipeReader Reader => Pipe.Reader;
@@ -48,6 +48,8 @@ namespace zivillian.ldap
         public bool HasSSL { get; private set; }
 
         public CancellationToken CancellationToken { get; }
+
+        public IPrincipal Principal { get; set; }
 
         internal async Task UseSSLAsync(SslServerAuthenticationOptions sslOptions)
         {
