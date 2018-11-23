@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Buffers;
 using System.Collections.Generic;
-using System.IO;
 using System.IO.Pipelines;
 using System.Linq;
 using System.Net;
@@ -25,6 +24,7 @@ namespace zivillian.ldap
         private readonly HashSet<string> _controls;
         private SslServerAuthenticationOptions _sslOptions;
         private TcpListener _sslListener;
+        private readonly IPAddress _localAddress;
 
         protected LdapServer(ushort port, TopObjectClass rootDse)
             : this(TcpListener.Create(port), rootDse)
@@ -34,6 +34,7 @@ namespace zivillian.ldap
         protected LdapServer(IPEndPoint endPoint, TopObjectClass rootDse)
             : this(new TcpListener(endPoint), rootDse)
         {
+            _localAddress = endPoint.Address;
         }
 
         private LdapServer(TcpListener listener, TopObjectClass rootDse)
@@ -58,8 +59,14 @@ namespace zivillian.ldap
         public void UseSsl(ushort port, SslServerAuthenticationOptions sslOptions)
         {
             _sslOptions = sslOptions;
-            var endPoint = (IPEndPoint) _listener.LocalEndpoint;
-            _sslListener = new TcpListener(endPoint.Address, port);
+            if (_localAddress == null)
+            {
+                _sslListener = TcpListener.Create(port);
+            }
+            else
+            {
+                _sslListener = new TcpListener(_localAddress, port);
+            }
         }
 
         public async Task RunAsync(CancellationToken cancellationToken)
