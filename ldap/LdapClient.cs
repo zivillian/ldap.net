@@ -22,7 +22,7 @@ namespace zivillian.ldap
         private Task _reader;
         private Task _dispatcher;
         private bool _closed;
-        private readonly Pipe _pipe;
+        private Pipe _pipe;
         private readonly SemaphoreSlim _writeLock;
         private readonly ConcurrentDictionary<int, MessageState> _receiveQueue = new ConcurrentDictionary<int, MessageState>();
         private readonly CancellationTokenSource _closeTokenSource;
@@ -38,7 +38,6 @@ namespace zivillian.ldap
             ServerControls = new List<LdapControl>();
             _writeLock = new SemaphoreSlim(1, 1);
             _closeTokenSource = new CancellationTokenSource();
-            _pipe = new Pipe();
         }
 
         public long MaxMessageSize { get; set; } = 1024 * 1024 * 1024;
@@ -277,6 +276,7 @@ namespace zivillian.ldap
                 throw new NotImplementedException("hostname parsing");
 
             await _client.ConnectAsync(Hostname, Port).ConfigureAwait(false);
+            _pipe = new Pipe(new PipeOptions(pauseWriterThreshold:MaxMessageSize));
             _reader = ReadAsync(_closeTokenSource.Token);
             _dispatcher = DispatchAsync(_closeTokenSource.Token);
         }
