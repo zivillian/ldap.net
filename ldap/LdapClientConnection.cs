@@ -17,13 +17,12 @@ namespace zivillian.ldap
         private readonly SemaphoreSlim _bindLock;
         private readonly SemaphoreSlim _readLock;
         private readonly TcpClient _client;
-        private Stream _stream;
 
         public LdapClientConnection(TcpClient client, Pipe pipe, CancellationTokenSource cts)
         {
             Id = Guid.NewGuid();
             _client = client;
-            _stream = client?.GetStream();
+            Stream = client?.GetStream();
             Pipe = pipe;
             _cts = cts;
             CancellationToken = _cts.Token;
@@ -38,25 +37,13 @@ namespace zivillian.ldap
         public Pipe Pipe { get; }
 
 
-        public Stream Stream
-        {
-            get { return _stream; }
-        }
+        public Stream Stream { get; private set; }
 
-        public PipeReader Reader
-        {
-            get { return Pipe.Reader; }
-        }
+        public PipeReader Reader => Pipe.Reader;
 
-        public PipeWriter Writer
-        {
-            get { return Pipe.Writer; }
-        }
+        public PipeWriter Writer => Pipe.Writer;
 
-        public bool IsConnected
-        {
-            get { return _client.Connected; }
-        }
+        public bool IsConnected => _client.Connected;
 
         public bool HasSSL { get; private set; }
 
@@ -91,9 +78,9 @@ namespace zivillian.ldap
 
         internal async Task StartSSLAsync(SslServerAuthenticationOptions sslOptions)
         {
-            var ssl = new SslStream(_stream);
+            var ssl = new SslStream(Stream);
             await ssl.AuthenticateAsServerAsync(sslOptions, CancellationToken).ConfigureAwait(false);
-            _stream = ssl;
+            Stream = ssl;
             HasSSL = true;
         }
 
@@ -191,7 +178,7 @@ namespace zivillian.ldap
                 {
                     request.Dispose();
                 }
-                _stream.Dispose();
+                Stream.Dispose();
             }
         }
 
@@ -218,17 +205,12 @@ namespace zivillian.ldap
                 _cts.Cancel();
             }
 
-            protected virtual void Dispose(bool disposing)
+            public void Dispose()
             {
-                if (disposing)
+                if (true)
                 {
                     _cts?.Dispose();
                 }
-            }
-
-            public void Dispose()
-            {
-                Dispose(true);
                 GC.SuppressFinalize(this);
             }
         }
