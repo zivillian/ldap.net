@@ -267,7 +267,7 @@ namespace zivillian.ldap
                     (filter.Attribute.Oid.Equals("objectClass", StringComparison.OrdinalIgnoreCase) || filter.Attribute.Oid == "2.5.4.0"))
                 {
                     ICollection<LdapAttribute> attributes = _rootDse.GetAttributes(request.Attributes, request.TypesOnly).ToList();
-                    if (_sslOptions != null && request.Attributes.Any(x=>x.Selector.Oid == SupportedExtensionAttribute.OidValue || x.Selector.Oid == SupportedExtensionAttribute.ShortName))
+                    if (_sslOptions != null && request.Attributes.Where(x=>x.Selector != null).Any(x=>x.Selector.Oid == SupportedExtensionAttribute.OidValue || x.Selector.Oid == SupportedExtensionAttribute.ShortName))
                     {
                         var attribute = attributes.OfType<SupportedExtensionAttribute>().FirstOrDefault();
                         if (attribute == null)
