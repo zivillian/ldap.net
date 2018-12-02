@@ -6,6 +6,9 @@ namespace zivillian.ldap.Attributes
     {
         private const string _name = "supportedSASLMechanisms";
 
+        public const string Plain = "PLAIN";
+        public const string Anonymous = "ANONYMOUS";
+
         public SupportedSASLMechanismsAttribute()
             : base(_name)
         {

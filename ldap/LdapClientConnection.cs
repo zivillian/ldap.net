@@ -130,13 +130,17 @@ namespace zivillian.ldap
         internal void ContinueRead()
         {
             if (!HasSSL || _readLock.CurrentCount == 0)
+            {
                 _readLock.Release();
+            }
         }
 
         internal async Task<int> ReadAsync(Memory<byte> buffer)
         {
             if (!HasSSL)
+            {
                 await _readLock.WaitAsync(CancellationToken).ConfigureAwait(false);
+            }
             return await Stream.ReadAsync(buffer, CancellationToken).ConfigureAwait(false);
         }
 
@@ -182,7 +186,7 @@ namespace zivillian.ldap
                 {
                     request.Dispose();
                 }
-                Stream.Dispose();
+                Stream?.Dispose();
             }
         }
 

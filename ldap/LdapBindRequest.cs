@@ -44,7 +44,7 @@ namespace zivillian.ldap
             Simple = password.LdapString();
         }
 
-        internal LdapBindRequest(int messageId, string dn, string mechanism, ReadOnlyMemory<byte> credentials, LdapControl[] controls)
+        public LdapBindRequest(int messageId, string dn, string mechanism, ReadOnlyMemory<byte> credentials, LdapControl[] controls)
         :base(messageId, controls)
         {
             Version = 3;

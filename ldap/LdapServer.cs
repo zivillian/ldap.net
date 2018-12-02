@@ -7,6 +7,7 @@ using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Cryptography.Asn1;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using zivillian.ldap.Asn1;
@@ -141,9 +142,14 @@ namespace zivillian.ldap
 
         }
 
-        protected virtual Task<LdapBindResponse> OnBindAsync(LdapBindRequest request, LdapClientConnection connection)
+        protected virtual Task<ResultCode> OnBindAsync(LdapDistinguishedName bindDN, ReadOnlyMemory<byte> password, LdapClientConnection connection)
         {
-            return Task.FromResult(request.Response(ResultCode.Other, "Not Implemented"));
+            return Task.FromResult(ResultCode.Other);
+        }
+
+        protected virtual Task<ResultCode> OnSaslBindAsync(LdapDistinguishedName bindDN, string username, ReadOnlyMemory<byte> password, LdapClientConnection connection)
+        {
+            return Task.FromResult(ResultCode.Other);
         }
 
         protected virtual Task<IEnumerable<LdapRequestMessage>> OnSearchAsync(LdapSearchRequest request, LdapClientConnection connection, CancellationToken cancellationToken)
@@ -233,7 +239,58 @@ namespace zivillian.ldap
                 //https://tools.ietf.org/html/rfc4513#section-5.1.2
                 return Task.FromResult(request.Response(ResultCode.UnwillingToPerform, "Unauthenticated Bind"));
             }
+            if (request.SaslMechanism != null && request.SaslMechanism.Length == 0)
+            {
+                return Task.FromResult(request.Response(ResultCode.AuthMethodNotSupported, "SASL aborted"));
+            }
             return OnBindAsync(request, connection);
+        }
+
+        private async Task<LdapBindResponse> OnBindAsync(LdapBindRequest request, LdapClientConnection connection)
+        {
+            ResultCode result = ResultCode.AuthMethodNotSupported;
+            if (request.Simple != null)
+            {
+                result = await OnBindAsync(request.Name, request.Simple.Value, connection).ConfigureAwait(false);
+            }
+            else if (request.SaslMechanism == SupportedSASLMechanismsAttribute.Anonymous)
+            {
+                var credentials = request.SaslCredentials.GetValueOrDefault(ReadOnlyMemory<byte>.Empty);
+                result = await OnSaslBindAsync(request.Name, String.Empty, credentials, connection).ConfigureAwait(false);
+            }
+            else if (request.SaslMechanism == SupportedSASLMechanismsAttribute.Plain)
+            {
+                if (request.SaslCredentials == null)
+                {
+                    result = ResultCode.InappropriateAuthentication;
+                }
+                else
+                {
+                    var credentials = request.SaslCredentials.Value;
+                    var first = credentials.Span.IndexOf((byte) 0);
+                    var last = credentials.Span.LastIndexOf((byte) 0);
+                    if (first == last)
+                    {
+                        result = ResultCode.InappropriateAuthentication;
+                    }
+                    else
+                    {
+                        first++;
+                        var user = Encoding.UTF8.GetString(credentials.Slice(first, last - first).Span);
+                        var password = credentials.Slice(last + 1);
+                        result = await OnSaslBindAsync(request.Name, user, password, connection).ConfigureAwait(false);
+                    }
+                }
+            }
+            switch (result)
+            {
+                case ResultCode.Other:
+                    return request.Response(result, "Not implemented");
+                case ResultCode.Success:
+                    return request.Response();
+                default:
+                    return request.Response(result, String.Empty);
+            }
         }
 
         private static void UnbindRequest(LdapClientConnection connection)
@@ -458,6 +515,10 @@ namespace zivillian.ldap
                             {
                                 //maybe increase pipe size https://github.com/dotnet/corefx/issues/30689
                                 throw new LdapException(ResultCode.UnwillingToPerform, "MaxMessageSize exceeded");
+                            }
+                            else
+                            {
+                                connection.ContinueRead();
                             }
                         }
                     } while (success && buffer.Length > 2);
