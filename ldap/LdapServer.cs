@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.IO;
 using System.IO.Pipelines;
 using System.Linq;
 using System.Net;
@@ -116,6 +117,10 @@ namespace zivillian.ldap
                         catch (SocketException)
                         {
                             //client may have disconnected
+                        }
+                        catch (IOException)
+                        {
+                            //client may have disconnected during ssl handshake
                         }
                     }
                     else
