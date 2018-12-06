@@ -118,10 +118,6 @@ namespace zivillian.ldap
                         {
                             //client may have disconnected
                         }
-                        catch (IOException)
-                        {
-                            //client may have disconnected during ssl handshake
-                        }
                     }
                     else
                     {
@@ -422,7 +418,17 @@ namespace zivillian.ldap
                 {
                     if (useSsl)
                     {
-                        await connection.UseSSLAsync(_sslOptions).ConfigureAwait(false);
+                        try
+                        {
+                            await connection.UseSSLAsync(_sslOptions).ConfigureAwait(false);
+                        }
+                        catch (IOException)
+                        {
+                            //client may have disconnected during ssl handshake
+                            cts.Cancel();
+                            OnClientDisconnected(connection.Id);
+                            return;
+                        }
                     }
                     try
                     {
