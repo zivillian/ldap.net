@@ -1,0 +1,13 @@
+language: csharp
+solution: ldap.net.sln
+
+matrix:
+  include:
+    - name: "Dotnet"
+      dotnet: 2.1.300
+      mono: none
+      script:
+        - dotnet restore
+        - dotnet build
+    - name: "Mono"
+      mono: latest
