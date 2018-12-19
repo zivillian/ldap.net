@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
+using System.Security.Authentication;
 using System.Security.Cryptography.Asn1;
 using System.Text;
 using System.Threading;
@@ -422,7 +423,7 @@ namespace zivillian.ldap
                         {
                             await connection.UseSSLAsync(_sslOptions).ConfigureAwait(false);
                         }
-                        catch (IOException)
+                        catch (Exception ex) when (ex is IOException || ex is AuthenticationException)
                         {
                             //client may have disconnected during ssl handshake
                             cts.Cancel();
