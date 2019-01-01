@@ -32,17 +32,28 @@ namespace zivillian.ldap.ObjectClasses
                 var selectors = selection
                     .Where(x => !x.AllUserAttributes)
                     .Where(x => !x.NoAttributes)
+                    .Where(x => !x.AllOperationalAttributes)
                     .Select(x => x.Selector)
                     .ToList();
 
                 if (selection.Any(x => x.AllUserAttributes))
                 {
-                    attributes = attributes
-                        .Where(x => selectors.Any(x.IsType) || x.Usage == LdapAttributeTypeUsage.UserApplication);
+                    if (!selection.Any(x => x.AllOperationalAttributes))
+                    {
+                        attributes = attributes
+                            .Where(x => selectors.Any(x.IsType) || x.Usage == LdapAttributeTypeUsage.UserApplication);
+                    }
                 }
                 else
                 {
-                    attributes = attributes.Where(x => selectors.Any(x.IsType));
+                    if (selection.Any(x => x.AllOperationalAttributes))
+                    {
+                        attributes = attributes.Where(x => selectors.Any(x.IsType) || x.Usage != LdapAttributeTypeUsage.UserApplication);
+                    }
+                    else
+                    {
+                        attributes = attributes.Where(x => selectors.Any(x.IsType));
+                    }
                 }
             }
             if (typesOnly)

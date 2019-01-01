@@ -8,6 +8,8 @@ namespace zivillian.ldap
 
         public bool NoAttributes { get; }
 
+        public bool AllOperationalAttributes { get; }
+
         public LdapAttributeDescription Selector { get; }
 
         public LdapAttributeSelection(ReadOnlySpan<byte> data)
@@ -25,7 +27,11 @@ namespace zivillian.ldap
             {
                 NoAttributes = true;
             }
-            else
+            else if (data.Length == 1 && data[0] == '+')
+            {
+                AllOperationalAttributes = true;
+            }
+            else 
             {
                 Selector = new LdapAttributeDescription(data);
             }
@@ -37,6 +43,8 @@ namespace zivillian.ldap
                 return "*";
             if (NoAttributes)
                 return "1.1";
+            if (AllOperationalAttributes)
+                return "+";
             if (Selector != null)
                 return Selector.ToString();
             return base.ToString();
