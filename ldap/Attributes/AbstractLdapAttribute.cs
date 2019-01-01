@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Reflection.Metadata;
 using System.Text;
 
@@ -75,6 +76,9 @@ namespace zivillian.ldap.Attributes
 
     }
     
+    /// <summary>
+    /// 1.3.6.1.4.1.1466.115.121.1.44
+    /// </summary>
     public abstract class PrintableStringLdapAttribute : AbstractLdapAttribute<string>
     {
         protected PrintableStringLdapAttribute(string nameOrOid):base(nameOrOid)
@@ -84,6 +88,37 @@ namespace zivillian.ldap.Attributes
         protected override ReadOnlyMemory<byte> Serialize(string entry)
         {
             return Encoding.ASCII.GetBytes(entry);
+        }
+    }
+
+    /// <summary>
+    /// 1.3.6.1.4.1.1466.115.121.1.12
+    /// </summary>
+    public abstract class DNLdapAttribute : AbstractLdapAttribute<LdapDistinguishedName>
+    {
+        protected DNLdapAttribute(string nameOrOid) : base(nameOrOid)
+        {
+        }
+
+        protected override ReadOnlyMemory<byte> Serialize(LdapDistinguishedName entry)
+        {
+            return entry.GetBytes();
+        }
+    }
+
+    /// <summary>
+    /// 1.3.6.1.4.1.1466.115.121.1.24
+    /// </summary>
+    public abstract class GeneralizedTimeAttribute : AbstractLdapAttribute<DateTimeOffset>
+    {
+        protected GeneralizedTimeAttribute(string nameOrOid) : base(nameOrOid)
+        {
+        }
+
+        protected override ReadOnlyMemory<byte> Serialize(DateTimeOffset entry)
+        {
+            var value = entry.ToUniversalTime().ToString("yyyyMMddHHmmss\\Z", CultureInfo.InvariantCulture);
+            return Encoding.ASCII.GetBytes(value);
         }
     }
 

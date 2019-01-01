@@ -17,6 +17,14 @@ namespace zivillian.ldap.ObjectClasses
 
         public ObjectClassAttribute ObjectClass { get; }
 
+        public CreatorsNameAttribute CreatorsName { get; set; }
+
+        public CreateTimestampAttribute CreateTimestamp { get; set; }
+
+        public ModifiersNameAttribute ModifiersName { get; set; }
+
+        public ModifyTimestampAttribute ModifyTimestamp { get; set; }
+
         public ICollection<LdapAttribute> GetAttributes(IReadOnlyList<LdapAttributeSelection> selection, bool typesOnly)
         {
             if (selection.Count == 1 && selection[0].NoAttributes)
@@ -73,6 +81,10 @@ namespace zivillian.ldap.ObjectClasses
         protected virtual void GetAttributes(List<AbstractLdapAttribute> result)
         {
             result.Add(ObjectClass);
+            result.Add(CreatorsName);
+            result.Add(CreateTimestamp);
+            result.Add(ModifiersName);
+            result.Add(ModifyTimestamp);
         }
     }
 }
