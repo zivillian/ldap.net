@@ -6,8 +6,8 @@ namespace zivillian.ldap.test
 {
     public class ProtosTest
     {
-        private static readonly string EncDirectory = @"..\..\..\data\enc\";
-        private static readonly string AppDirectory = @"..\..\..\data\app\";
+        private static readonly string EncDirectory = Path.Combine("..", "..", "..", "data", "enc");
+        private static readonly string AppDirectory = Path.Combine("..", "..", "..", "data", "app");
 
         [Fact]
         public void CanReadBEREnc()
