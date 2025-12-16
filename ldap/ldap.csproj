@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <ApplicationIcon />
     <OutputType>Library</OutputType>
     <StartupObject />
@@ -42,9 +42,6 @@
     <AsnXml Include="Asn1\Asn1SearchResultEntry.xml" />
     <AsnXml Include="Asn1\Asn1Substring.xml" />
     <AsnXml Include="Asn1\Asn1SubstringFilter.xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="System.IO.Pipelines" Version="6.0.1" />
   </ItemGroup>
   <Import Project="Asn1\AsnXml.targets" />
 </Project>
