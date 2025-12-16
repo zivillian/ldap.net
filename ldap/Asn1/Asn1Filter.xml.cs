@@ -1,22 +1,26 @@
-﻿using System;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+#pragma warning disable SA1028 // ignore whitespace warnings for generated code
+using System;
 using System.Collections.Generic;
-using System.Security.Cryptography;
-using System.Security.Cryptography.Asn1;
+using System.Formats.Asn1;
+using System.Runtime.InteropServices;
 
 namespace zivillian.ldap.Asn1
 {
     internal sealed partial class Asn1Filter
     {
-        internal Asn1Filter[] And;
-        internal Asn1Filter[] Or;
-        internal Asn1Filter Not;
-        internal Asn1AttributeValueAssertion EqualityMatch;
-        internal Asn1SubstringFilter Substrings;
-        internal Asn1AttributeValueAssertion GreaterOrEqual;
-        internal Asn1AttributeValueAssertion LessOrEqual;
+        internal Asn1Filter[]? And;
+        internal Asn1Filter[]? Or;
+        internal Asn1Filter? Not;
+        internal Asn1AttributeValueAssertion? EqualityMatch;
+        internal Asn1SubstringFilter? Substrings;
+        internal Asn1AttributeValueAssertion? GreaterOrEqual;
+        internal Asn1AttributeValueAssertion? LessOrEqual;
         internal ReadOnlyMemory<byte>? Present;
-        internal Asn1AttributeValueAssertion ApproxMatch;
-        internal Asn1MatchingRuleAssertion ExtensibleMatch;
+        internal Asn1AttributeValueAssertion? ApproxMatch;
+        internal Asn1MatchingRuleAssertion? ExtensibleMatch;
 
 #if DEBUG
         static Asn1Filter()
@@ -24,14 +28,14 @@ namespace zivillian.ldap.Asn1
             var usedTags = new System.Collections.Generic.Dictionary<Asn1Tag, string>();
             Action<Asn1Tag, string> ensureUniqueTag = (tag, fieldName) =>
             {
-                if (usedTags.TryGetValue(tag, out string existing))
+                if (usedTags.TryGetValue(tag, out string? existing))
                 {
                     throw new InvalidOperationException($"Tag '{tag}' is in use by both '{existing}' and '{fieldName}'");
                 }
 
                 usedTags.Add(tag, fieldName);
             };
-            
+
             ensureUniqueTag(new Asn1Tag(TagClass.ContextSpecific, 0), "And");
             ensureUniqueTag(new Asn1Tag(TagClass.ContextSpecific, 1), "Or");
             ensureUniqueTag(new Asn1Tag(TagClass.ContextSpecific, 2), "Not");
@@ -47,18 +51,18 @@ namespace zivillian.ldap.Asn1
 
         internal void Encode(AsnWriter writer)
         {
-            bool wroteValue = false; 
-            
+            bool wroteValue = false;
+
             if (And != null)
             {
                 if (wroteValue)
                     throw new CryptographicException();
-                
+
 
                 writer.PushSetOf(new Asn1Tag(TagClass.ContextSpecific, 0));
                 for (int i = 0; i < And.Length; i++)
                 {
-                    And[i].Encode(writer); 
+                    And[i].Encode(writer);
                 }
                 writer.PopSetOf(new Asn1Tag(TagClass.ContextSpecific, 0));
 
@@ -69,12 +73,12 @@ namespace zivillian.ldap.Asn1
             {
                 if (wroteValue)
                     throw new CryptographicException();
-                
+
 
                 writer.PushSetOf(new Asn1Tag(TagClass.ContextSpecific, 1));
                 for (int i = 0; i < Or.Length; i++)
                 {
-                    Or[i].Encode(writer); 
+                    Or[i].Encode(writer);
                 }
                 writer.PopSetOf(new Asn1Tag(TagClass.ContextSpecific, 1));
 
@@ -85,12 +89,9 @@ namespace zivillian.ldap.Asn1
             {
                 if (wroteValue)
                     throw new CryptographicException();
-                
+
                 writer.PushSequence(new Asn1Tag(TagClass.ContextSpecific, 2));
-                writer.PushSequence();
                 Not.Encode(writer);
-                writer.PopSequence();
-      
                 writer.PopSequence(new Asn1Tag(TagClass.ContextSpecific, 2));
                 wroteValue = true;
             }
@@ -99,7 +100,7 @@ namespace zivillian.ldap.Asn1
             {
                 if (wroteValue)
                     throw new CryptographicException();
-                
+
                 EqualityMatch.Encode(writer, new Asn1Tag(TagClass.ContextSpecific, 3));
                 wroteValue = true;
             }
@@ -108,7 +109,7 @@ namespace zivillian.ldap.Asn1
             {
                 if (wroteValue)
                     throw new CryptographicException();
-                
+
                 Substrings.Encode(writer, new Asn1Tag(TagClass.ContextSpecific, 4));
                 wroteValue = true;
             }
@@ -117,7 +118,7 @@ namespace zivillian.ldap.Asn1
             {
                 if (wroteValue)
                     throw new CryptographicException();
-                
+
                 GreaterOrEqual.Encode(writer, new Asn1Tag(TagClass.ContextSpecific, 5));
                 wroteValue = true;
             }
@@ -126,7 +127,7 @@ namespace zivillian.ldap.Asn1
             {
                 if (wroteValue)
                     throw new CryptographicException();
-                
+
                 LessOrEqual.Encode(writer, new Asn1Tag(TagClass.ContextSpecific, 6));
                 wroteValue = true;
             }
@@ -135,8 +136,8 @@ namespace zivillian.ldap.Asn1
             {
                 if (wroteValue)
                     throw new CryptographicException();
-                
-                writer.WriteOctetString(new Asn1Tag(TagClass.ContextSpecific, 7), Present.Value.Span);
+
+                writer.WriteOctetString(Present.Value.Span, new Asn1Tag(TagClass.ContextSpecific, 7));
                 wroteValue = true;
             }
 
@@ -144,7 +145,7 @@ namespace zivillian.ldap.Asn1
             {
                 if (wroteValue)
                     throw new CryptographicException();
-                
+
                 ApproxMatch.Encode(writer, new Asn1Tag(TagClass.ContextSpecific, 8));
                 wroteValue = true;
             }
@@ -153,7 +154,7 @@ namespace zivillian.ldap.Asn1
             {
                 if (wroteValue)
                     throw new CryptographicException();
-                
+
                 ExtensibleMatch.Encode(writer, new Asn1Tag(TagClass.ContextSpecific, 9));
                 wroteValue = true;
             }
@@ -167,31 +168,27 @@ namespace zivillian.ldap.Asn1
         internal static Asn1Filter Decode(ReadOnlyMemory<byte> encoded, AsnEncodingRules ruleSet)
         {
             AsnReader reader = new AsnReader(encoded, ruleSet);
-            
-            Decode(reader, out Asn1Filter decoded);
+
+            DecodeCore(reader, encoded, out Asn1Filter decoded);
             reader.ThrowIfNotEmpty();
             return decoded;
         }
 
-        internal static void Decode(AsnReader reader, Asn1Tag expectedTag, out Asn1Filter decoded)
+        internal static void Decode(AsnReader reader, ReadOnlyMemory<byte> rebind, out Asn1Filter decoded)
         {
-            if (reader == null)
-                throw new ArgumentNullException(nameof(reader));
-
-            reader.ReadNull(expectedTag);
-            Decode(reader, out decoded);
+            DecodeCore(reader, rebind, out decoded);
         }
 
-        internal static void Decode(AsnReader reader, out Asn1Filter decoded)
+        private static void DecodeCore(AsnReader reader, ReadOnlyMemory<byte> rebind, out Asn1Filter decoded)
         {
-            if (reader == null)
-                throw new ArgumentNullException(nameof(reader));
-
             decoded = new Asn1Filter();
             Asn1Tag tag = reader.PeekTag();
             AsnReader explicitReader;
             AsnReader collectionReader;
-            
+            ReadOnlySpan<byte> rebindSpan = rebind.Span;
+            int offset;
+            ReadOnlyMemory<byte> tmpSpan;
+
             if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.ContextSpecific, 0)))
             {
 
@@ -203,7 +200,7 @@ namespace zivillian.ldap.Asn1
 
                     while (collectionReader.HasData)
                     {
-                        Asn1Filter.Decode(collectionReader, out tmpItem); 
+                        Asn1Filter.Decode(collectionReader, rebind, out tmpItem);
                         tmpList.Add(tmpItem);
                     }
 
@@ -222,7 +219,7 @@ namespace zivillian.ldap.Asn1
 
                     while (collectionReader.HasData)
                     {
-                        Asn1Filter.Decode(collectionReader, out tmpItem); 
+                        Asn1Filter.Decode(collectionReader, rebind, out tmpItem);
                         tmpList.Add(tmpItem);
                     }
 
@@ -234,7 +231,7 @@ namespace zivillian.ldap.Asn1
             {
                 explicitReader = reader.ReadSequence(new Asn1Tag(TagClass.ContextSpecific, 2));
                 Asn1Filter tmpNot;
-                Asn1Filter.Decode(explicitReader, out tmpNot);
+                Asn1Filter.Decode(explicitReader, rebind, out tmpNot);
                 decoded.Not = tmpNot;
 
                 explicitReader.ThrowIfNotEmpty();
@@ -242,37 +239,37 @@ namespace zivillian.ldap.Asn1
             else if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.ContextSpecific, 3)))
             {
                 Asn1AttributeValueAssertion tmpEqualityMatch;
-                Asn1AttributeValueAssertion.Decode(reader, new Asn1Tag(TagClass.ContextSpecific, 3), out tmpEqualityMatch);
+                Asn1AttributeValueAssertion.Decode(reader, new Asn1Tag(TagClass.ContextSpecific, 3), rebind, out tmpEqualityMatch);
                 decoded.EqualityMatch = tmpEqualityMatch;
 
             }
             else if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.ContextSpecific, 4)))
             {
                 Asn1SubstringFilter tmpSubstrings;
-                Asn1SubstringFilter.Decode(reader, new Asn1Tag(TagClass.ContextSpecific, 4), out tmpSubstrings);
+                Asn1SubstringFilter.Decode(reader, new Asn1Tag(TagClass.ContextSpecific, 4), rebind, out tmpSubstrings);
                 decoded.Substrings = tmpSubstrings;
 
             }
             else if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.ContextSpecific, 5)))
             {
                 Asn1AttributeValueAssertion tmpGreaterOrEqual;
-                Asn1AttributeValueAssertion.Decode(reader, new Asn1Tag(TagClass.ContextSpecific, 5), out tmpGreaterOrEqual);
+                Asn1AttributeValueAssertion.Decode(reader, new Asn1Tag(TagClass.ContextSpecific, 5), rebind, out tmpGreaterOrEqual);
                 decoded.GreaterOrEqual = tmpGreaterOrEqual;
 
             }
             else if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.ContextSpecific, 6)))
             {
                 Asn1AttributeValueAssertion tmpLessOrEqual;
-                Asn1AttributeValueAssertion.Decode(reader, new Asn1Tag(TagClass.ContextSpecific, 6), out tmpLessOrEqual);
+                Asn1AttributeValueAssertion.Decode(reader, new Asn1Tag(TagClass.ContextSpecific, 6), rebind, out tmpLessOrEqual);
                 decoded.LessOrEqual = tmpLessOrEqual;
 
             }
             else if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.ContextSpecific, 7)))
             {
 
-                if (reader.TryGetPrimitiveOctetStringBytes(new Asn1Tag(TagClass.ContextSpecific, 7), out ReadOnlyMemory<byte> tmpPresent))
+                if (reader.TryReadPrimitiveOctetString(out tmpSpan, new Asn1Tag(TagClass.ContextSpecific, 7)))
                 {
-                    decoded.Present = tmpPresent;
+                    decoded.Present = rebindSpan.Overlaps(tmpSpan.Span, out offset) ? rebind.Slice(offset, tmpSpan.Length) : tmpSpan.ToArray();
                 }
                 else
                 {
@@ -283,14 +280,14 @@ namespace zivillian.ldap.Asn1
             else if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.ContextSpecific, 8)))
             {
                 Asn1AttributeValueAssertion tmpApproxMatch;
-                Asn1AttributeValueAssertion.Decode(reader, new Asn1Tag(TagClass.ContextSpecific, 8), out tmpApproxMatch);
+                Asn1AttributeValueAssertion.Decode(reader, new Asn1Tag(TagClass.ContextSpecific, 8), rebind, out tmpApproxMatch);
                 decoded.ApproxMatch = tmpApproxMatch;
 
             }
             else if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.ContextSpecific, 9)))
             {
                 Asn1MatchingRuleAssertion tmpExtensibleMatch;
-                Asn1MatchingRuleAssertion.Decode(reader, new Asn1Tag(TagClass.ContextSpecific, 9), out tmpExtensibleMatch);
+                Asn1MatchingRuleAssertion.Decode(reader, new Asn1Tag(TagClass.ContextSpecific, 9), rebind, out tmpExtensibleMatch);
                 decoded.ExtensibleMatch = tmpExtensibleMatch;
 
             }

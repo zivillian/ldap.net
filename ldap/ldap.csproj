@@ -7,15 +7,15 @@
     <StartupObject />
     <RootNamespace>zivillian.ldap</RootNamespace>
     <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors />
   </PropertyGroup>
-
   <ItemGroup>
-    <ProjectReference Include="..\asn.1\asn.1.csproj" />
+    <Using Include="System.Security.Cryptography" />
   </ItemGroup>
   <ItemGroup>
     <AsnXml Include="Asn1\Asn1AddRequest.xml" />

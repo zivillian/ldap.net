@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Security.Cryptography;
-using System.Security.Cryptography.Asn1;
-using System.Text;
+using System.Formats.Asn1;
 
 namespace zivillian.ldap.Asn1
 {
@@ -12,9 +9,9 @@ namespace zivillian.ldap.Asn1
         {
             try
             {
-                return Asn1LdapMessage.Decode(data, AsnEncodingRules.BERFlexible);
+                return Asn1LdapMessage.Decode(data, AsnEncodingRules.BER);
             }
-            catch (CryptographicException ex)
+            catch (Exception ex) when (ex is AsnContentException || ex is CryptographicException)
             {
                 throw new LdapProtocolException("invalid BER encoding", ex);
             }
@@ -22,11 +19,9 @@ namespace zivillian.ldap.Asn1
 
         internal static byte[] Serialize(Asn1LdapMessage message)
         {
-            using (var writer = new AsnWriter(AsnEncodingRules.BER))
-            {
-                message.Encode(writer);
-                return writer.Encode();
-            }
+            var writer = new AsnWriter(AsnEncodingRules.BER);
+            message.Encode(writer);
+            return writer.Encode();
         }
     }
 }

@@ -1,7 +1,11 @@
-﻿using System;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+#pragma warning disable SA1028 // ignore whitespace warnings for generated code
+using System;
 using System.Collections.Generic;
-using System.Security.Cryptography;
-using System.Security.Cryptography.Asn1;
+using System.Formats.Asn1;
+using System.Runtime.InteropServices;
 
 namespace zivillian.ldap.Asn1
 {
@@ -10,18 +14,18 @@ namespace zivillian.ldap.Asn1
         internal ResultCode ResultCode;
         internal ReadOnlyMemory<byte> MatchedDN;
         internal ReadOnlyMemory<byte> DiagnosticMessage;
-        internal ReadOnlyMemory<byte>[] Referral;
+        internal ReadOnlyMemory<byte>[]? Referral;
         internal ReadOnlyMemory<byte>? ServerSaslCreds;
-      
+
         internal void Encode(AsnWriter writer)
         {
             Encode(writer, Asn1Tag.Sequence);
         }
-    
+
         internal void Encode(AsnWriter writer, Asn1Tag tag)
         {
             writer.PushSequence(tag);
-            
+
             writer.WriteEnumeratedValue(ResultCode);
             writer.WriteOctetString(MatchedDN.Span);
             writer.WriteOctetString(DiagnosticMessage.Span);
@@ -32,7 +36,7 @@ namespace zivillian.ldap.Asn1
                 writer.PushSequence(new Asn1Tag(TagClass.ContextSpecific, 3));
                 for (int i = 0; i < Referral.Length; i++)
                 {
-                    writer.WriteOctetString(Referral[i].Span); 
+                    writer.WriteOctetString(Referral[i].Span);
                 }
                 writer.PopSequence(new Asn1Tag(TagClass.ContextSpecific, 3));
 
@@ -41,7 +45,7 @@ namespace zivillian.ldap.Asn1
 
             if (ServerSaslCreds.HasValue)
             {
-                writer.WriteOctetString(new Asn1Tag(TagClass.ContextSpecific, 7), ServerSaslCreds.Value.Span);
+                writer.WriteOctetString(ServerSaslCreds.Value.Span, new Asn1Tag(TagClass.ContextSpecific, 7));
             }
 
             writer.PopSequence(tag);
@@ -51,38 +55,40 @@ namespace zivillian.ldap.Asn1
         {
             return Decode(Asn1Tag.Sequence, encoded, ruleSet);
         }
-        
+
         internal static Asn1BindResponse Decode(Asn1Tag expectedTag, ReadOnlyMemory<byte> encoded, AsnEncodingRules ruleSet)
         {
             AsnReader reader = new AsnReader(encoded, ruleSet);
-            
-            Decode(reader, expectedTag, out Asn1BindResponse decoded);
+
+            DecodeCore(reader, expectedTag, encoded, out Asn1BindResponse decoded);
             reader.ThrowIfNotEmpty();
             return decoded;
         }
 
-        internal static void Decode(AsnReader reader, out Asn1BindResponse decoded)
+        internal static void Decode(AsnReader reader, ReadOnlyMemory<byte> rebind, out Asn1BindResponse decoded)
         {
-            if (reader == null)
-                throw new ArgumentNullException(nameof(reader));
-
-            Decode(reader, Asn1Tag.Sequence, out decoded);
+            Decode(reader, Asn1Tag.Sequence, rebind, out decoded);
         }
 
-        internal static void Decode(AsnReader reader, Asn1Tag expectedTag, out Asn1BindResponse decoded)
+        internal static void Decode(AsnReader reader, Asn1Tag expectedTag, ReadOnlyMemory<byte> rebind, out Asn1BindResponse decoded)
         {
-            if (reader == null)
-                throw new ArgumentNullException(nameof(reader));
+            DecodeCore(reader, expectedTag, rebind, out decoded);
+        }
 
+        private static void DecodeCore(AsnReader reader, Asn1Tag expectedTag, ReadOnlyMemory<byte> rebind, out Asn1BindResponse decoded)
+        {
             decoded = new Asn1BindResponse();
             AsnReader sequenceReader = reader.ReadSequence(expectedTag);
             AsnReader collectionReader;
-            
-            decoded.ResultCode = sequenceReader.GetEnumeratedValue<ResultCode>();
+            ReadOnlySpan<byte> rebindSpan = rebind.Span;
+            int offset;
+            ReadOnlyMemory<byte> tmpSpan;
 
-            if (sequenceReader.TryGetPrimitiveOctetStringBytes(out ReadOnlyMemory<byte> tmpMatchedDN))
+            decoded.ResultCode = sequenceReader.ReadEnumeratedValue<ResultCode>();
+
+            if (sequenceReader.TryReadPrimitiveOctetString(out tmpSpan))
             {
-                decoded.MatchedDN = tmpMatchedDN;
+                decoded.MatchedDN = rebindSpan.Overlaps(tmpSpan.Span, out offset) ? rebind.Slice(offset, tmpSpan.Length) : tmpSpan.ToArray();
             }
             else
             {
@@ -90,9 +96,9 @@ namespace zivillian.ldap.Asn1
             }
 
 
-            if (sequenceReader.TryGetPrimitiveOctetStringBytes(out ReadOnlyMemory<byte> tmpDiagnosticMessage))
+            if (sequenceReader.TryReadPrimitiveOctetString(out tmpSpan))
             {
-                decoded.DiagnosticMessage = tmpDiagnosticMessage;
+                decoded.DiagnosticMessage = rebindSpan.Overlaps(tmpSpan.Span, out offset) ? rebind.Slice(offset, tmpSpan.Length) : tmpSpan.ToArray();
             }
             else
             {
@@ -112,15 +118,15 @@ namespace zivillian.ldap.Asn1
                     while (collectionReader.HasData)
                     {
 
-                        if (collectionReader.TryGetPrimitiveOctetStringBytes(out ReadOnlyMemory<byte> tmp))
+                        if (collectionReader.TryReadPrimitiveOctetString(out tmpSpan))
                         {
-                            tmpItem = tmp;
+                            tmpItem = rebindSpan.Overlaps(tmpSpan.Span, out offset) ? rebind.Slice(offset, tmpSpan.Length) : tmpSpan.ToArray();
                         }
                         else
                         {
                             tmpItem = collectionReader.ReadOctetString();
                         }
- 
+
                         tmpList.Add(tmpItem);
                     }
 
@@ -133,9 +139,9 @@ namespace zivillian.ldap.Asn1
             if (sequenceReader.HasData && sequenceReader.PeekTag().HasSameClassAndValue(new Asn1Tag(TagClass.ContextSpecific, 7)))
             {
 
-                if (sequenceReader.TryGetPrimitiveOctetStringBytes(new Asn1Tag(TagClass.ContextSpecific, 7), out ReadOnlyMemory<byte> tmpServerSaslCreds))
+                if (sequenceReader.TryReadPrimitiveOctetString(out tmpSpan, new Asn1Tag(TagClass.ContextSpecific, 7)))
                 {
-                    decoded.ServerSaslCreds = tmpServerSaslCreds;
+                    decoded.ServerSaslCreds = rebindSpan.Overlaps(tmpSpan.Span, out offset) ? rebind.Slice(offset, tmpSpan.Length) : tmpSpan.ToArray();
                 }
                 else
                 {

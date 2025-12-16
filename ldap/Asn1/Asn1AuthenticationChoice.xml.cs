@@ -1,13 +1,17 @@
-﻿using System;
-using System.Security.Cryptography;
-using System.Security.Cryptography.Asn1;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+#pragma warning disable SA1028 // ignore whitespace warnings for generated code
+using System;
+using System.Formats.Asn1;
+using System.Runtime.InteropServices;
 
 namespace zivillian.ldap.Asn1
 {
     internal sealed partial class Asn1AuthenticationChoice
     {
         internal ReadOnlyMemory<byte>? Simple;
-        internal Asn1SaslCredentials Sasl;
+        internal Asn1SaslCredentials? Sasl;
 
 #if DEBUG
         static Asn1AuthenticationChoice()
@@ -15,14 +19,14 @@ namespace zivillian.ldap.Asn1
             var usedTags = new System.Collections.Generic.Dictionary<Asn1Tag, string>();
             Action<Asn1Tag, string> ensureUniqueTag = (tag, fieldName) =>
             {
-                if (usedTags.TryGetValue(tag, out string existing))
+                if (usedTags.TryGetValue(tag, out string? existing))
                 {
                     throw new InvalidOperationException($"Tag '{tag}' is in use by both '{existing}' and '{fieldName}'");
                 }
 
                 usedTags.Add(tag, fieldName);
             };
-            
+
             ensureUniqueTag(new Asn1Tag(TagClass.ContextSpecific, 0), "Simple");
             ensureUniqueTag(new Asn1Tag(TagClass.ContextSpecific, 3), "Sasl");
         }
@@ -30,14 +34,14 @@ namespace zivillian.ldap.Asn1
 
         internal void Encode(AsnWriter writer)
         {
-            bool wroteValue = false; 
-            
+            bool wroteValue = false;
+
             if (Simple.HasValue)
             {
                 if (wroteValue)
                     throw new CryptographicException();
-                
-                writer.WriteOctetString(new Asn1Tag(TagClass.ContextSpecific, 0), Simple.Value.Span);
+
+                writer.WriteOctetString(Simple.Value.Span, new Asn1Tag(TagClass.ContextSpecific, 0));
                 wroteValue = true;
             }
 
@@ -45,7 +49,7 @@ namespace zivillian.ldap.Asn1
             {
                 if (wroteValue)
                     throw new CryptographicException();
-                
+
                 Sasl.Encode(writer, new Asn1Tag(TagClass.ContextSpecific, 3));
                 wroteValue = true;
             }
@@ -59,35 +63,31 @@ namespace zivillian.ldap.Asn1
         internal static Asn1AuthenticationChoice Decode(ReadOnlyMemory<byte> encoded, AsnEncodingRules ruleSet)
         {
             AsnReader reader = new AsnReader(encoded, ruleSet);
-            
-            Decode(reader, out Asn1AuthenticationChoice decoded);
+
+            DecodeCore(reader, encoded, out Asn1AuthenticationChoice decoded);
             reader.ThrowIfNotEmpty();
             return decoded;
         }
 
-        internal static void Decode(AsnReader reader, Asn1Tag expectedTag, out Asn1AuthenticationChoice decoded)
+        internal static void Decode(AsnReader reader, ReadOnlyMemory<byte> rebind, out Asn1AuthenticationChoice decoded)
         {
-            if (reader == null)
-                throw new ArgumentNullException(nameof(reader));
-
-            reader.ReadNull(expectedTag);
-            Decode(reader, out decoded);
+            DecodeCore(reader, rebind, out decoded);
         }
 
-        internal static void Decode(AsnReader reader, out Asn1AuthenticationChoice decoded)
+        private static void DecodeCore(AsnReader reader, ReadOnlyMemory<byte> rebind, out Asn1AuthenticationChoice decoded)
         {
-            if (reader == null)
-                throw new ArgumentNullException(nameof(reader));
-
             decoded = new Asn1AuthenticationChoice();
             Asn1Tag tag = reader.PeekTag();
-            
+            ReadOnlySpan<byte> rebindSpan = rebind.Span;
+            int offset;
+            ReadOnlyMemory<byte> tmpSpan;
+
             if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.ContextSpecific, 0)))
             {
 
-                if (reader.TryGetPrimitiveOctetStringBytes(new Asn1Tag(TagClass.ContextSpecific, 0), out ReadOnlyMemory<byte> tmpSimple))
+                if (reader.TryReadPrimitiveOctetString(out tmpSpan, new Asn1Tag(TagClass.ContextSpecific, 0)))
                 {
-                    decoded.Simple = tmpSimple;
+                    decoded.Simple = rebindSpan.Overlaps(tmpSpan.Span, out offset) ? rebind.Slice(offset, tmpSpan.Length) : tmpSpan.ToArray();
                 }
                 else
                 {
@@ -98,7 +98,7 @@ namespace zivillian.ldap.Asn1
             else if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.ContextSpecific, 3)))
             {
                 Asn1SaslCredentials tmpSasl;
-                Asn1SaslCredentials.Decode(reader, new Asn1Tag(TagClass.ContextSpecific, 3), out tmpSasl);
+                Asn1SaslCredentials.Decode(reader, new Asn1Tag(TagClass.ContextSpecific, 3), rebind, out tmpSasl);
                 decoded.Sasl = tmpSasl;
 
             }

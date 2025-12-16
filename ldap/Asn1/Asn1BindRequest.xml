@@ -9,7 +9,7 @@
          name                    LDAPDN,
          authentication          AuthenticationChoice }
   -->
-  <asn:Integer backingType="byte" name="Version"/>
+  <asn:Integer backingType="int" name="Version"/>
   <asn:OctetString name="Name"/>
   <asn:AsnType name="Authentication" typeName="Asn1AuthenticationChoice"/>
 </asn:Sequence>

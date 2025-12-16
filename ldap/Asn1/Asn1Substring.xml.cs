@@ -1,6 +1,10 @@
-﻿using System;
-using System.Security.Cryptography;
-using System.Security.Cryptography.Asn1;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+#pragma warning disable SA1028 // ignore whitespace warnings for generated code
+using System;
+using System.Formats.Asn1;
+using System.Runtime.InteropServices;
 
 namespace zivillian.ldap.Asn1
 {
@@ -16,14 +20,14 @@ namespace zivillian.ldap.Asn1
             var usedTags = new System.Collections.Generic.Dictionary<Asn1Tag, string>();
             Action<Asn1Tag, string> ensureUniqueTag = (tag, fieldName) =>
             {
-                if (usedTags.TryGetValue(tag, out string existing))
+                if (usedTags.TryGetValue(tag, out string? existing))
                 {
                     throw new InvalidOperationException($"Tag '{tag}' is in use by both '{existing}' and '{fieldName}'");
                 }
 
                 usedTags.Add(tag, fieldName);
             };
-            
+
             ensureUniqueTag(new Asn1Tag(TagClass.ContextSpecific, 0), "Initial");
             ensureUniqueTag(new Asn1Tag(TagClass.ContextSpecific, 1), "Any");
             ensureUniqueTag(new Asn1Tag(TagClass.ContextSpecific, 2), "Final");
@@ -32,14 +36,14 @@ namespace zivillian.ldap.Asn1
 
         internal void Encode(AsnWriter writer)
         {
-            bool wroteValue = false; 
-            
+            bool wroteValue = false;
+
             if (Initial.HasValue)
             {
                 if (wroteValue)
                     throw new CryptographicException();
-                
-                writer.WriteOctetString(new Asn1Tag(TagClass.ContextSpecific, 0), Initial.Value.Span);
+
+                writer.WriteOctetString(Initial.Value.Span, new Asn1Tag(TagClass.ContextSpecific, 0));
                 wroteValue = true;
             }
 
@@ -47,8 +51,8 @@ namespace zivillian.ldap.Asn1
             {
                 if (wroteValue)
                     throw new CryptographicException();
-                
-                writer.WriteOctetString(new Asn1Tag(TagClass.ContextSpecific, 1), Any.Value.Span);
+
+                writer.WriteOctetString(Any.Value.Span, new Asn1Tag(TagClass.ContextSpecific, 1));
                 wroteValue = true;
             }
 
@@ -56,8 +60,8 @@ namespace zivillian.ldap.Asn1
             {
                 if (wroteValue)
                     throw new CryptographicException();
-                
-                writer.WriteOctetString(new Asn1Tag(TagClass.ContextSpecific, 2), Final.Value.Span);
+
+                writer.WriteOctetString(Final.Value.Span, new Asn1Tag(TagClass.ContextSpecific, 2));
                 wroteValue = true;
             }
 
@@ -70,35 +74,31 @@ namespace zivillian.ldap.Asn1
         internal static Asn1Substring Decode(ReadOnlyMemory<byte> encoded, AsnEncodingRules ruleSet)
         {
             AsnReader reader = new AsnReader(encoded, ruleSet);
-            
-            Decode(reader, out Asn1Substring decoded);
+
+            DecodeCore(reader, encoded, out Asn1Substring decoded);
             reader.ThrowIfNotEmpty();
             return decoded;
         }
 
-        internal static void Decode(AsnReader reader, Asn1Tag expectedTag, out Asn1Substring decoded)
+        internal static void Decode(AsnReader reader, ReadOnlyMemory<byte> rebind, out Asn1Substring decoded)
         {
-            if (reader == null)
-                throw new ArgumentNullException(nameof(reader));
-
-            reader.ReadNull(expectedTag);
-            Decode(reader, out decoded);
+            DecodeCore(reader, rebind, out decoded);
         }
 
-        internal static void Decode(AsnReader reader, out Asn1Substring decoded)
+        private static void DecodeCore(AsnReader reader, ReadOnlyMemory<byte> rebind, out Asn1Substring decoded)
         {
-            if (reader == null)
-                throw new ArgumentNullException(nameof(reader));
-
             decoded = new Asn1Substring();
             Asn1Tag tag = reader.PeekTag();
-            
+            ReadOnlySpan<byte> rebindSpan = rebind.Span;
+            int offset;
+            ReadOnlyMemory<byte> tmpSpan;
+
             if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.ContextSpecific, 0)))
             {
 
-                if (reader.TryGetPrimitiveOctetStringBytes(new Asn1Tag(TagClass.ContextSpecific, 0), out ReadOnlyMemory<byte> tmpInitial))
+                if (reader.TryReadPrimitiveOctetString(out tmpSpan, new Asn1Tag(TagClass.ContextSpecific, 0)))
                 {
-                    decoded.Initial = tmpInitial;
+                    decoded.Initial = rebindSpan.Overlaps(tmpSpan.Span, out offset) ? rebind.Slice(offset, tmpSpan.Length) : tmpSpan.ToArray();
                 }
                 else
                 {
@@ -109,9 +109,9 @@ namespace zivillian.ldap.Asn1
             else if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.ContextSpecific, 1)))
             {
 
-                if (reader.TryGetPrimitiveOctetStringBytes(new Asn1Tag(TagClass.ContextSpecific, 1), out ReadOnlyMemory<byte> tmpAny))
+                if (reader.TryReadPrimitiveOctetString(out tmpSpan, new Asn1Tag(TagClass.ContextSpecific, 1)))
                 {
-                    decoded.Any = tmpAny;
+                    decoded.Any = rebindSpan.Overlaps(tmpSpan.Span, out offset) ? rebind.Slice(offset, tmpSpan.Length) : tmpSpan.ToArray();
                 }
                 else
                 {
@@ -122,9 +122,9 @@ namespace zivillian.ldap.Asn1
             else if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.ContextSpecific, 2)))
             {
 
-                if (reader.TryGetPrimitiveOctetStringBytes(new Asn1Tag(TagClass.ContextSpecific, 2), out ReadOnlyMemory<byte> tmpFinal))
+                if (reader.TryReadPrimitiveOctetString(out tmpSpan, new Asn1Tag(TagClass.ContextSpecific, 2)))
                 {
-                    decoded.Final = tmpFinal;
+                    decoded.Final = rebindSpan.Overlaps(tmpSpan.Span, out offset) ? rebind.Slice(offset, tmpSpan.Length) : tmpSpan.ToArray();
                 }
                 else
                 {

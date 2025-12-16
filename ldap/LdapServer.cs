@@ -8,7 +8,7 @@ using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Authentication;
-using System.Security.Cryptography.Asn1;
+using System.Formats.Asn1;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -563,12 +563,10 @@ namespace zivillian.ldap
         private static async Task WriteAsync(LdapRequestMessage message, LdapClientConnection connection)
         {
             var asn = message.GetAsn();
-            using (var asnwriter = new AsnWriter(AsnEncodingRules.BER))
-            {
-                asn.Encode(asnwriter);
-                var bytes = asnwriter.Encode();
-                await connection.WriteAsync(bytes).ConfigureAwait(false);
-            }
+            var asnwriter = new AsnWriter(AsnEncodingRules.BER);
+            asn.Encode(asnwriter);
+            var bytes = asnwriter.Encode();
+            await connection.WriteAsync(bytes).ConfigureAwait(false);
         }
 
         private static bool TryReadTagAndLength(ReadOnlySequence<byte> buffer, out long length)
@@ -577,10 +575,10 @@ namespace zivillian.ldap
                 return TryReadTagAndLength(buffer.First, out length);
 
             length = 0;
-            if (!AsnReader.TryPeekTag(buffer.First.Span, out _, out int tagBytes))
+            if (!Asn1Tag.TryDecode(buffer.First.Span, out _, out int tagBytes))
                 return false;
             buffer = buffer.Slice(tagBytes);
-            if (!AsnReader.TryReadLength(buffer.First.Span, AsnEncodingRules.BER, out var asnLength, out var lengthBytes))
+            if (!AsnDecoder.TryDecodeLength(buffer.First.Span, AsnEncodingRules.BER, out var asnLength, out var lengthBytes))
                 return false;
             if (!asnLength.HasValue)
                 return false;
@@ -593,9 +591,9 @@ namespace zivillian.ldap
         private static bool TryReadTagAndLength(ReadOnlyMemory<byte> buffer, out long length)
         {
             length = 0;
-            if (!AsnReader.TryPeekTag(buffer.Span, out _, out int tagBytes))
+            if (!Asn1Tag.TryDecode(buffer.Span, out _, out int tagBytes))
                 return false;
-            if (!AsnReader.TryReadLength(buffer.Span.Slice(tagBytes), AsnEncodingRules.BER, out var asnLength, out var lengthBytes))
+            if (!AsnDecoder.TryDecodeLength(buffer.Span.Slice(tagBytes), AsnEncodingRules.BER, out var asnLength, out var lengthBytes))
                 return false;
             if (!asnLength.HasValue)
                 return false;

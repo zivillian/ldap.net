@@ -19,9 +19,10 @@ namespace zivillian.ldap
             : base(message)
         {
             var bindRequest = message.ProtocolOp.BindRequest;
-            Version = bindRequest.Version;
-            if (Version < 1 || Version > 127)
+            var version = bindRequest.Version;
+            if (version < 1 || version > 127)
                 throw new ArgumentException("invalid LDAP version");
+            Version = (byte)version;
             Name = new LdapDistinguishedName(bindRequest.Name.Span);
             var auth = bindRequest.Authentication;
             if (auth.Simple != null)

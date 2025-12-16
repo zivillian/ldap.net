@@ -1,7 +1,11 @@
-﻿using System;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+#pragma warning disable SA1028 // ignore whitespace warnings for generated code
+using System;
 using System.Collections.Generic;
-using System.Security.Cryptography;
-using System.Security.Cryptography.Asn1;
+using System.Formats.Asn1;
+using System.Runtime.InteropServices;
 
 namespace zivillian.ldap.Asn1
 {
@@ -9,22 +13,22 @@ namespace zivillian.ldap.Asn1
     {
         internal ReadOnlyMemory<byte> Object;
         internal Asn1Change[] Changes;
-      
+
         internal void Encode(AsnWriter writer)
         {
             Encode(writer, Asn1Tag.Sequence);
         }
-    
+
         internal void Encode(AsnWriter writer, Asn1Tag tag)
         {
             writer.PushSequence(tag);
-            
+
             writer.WriteOctetString(Object.Span);
 
             writer.PushSequence();
             for (int i = 0; i < Changes.Length; i++)
             {
-                Changes[i].Encode(writer); 
+                Changes[i].Encode(writer);
             }
             writer.PopSequence();
 
@@ -35,37 +39,39 @@ namespace zivillian.ldap.Asn1
         {
             return Decode(Asn1Tag.Sequence, encoded, ruleSet);
         }
-        
+
         internal static Asn1ModifyRequest Decode(Asn1Tag expectedTag, ReadOnlyMemory<byte> encoded, AsnEncodingRules ruleSet)
         {
             AsnReader reader = new AsnReader(encoded, ruleSet);
-            
-            Decode(reader, expectedTag, out Asn1ModifyRequest decoded);
+
+            DecodeCore(reader, expectedTag, encoded, out Asn1ModifyRequest decoded);
             reader.ThrowIfNotEmpty();
             return decoded;
         }
 
-        internal static void Decode(AsnReader reader, out Asn1ModifyRequest decoded)
+        internal static void Decode(AsnReader reader, ReadOnlyMemory<byte> rebind, out Asn1ModifyRequest decoded)
         {
-            if (reader == null)
-                throw new ArgumentNullException(nameof(reader));
-
-            Decode(reader, Asn1Tag.Sequence, out decoded);
+            Decode(reader, Asn1Tag.Sequence, rebind, out decoded);
         }
 
-        internal static void Decode(AsnReader reader, Asn1Tag expectedTag, out Asn1ModifyRequest decoded)
+        internal static void Decode(AsnReader reader, Asn1Tag expectedTag, ReadOnlyMemory<byte> rebind, out Asn1ModifyRequest decoded)
         {
-            if (reader == null)
-                throw new ArgumentNullException(nameof(reader));
+            DecodeCore(reader, expectedTag, rebind, out decoded);
+        }
 
+        private static void DecodeCore(AsnReader reader, Asn1Tag expectedTag, ReadOnlyMemory<byte> rebind, out Asn1ModifyRequest decoded)
+        {
             decoded = new Asn1ModifyRequest();
             AsnReader sequenceReader = reader.ReadSequence(expectedTag);
             AsnReader collectionReader;
-            
+            ReadOnlySpan<byte> rebindSpan = rebind.Span;
+            int offset;
+            ReadOnlyMemory<byte> tmpSpan;
 
-            if (sequenceReader.TryGetPrimitiveOctetStringBytes(out ReadOnlyMemory<byte> tmpObject))
+
+            if (sequenceReader.TryReadPrimitiveOctetString(out tmpSpan))
             {
-                decoded.Object = tmpObject;
+                decoded.Object = rebindSpan.Overlaps(tmpSpan.Span, out offset) ? rebind.Slice(offset, tmpSpan.Length) : tmpSpan.ToArray();
             }
             else
             {
@@ -81,7 +87,7 @@ namespace zivillian.ldap.Asn1
 
                 while (collectionReader.HasData)
                 {
-                    Asn1Change.Decode(collectionReader, out tmpItem); 
+                    Asn1Change.Decode(collectionReader, rebind, out tmpItem);
                     tmpList.Add(tmpItem);
                 }
 

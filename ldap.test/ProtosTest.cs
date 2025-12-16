@@ -9,43 +9,56 @@ namespace zivillian.ldap.test
         private static readonly string EncDirectory = Path.Combine("..", "..", "..", "data", "enc");
         private static readonly string AppDirectory = Path.Combine("..", "..", "..", "data", "app");
 
-        [Fact]
-        public void CanReadBEREnc()
+        public static IEnumerable<object[]> GetEncFiles()
         {
-            var files = new DirectoryInfo(EncDirectory).GetFiles();
+            return GetFiles(EncDirectory);
+        }
+
+        public static IEnumerable<object[]> GetAppFiles()
+        {
+            return GetFiles(AppDirectory);
+        }
+
+        private static IEnumerable<object[]> GetFiles(string directory)
+        {
+            var files = new DirectoryInfo(directory).GetFiles();
             Assert.NotEmpty(files);
+
             foreach (var file in files)
             {
-                var data = File.ReadAllBytes(file.FullName);
-                try
-                {
-                    var ldap = LdapReader.ReadMessage(data);
-                    data = LdapReader.WriteMessage(ldap);
-                    Assert.NotEmpty(data);
-                }
-                catch (LdapException)
-                {
-                }
+                yield return [file.Name];
             }
         }
 
-        [Fact]
-        public void CanReadApp()
+        [Theory]
+        [MemberData(nameof(GetEncFiles))]
+        public void CanReadBEREnc(string filename)
         {
-            var files = new DirectoryInfo(AppDirectory).GetFiles();
-            Assert.NotEmpty(files);
-            foreach (var file in files)
+            var data = File.ReadAllBytes(Path.Combine(EncDirectory, filename));
+            try
             {
-                var data = File.ReadAllBytes(file.FullName);
-                try
-                {
-                    var ldap = LdapReader.ReadMessage(data);
-                    data = LdapReader.WriteMessage(ldap);
-                    Assert.NotEmpty(data);
-                }
-                catch (LdapException)
-                {
-                }
+                var ldap = LdapReader.ReadMessage(data);
+                data = LdapReader.WriteMessage(ldap);
+                Assert.NotEmpty(data);
+            }
+            catch (LdapException)
+            {
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(GetAppFiles))]
+        public void CanReadApp(string filename)
+        {
+            var data = File.ReadAllBytes(Path.Combine(AppDirectory, filename));
+            try
+            {
+                var ldap = LdapReader.ReadMessage(data);
+                data = LdapReader.WriteMessage(ldap);
+                Assert.NotEmpty(data);
+            }
+            catch (LdapException)
+            {
             }
         }
     }

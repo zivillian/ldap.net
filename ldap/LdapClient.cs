@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
-using System.Security.Cryptography.Asn1;
+using System.Formats.Asn1;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
@@ -239,12 +239,9 @@ namespace zivillian.ldap
             await _writeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
-                ReadOnlyMemory<byte> bytes;
-                using (var writer = new AsnWriter(AsnEncodingRules.BER))
-                {
-                    asn.Encode(writer);
-                    bytes = writer.Encode();
-                }
+                var writer = new AsnWriter(AsnEncodingRules.BER);
+                asn.Encode(writer);
+                ReadOnlyMemory<byte> bytes = writer.Encode();
                 await stream.WriteAsync(bytes, cancellationToken).ConfigureAwait(false);
                 await stream.FlushAsync(cancellationToken).ConfigureAwait(false);
             }

@@ -1,33 +1,37 @@
-﻿using System;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+#pragma warning disable SA1028 // ignore whitespace warnings for generated code
+using System;
 using System.Collections.Generic;
-using System.Security.Cryptography;
-using System.Security.Cryptography.Asn1;
+using System.Formats.Asn1;
+using System.Runtime.InteropServices;
 
 namespace zivillian.ldap.Asn1
 {
     internal sealed partial class Asn1ProtocolOp
     {
-        internal Asn1BindRequest BindRequest;
-        internal Asn1BindResponse BindResponse;
+        internal Asn1BindRequest? BindRequest;
+        internal Asn1BindResponse? BindResponse;
         internal bool ? UnbindRequest;
-        internal Asn1SearchRequest SearchRequest;
-        internal Asn1SearchResultEntry SearchResEntry;
-        internal Asn1LDAPResult SearchResultDone;
-        internal ReadOnlyMemory<byte>[] SearchResultReference;
-        internal Asn1ModifyRequest ModifyRequest;
-        internal Asn1LDAPResult ModifyResponse;
-        internal Asn1AddRequest AddRequest;
-        internal Asn1LDAPResult AddResponse;
+        internal Asn1SearchRequest? SearchRequest;
+        internal Asn1SearchResultEntry? SearchResEntry;
+        internal Asn1LDAPResult? SearchResultDone;
+        internal ReadOnlyMemory<byte>[]? SearchResultReference;
+        internal Asn1ModifyRequest? ModifyRequest;
+        internal Asn1LDAPResult? ModifyResponse;
+        internal Asn1AddRequest? AddRequest;
+        internal Asn1LDAPResult? AddResponse;
         internal ReadOnlyMemory<byte>? DelRequest;
-        internal Asn1LDAPResult DelResponse;
-        internal Asn1ModifyDNRequest ModifyDNRequest;
-        internal Asn1LDAPResult ModifyDNResponse;
-        internal Asn1CompareRequest CompareRequest;
-        internal Asn1LDAPResult CompareResponse;
+        internal Asn1LDAPResult? DelResponse;
+        internal Asn1ModifyDNRequest? ModifyDNRequest;
+        internal Asn1LDAPResult? ModifyDNResponse;
+        internal Asn1CompareRequest? CompareRequest;
+        internal Asn1LDAPResult? CompareResponse;
         internal int? AbandonRequest;
-        internal Asn1ExtendedRequest ExtendedRequest;
-        internal Asn1ExtendedResponse ExtendedResponse;
-        internal Asn1IntermediateResponse IntermediateResponse;
+        internal Asn1ExtendedRequest? ExtendedRequest;
+        internal Asn1ExtendedResponse? ExtendedResponse;
+        internal Asn1IntermediateResponse? IntermediateResponse;
 
 #if DEBUG
         static Asn1ProtocolOp()
@@ -35,14 +39,14 @@ namespace zivillian.ldap.Asn1
             var usedTags = new System.Collections.Generic.Dictionary<Asn1Tag, string>();
             Action<Asn1Tag, string> ensureUniqueTag = (tag, fieldName) =>
             {
-                if (usedTags.TryGetValue(tag, out string existing))
+                if (usedTags.TryGetValue(tag, out string? existing))
                 {
                     throw new InvalidOperationException($"Tag '{tag}' is in use by both '{existing}' and '{fieldName}'");
                 }
 
                 usedTags.Add(tag, fieldName);
             };
-            
+
             ensureUniqueTag(new Asn1Tag(TagClass.Application, 0), "BindRequest");
             ensureUniqueTag(new Asn1Tag(TagClass.Application, 1), "BindResponse");
             ensureUniqueTag(new Asn1Tag(TagClass.Application, 2), "UnbindRequest");
@@ -69,13 +73,13 @@ namespace zivillian.ldap.Asn1
 
         internal void Encode(AsnWriter writer)
         {
-            bool wroteValue = false; 
-            
+            bool wroteValue = false;
+
             if (BindRequest != null)
             {
                 if (wroteValue)
                     throw new CryptographicException();
-                
+
                 BindRequest.Encode(writer, new Asn1Tag(TagClass.Application, 0));
                 wroteValue = true;
             }
@@ -84,7 +88,7 @@ namespace zivillian.ldap.Asn1
             {
                 if (wroteValue)
                     throw new CryptographicException();
-                
+
                 BindResponse.Encode(writer, new Asn1Tag(TagClass.Application, 1));
                 wroteValue = true;
             }
@@ -93,7 +97,7 @@ namespace zivillian.ldap.Asn1
             {
                 if (wroteValue)
                     throw new CryptographicException();
-                
+
                 writer.WriteNull(new Asn1Tag(TagClass.Application, 2));
                 wroteValue = true;
             }
@@ -102,7 +106,7 @@ namespace zivillian.ldap.Asn1
             {
                 if (wroteValue)
                     throw new CryptographicException();
-                
+
                 SearchRequest.Encode(writer, new Asn1Tag(TagClass.Application, 3));
                 wroteValue = true;
             }
@@ -111,7 +115,7 @@ namespace zivillian.ldap.Asn1
             {
                 if (wroteValue)
                     throw new CryptographicException();
-                
+
                 SearchResEntry.Encode(writer, new Asn1Tag(TagClass.Application, 4));
                 wroteValue = true;
             }
@@ -120,7 +124,7 @@ namespace zivillian.ldap.Asn1
             {
                 if (wroteValue)
                     throw new CryptographicException();
-                
+
                 SearchResultDone.Encode(writer, new Asn1Tag(TagClass.Application, 5));
                 wroteValue = true;
             }
@@ -129,12 +133,12 @@ namespace zivillian.ldap.Asn1
             {
                 if (wroteValue)
                     throw new CryptographicException();
-                
+
 
                 writer.PushSequence(new Asn1Tag(TagClass.Application, 19));
                 for (int i = 0; i < SearchResultReference.Length; i++)
                 {
-                    writer.WriteOctetString(SearchResultReference[i].Span); 
+                    writer.WriteOctetString(SearchResultReference[i].Span);
                 }
                 writer.PopSequence(new Asn1Tag(TagClass.Application, 19));
 
@@ -145,7 +149,7 @@ namespace zivillian.ldap.Asn1
             {
                 if (wroteValue)
                     throw new CryptographicException();
-                
+
                 ModifyRequest.Encode(writer, new Asn1Tag(TagClass.Application, 6));
                 wroteValue = true;
             }
@@ -154,7 +158,7 @@ namespace zivillian.ldap.Asn1
             {
                 if (wroteValue)
                     throw new CryptographicException();
-                
+
                 ModifyResponse.Encode(writer, new Asn1Tag(TagClass.Application, 7));
                 wroteValue = true;
             }
@@ -163,7 +167,7 @@ namespace zivillian.ldap.Asn1
             {
                 if (wroteValue)
                     throw new CryptographicException();
-                
+
                 AddRequest.Encode(writer, new Asn1Tag(TagClass.Application, 8));
                 wroteValue = true;
             }
@@ -172,7 +176,7 @@ namespace zivillian.ldap.Asn1
             {
                 if (wroteValue)
                     throw new CryptographicException();
-                
+
                 AddResponse.Encode(writer, new Asn1Tag(TagClass.Application, 9));
                 wroteValue = true;
             }
@@ -181,8 +185,8 @@ namespace zivillian.ldap.Asn1
             {
                 if (wroteValue)
                     throw new CryptographicException();
-                
-                writer.WriteOctetString(new Asn1Tag(TagClass.Application, 10), DelRequest.Value.Span);
+
+                writer.WriteOctetString(DelRequest.Value.Span, new Asn1Tag(TagClass.Application, 10));
                 wroteValue = true;
             }
 
@@ -190,7 +194,7 @@ namespace zivillian.ldap.Asn1
             {
                 if (wroteValue)
                     throw new CryptographicException();
-                
+
                 DelResponse.Encode(writer, new Asn1Tag(TagClass.Application, 11));
                 wroteValue = true;
             }
@@ -199,7 +203,7 @@ namespace zivillian.ldap.Asn1
             {
                 if (wroteValue)
                     throw new CryptographicException();
-                
+
                 ModifyDNRequest.Encode(writer, new Asn1Tag(TagClass.Application, 12));
                 wroteValue = true;
             }
@@ -208,7 +212,7 @@ namespace zivillian.ldap.Asn1
             {
                 if (wroteValue)
                     throw new CryptographicException();
-                
+
                 ModifyDNResponse.Encode(writer, new Asn1Tag(TagClass.Application, 13));
                 wroteValue = true;
             }
@@ -217,7 +221,7 @@ namespace zivillian.ldap.Asn1
             {
                 if (wroteValue)
                     throw new CryptographicException();
-                
+
                 CompareRequest.Encode(writer, new Asn1Tag(TagClass.Application, 14));
                 wroteValue = true;
             }
@@ -226,7 +230,7 @@ namespace zivillian.ldap.Asn1
             {
                 if (wroteValue)
                     throw new CryptographicException();
-                
+
                 CompareResponse.Encode(writer, new Asn1Tag(TagClass.Application, 15));
                 wroteValue = true;
             }
@@ -235,8 +239,8 @@ namespace zivillian.ldap.Asn1
             {
                 if (wroteValue)
                     throw new CryptographicException();
-                
-                writer.WriteInteger(new Asn1Tag(TagClass.Application, 16), AbandonRequest.Value);
+
+                writer.WriteInteger(AbandonRequest.Value, new Asn1Tag(TagClass.Application, 16));
                 wroteValue = true;
             }
 
@@ -244,7 +248,7 @@ namespace zivillian.ldap.Asn1
             {
                 if (wroteValue)
                     throw new CryptographicException();
-                
+
                 ExtendedRequest.Encode(writer, new Asn1Tag(TagClass.Application, 23));
                 wroteValue = true;
             }
@@ -253,7 +257,7 @@ namespace zivillian.ldap.Asn1
             {
                 if (wroteValue)
                     throw new CryptographicException();
-                
+
                 ExtendedResponse.Encode(writer, new Asn1Tag(TagClass.Application, 24));
                 wroteValue = true;
             }
@@ -262,7 +266,7 @@ namespace zivillian.ldap.Asn1
             {
                 if (wroteValue)
                     throw new CryptographicException();
-                
+
                 IntermediateResponse.Encode(writer, new Asn1Tag(TagClass.Application, 25));
                 wroteValue = true;
             }
@@ -276,41 +280,37 @@ namespace zivillian.ldap.Asn1
         internal static Asn1ProtocolOp Decode(ReadOnlyMemory<byte> encoded, AsnEncodingRules ruleSet)
         {
             AsnReader reader = new AsnReader(encoded, ruleSet);
-            
-            Decode(reader, out Asn1ProtocolOp decoded);
+
+            DecodeCore(reader, encoded, out Asn1ProtocolOp decoded);
             reader.ThrowIfNotEmpty();
             return decoded;
         }
 
-        internal static void Decode(AsnReader reader, Asn1Tag expectedTag, out Asn1ProtocolOp decoded)
+        internal static void Decode(AsnReader reader, ReadOnlyMemory<byte> rebind, out Asn1ProtocolOp decoded)
         {
-            if (reader == null)
-                throw new ArgumentNullException(nameof(reader));
-
-            reader.ReadNull(expectedTag);
-            Decode(reader, out decoded);
+            DecodeCore(reader, rebind, out decoded);
         }
 
-        internal static void Decode(AsnReader reader, out Asn1ProtocolOp decoded)
+        private static void DecodeCore(AsnReader reader, ReadOnlyMemory<byte> rebind, out Asn1ProtocolOp decoded)
         {
-            if (reader == null)
-                throw new ArgumentNullException(nameof(reader));
-
             decoded = new Asn1ProtocolOp();
             Asn1Tag tag = reader.PeekTag();
             AsnReader collectionReader;
-            
+            ReadOnlySpan<byte> rebindSpan = rebind.Span;
+            int offset;
+            ReadOnlyMemory<byte> tmpSpan;
+
             if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.Application, 0)))
             {
                 Asn1BindRequest tmpBindRequest;
-                Asn1BindRequest.Decode(reader, new Asn1Tag(TagClass.Application, 0), out tmpBindRequest);
+                Asn1BindRequest.Decode(reader, new Asn1Tag(TagClass.Application, 0), rebind, out tmpBindRequest);
                 decoded.BindRequest = tmpBindRequest;
 
             }
             else if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.Application, 1)))
             {
                 Asn1BindResponse tmpBindResponse;
-                Asn1BindResponse.Decode(reader, new Asn1Tag(TagClass.Application, 1), out tmpBindResponse);
+                Asn1BindResponse.Decode(reader, new Asn1Tag(TagClass.Application, 1), rebind, out tmpBindResponse);
                 decoded.BindResponse = tmpBindResponse;
 
             }
@@ -323,21 +323,21 @@ namespace zivillian.ldap.Asn1
             else if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.Application, 3)))
             {
                 Asn1SearchRequest tmpSearchRequest;
-                Asn1SearchRequest.Decode(reader, new Asn1Tag(TagClass.Application, 3), out tmpSearchRequest);
+                Asn1SearchRequest.Decode(reader, new Asn1Tag(TagClass.Application, 3), rebind, out tmpSearchRequest);
                 decoded.SearchRequest = tmpSearchRequest;
 
             }
             else if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.Application, 4)))
             {
                 Asn1SearchResultEntry tmpSearchResEntry;
-                Asn1SearchResultEntry.Decode(reader, new Asn1Tag(TagClass.Application, 4), out tmpSearchResEntry);
+                Asn1SearchResultEntry.Decode(reader, new Asn1Tag(TagClass.Application, 4), rebind, out tmpSearchResEntry);
                 decoded.SearchResEntry = tmpSearchResEntry;
 
             }
             else if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.Application, 5)))
             {
                 Asn1LDAPResult tmpSearchResultDone;
-                Asn1LDAPResult.Decode(reader, new Asn1Tag(TagClass.Application, 5), out tmpSearchResultDone);
+                Asn1LDAPResult.Decode(reader, new Asn1Tag(TagClass.Application, 5), rebind, out tmpSearchResultDone);
                 decoded.SearchResultDone = tmpSearchResultDone;
 
             }
@@ -353,15 +353,15 @@ namespace zivillian.ldap.Asn1
                     while (collectionReader.HasData)
                     {
 
-                        if (collectionReader.TryGetPrimitiveOctetStringBytes(out ReadOnlyMemory<byte> tmp))
+                        if (collectionReader.TryReadPrimitiveOctetString(out tmpSpan))
                         {
-                            tmpItem = tmp;
+                            tmpItem = rebindSpan.Overlaps(tmpSpan.Span, out offset) ? rebind.Slice(offset, tmpSpan.Length) : tmpSpan.ToArray();
                         }
                         else
                         {
                             tmpItem = collectionReader.ReadOctetString();
                         }
- 
+
                         tmpList.Add(tmpItem);
                     }
 
@@ -372,37 +372,37 @@ namespace zivillian.ldap.Asn1
             else if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.Application, 6)))
             {
                 Asn1ModifyRequest tmpModifyRequest;
-                Asn1ModifyRequest.Decode(reader, new Asn1Tag(TagClass.Application, 6), out tmpModifyRequest);
+                Asn1ModifyRequest.Decode(reader, new Asn1Tag(TagClass.Application, 6), rebind, out tmpModifyRequest);
                 decoded.ModifyRequest = tmpModifyRequest;
 
             }
             else if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.Application, 7)))
             {
                 Asn1LDAPResult tmpModifyResponse;
-                Asn1LDAPResult.Decode(reader, new Asn1Tag(TagClass.Application, 7), out tmpModifyResponse);
+                Asn1LDAPResult.Decode(reader, new Asn1Tag(TagClass.Application, 7), rebind, out tmpModifyResponse);
                 decoded.ModifyResponse = tmpModifyResponse;
 
             }
             else if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.Application, 8)))
             {
                 Asn1AddRequest tmpAddRequest;
-                Asn1AddRequest.Decode(reader, new Asn1Tag(TagClass.Application, 8), out tmpAddRequest);
+                Asn1AddRequest.Decode(reader, new Asn1Tag(TagClass.Application, 8), rebind, out tmpAddRequest);
                 decoded.AddRequest = tmpAddRequest;
 
             }
             else if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.Application, 9)))
             {
                 Asn1LDAPResult tmpAddResponse;
-                Asn1LDAPResult.Decode(reader, new Asn1Tag(TagClass.Application, 9), out tmpAddResponse);
+                Asn1LDAPResult.Decode(reader, new Asn1Tag(TagClass.Application, 9), rebind, out tmpAddResponse);
                 decoded.AddResponse = tmpAddResponse;
 
             }
             else if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.Application, 10)))
             {
 
-                if (reader.TryGetPrimitiveOctetStringBytes(new Asn1Tag(TagClass.Application, 10), out ReadOnlyMemory<byte> tmpDelRequest))
+                if (reader.TryReadPrimitiveOctetString(out tmpSpan, new Asn1Tag(TagClass.Application, 10)))
                 {
-                    decoded.DelRequest = tmpDelRequest;
+                    decoded.DelRequest = rebindSpan.Overlaps(tmpSpan.Span, out offset) ? rebind.Slice(offset, tmpSpan.Length) : tmpSpan.ToArray();
                 }
                 else
                 {
@@ -413,42 +413,42 @@ namespace zivillian.ldap.Asn1
             else if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.Application, 11)))
             {
                 Asn1LDAPResult tmpDelResponse;
-                Asn1LDAPResult.Decode(reader, new Asn1Tag(TagClass.Application, 11), out tmpDelResponse);
+                Asn1LDAPResult.Decode(reader, new Asn1Tag(TagClass.Application, 11), rebind, out tmpDelResponse);
                 decoded.DelResponse = tmpDelResponse;
 
             }
             else if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.Application, 12)))
             {
                 Asn1ModifyDNRequest tmpModifyDNRequest;
-                Asn1ModifyDNRequest.Decode(reader, new Asn1Tag(TagClass.Application, 12), out tmpModifyDNRequest);
+                Asn1ModifyDNRequest.Decode(reader, new Asn1Tag(TagClass.Application, 12), rebind, out tmpModifyDNRequest);
                 decoded.ModifyDNRequest = tmpModifyDNRequest;
 
             }
             else if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.Application, 13)))
             {
                 Asn1LDAPResult tmpModifyDNResponse;
-                Asn1LDAPResult.Decode(reader, new Asn1Tag(TagClass.Application, 13), out tmpModifyDNResponse);
+                Asn1LDAPResult.Decode(reader, new Asn1Tag(TagClass.Application, 13), rebind, out tmpModifyDNResponse);
                 decoded.ModifyDNResponse = tmpModifyDNResponse;
 
             }
             else if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.Application, 14)))
             {
                 Asn1CompareRequest tmpCompareRequest;
-                Asn1CompareRequest.Decode(reader, new Asn1Tag(TagClass.Application, 14), out tmpCompareRequest);
+                Asn1CompareRequest.Decode(reader, new Asn1Tag(TagClass.Application, 14), rebind, out tmpCompareRequest);
                 decoded.CompareRequest = tmpCompareRequest;
 
             }
             else if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.Application, 15)))
             {
                 Asn1LDAPResult tmpCompareResponse;
-                Asn1LDAPResult.Decode(reader, new Asn1Tag(TagClass.Application, 15), out tmpCompareResponse);
+                Asn1LDAPResult.Decode(reader, new Asn1Tag(TagClass.Application, 15), rebind, out tmpCompareResponse);
                 decoded.CompareResponse = tmpCompareResponse;
 
             }
             else if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.Application, 16)))
             {
 
-                if (reader.TryReadInt32(new Asn1Tag(TagClass.Application, 16), out int tmpAbandonRequest))
+                if (reader.TryReadInt32(out int tmpAbandonRequest, new Asn1Tag(TagClass.Application, 16)))
                 {
                     decoded.AbandonRequest = tmpAbandonRequest;
                 }
@@ -461,21 +461,21 @@ namespace zivillian.ldap.Asn1
             else if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.Application, 23)))
             {
                 Asn1ExtendedRequest tmpExtendedRequest;
-                Asn1ExtendedRequest.Decode(reader, new Asn1Tag(TagClass.Application, 23), out tmpExtendedRequest);
+                Asn1ExtendedRequest.Decode(reader, new Asn1Tag(TagClass.Application, 23), rebind, out tmpExtendedRequest);
                 decoded.ExtendedRequest = tmpExtendedRequest;
 
             }
             else if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.Application, 24)))
             {
                 Asn1ExtendedResponse tmpExtendedResponse;
-                Asn1ExtendedResponse.Decode(reader, new Asn1Tag(TagClass.Application, 24), out tmpExtendedResponse);
+                Asn1ExtendedResponse.Decode(reader, new Asn1Tag(TagClass.Application, 24), rebind, out tmpExtendedResponse);
                 decoded.ExtendedResponse = tmpExtendedResponse;
 
             }
             else if (tag.HasSameClassAndValue(new Asn1Tag(TagClass.Application, 25)))
             {
                 Asn1IntermediateResponse tmpIntermediateResponse;
-                Asn1IntermediateResponse.Decode(reader, new Asn1Tag(TagClass.Application, 25), out tmpIntermediateResponse);
+                Asn1IntermediateResponse.Decode(reader, new Asn1Tag(TagClass.Application, 25), rebind, out tmpIntermediateResponse);
                 decoded.IntermediateResponse = tmpIntermediateResponse;
 
             }

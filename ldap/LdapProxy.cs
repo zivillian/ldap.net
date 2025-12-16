@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Linq;
 using System.Net.Sockets;
-using System.Security.Cryptography.Asn1;
+using System.Formats.Asn1;
 using System.Threading;
 using System.Threading.Tasks;
 using zivillian.ldap.Asn1;
@@ -210,10 +210,11 @@ namespace zivillian.ldap
                 return TryReadTagAndLength(buffer.First, out length);
 
             length = 0;
-            if (!AsnReader.TryPeekTag(buffer.First.Span, out _, out int tagBytes))
+            
+            if (!Asn1Tag.TryDecode(buffer.First.Span, out _, out int tagBytes))
                 return false;
             buffer = buffer.Slice(tagBytes);
-            if (!AsnReader.TryReadLength(buffer.First.Span, AsnEncodingRules.BER, out var asnLength, out var lengthBytes))
+            if (!AsnDecoder.TryDecodeLength(buffer.First.Span, AsnEncodingRules.BER, out var asnLength, out var lengthBytes))
                 return false;
             if (!asnLength.HasValue)
                 return false;
@@ -226,9 +227,9 @@ namespace zivillian.ldap
         private static bool TryReadTagAndLength(ReadOnlyMemory<byte> buffer, out long length)
         {
             length = 0;
-            if (!AsnReader.TryPeekTag(buffer.Span, out _, out int tagBytes))
+            if (!Asn1Tag.TryDecode(buffer.Span, out _, out int tagBytes))
                 return false;
-            if (!AsnReader.TryReadLength(buffer.Span.Slice(tagBytes), AsnEncodingRules.BER, out var asnLength, out var lengthBytes))
+            if (!AsnDecoder.TryDecodeLength(buffer.Span.Slice(tagBytes), AsnEncodingRules.BER, out var asnLength, out var lengthBytes))
                 return false;
             if (!asnLength.HasValue)
                 return false;
@@ -241,12 +242,10 @@ namespace zivillian.ldap
         private static async Task WriteLdapMessage(Socket socket, LdapRequestMessage ldap, CancellationToken cancellationToken)
         {
             var asn = ldap.GetAsn();
-            using (var asnwriter = new AsnWriter(AsnEncodingRules.BER))
-            {
-                asn.Encode(asnwriter);
-                var bytes = asnwriter.Encode();
-                await socket.SendAsync(bytes, SocketFlags.None, cancellationToken);
-            }
+            var asnwriter = new AsnWriter(AsnEncodingRules.BER);
+            asn.Encode(asnwriter);
+            var bytes = asnwriter.Encode();
+            await socket.SendAsync(bytes, SocketFlags.None, cancellationToken);
         }
 
         private static LdapRequestMessage ReadLdapMessage(ReadOnlySequence<byte> buffer)
