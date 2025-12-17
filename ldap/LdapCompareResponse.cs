@@ -4,8 +4,8 @@ namespace zivillian.ldap
 {
     public class LdapCompareResponse : LdapResponseMessage
     {
-        internal LdapCompareResponse(Asn1LdapMessage message)
-            : base(message.ProtocolOp.CompareResponse, message)
+        internal LdapCompareResponse(Asn1LDAPResult result, Asn1LdapMessage message)
+            : base(result, message)
         {
         }
 

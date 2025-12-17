@@ -17,10 +17,10 @@ namespace zivillian.ldap
         internal Asn1Change GetAsn()
         {
             return new Asn1Change
-            {
-                Operation = Operation,
-                Modification = Modification.GetAsn()
-            };
+            (
+                Operation,
+                Modification.GetAsn()
+            );
         }
     }
 }

@@ -40,10 +40,10 @@ namespace zivillian.ldap
                 bool running = true;
                 cancellationToken.Register(() => running = false);
                 var cancellationTask = Task.Delay(Timeout.Infinite, combined.Token);
-                var accept = _listener.AcceptTcpClientAsync();
+                var accept = _listener.AcceptTcpClientAsync(combined.Token).AsTask();
                 while (running)
                 {
-                    await Task.WhenAny(_clients.Concat(new []{accept, cancellationTask})).ConfigureAwait(false);
+                    await Task.WhenAny(_clients.Concat([accept, cancellationTask])).ConfigureAwait(false);
                     if (accept.IsCompleted)
                     {
                         try
@@ -55,7 +55,7 @@ namespace zivillian.ldap
                         {
                             //client may hav disconnected
                         }
-                        accept = _listener.AcceptTcpClientAsync();
+                        accept = _listener.AcceptTcpClientAsync(combined.Token).AsTask();
                     }
                     else
                     {

@@ -11,10 +11,9 @@ namespace zivillian.ldap
 
         public ReadOnlyMemory<byte>? Value { get; }
 
-        internal LdapExtendedRequest(Asn1LdapMessage message)
+        internal LdapExtendedRequest(Asn1ExtendedRequest extended, Asn1LdapMessage message)
             : base(message)
         {
-            var extended = message.ProtocolOp.ExtendedRequest;
             Name = extended.Name.Span.NumericOid();
             Value = extended.Value;
         }

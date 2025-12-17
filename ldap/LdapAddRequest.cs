@@ -10,10 +10,9 @@ namespace zivillian.ldap
 
         public IReadOnlyList<LdapAttribute> Attributes { get; }
 
-        internal LdapAddRequest(Asn1LdapMessage message)
+        internal LdapAddRequest(Asn1AddRequest add, Asn1LdapMessage message)
             : base(message)
         {
-            var add = message.ProtocolOp.AddRequest;
             Entry = new LdapDistinguishedName(add.Entry.Span);
             if (add.Attributes.Length == 0)
                 throw new ArgumentException("at least one attribute required");

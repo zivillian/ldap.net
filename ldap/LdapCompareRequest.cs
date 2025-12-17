@@ -10,10 +10,9 @@ namespace zivillian.ldap
 
         public LdapAttributeAssertion Assertion { get; }
 
-        internal LdapCompareRequest(Asn1LdapMessage message)
+        internal LdapCompareRequest(Asn1CompareRequest compare, Asn1LdapMessage message)
             : base(message)
         {
-            var compare = message.ProtocolOp.CompareRequest;
             Entry = new LdapDistinguishedName(compare.Entry.Span);
             Assertion = new LdapAttributeAssertion(compare.Assertion);
         }
@@ -28,10 +27,10 @@ namespace zivillian.ldap
         internal override void SetProtocolOp(Asn1ProtocolOp op)
         {
             op.CompareRequest = new Asn1CompareRequest
-            {
-                Entry = Entry.GetBytes(),
-                Assertion = Assertion.GetAsn()
-            };
+            (
+                Entry.GetBytes(),
+                Assertion.GetAsn()
+            );
         }
     }
 }

@@ -13,7 +13,7 @@ namespace zivillian.ldap.ObjectClasses
 
         public OAttribute O { get; }
 
-        protected override void GetAttributes(List<AbstractLdapAttribute> result)
+        protected override void GetAttributes(List<AbstractLdapAttribute?> result)
         {
             result.Add(O);
             base.GetAttributes(result);

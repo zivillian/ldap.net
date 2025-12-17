@@ -15,7 +15,7 @@ namespace zivillian.ldap.Attributes
 
         public abstract string Oid { get; }
 
-        public virtual string Name { get; }
+        public virtual string Name => String.Empty;
 
         public abstract LdapAttributeTypeUsage Usage { get; }
 

@@ -8,12 +8,10 @@
     <RootNamespace>zivillian.ldap</RootNamespace>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors />
   </PropertyGroup>
+
   <ItemGroup>
     <Using Include="System.Security.Cryptography" />
   </ItemGroup>

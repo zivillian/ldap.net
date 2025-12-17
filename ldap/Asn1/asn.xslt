@@ -787,7 +787,7 @@ namespace <xsl:value-of select="@namespace" />
   <xsl:template match="asn:UTF8String | asn:PrintableString | asn:T61String | asn:IA5String | asn:VisibleString | asn:BMPString" mode="DefaultTag">new Asn1Tag(UniversalTagNumber.<xsl:value-of select="local-name()"/>)</xsl:template>
 
   <xsl:template match="asn:SequenceOf | asn:SetOf" mode="FieldDef">
-        internal <xsl:apply-templates mode="CollectionElementType"/>[]<xsl:if test="@optional | parent::asn:Choice">?</xsl:if> <xsl:value-of select="@name"/>;</xsl:template>
+        internal <xsl:apply-templates mode="CollectionElementType"/>[]<xsl:if test="@optional | parent::asn:Choice">?</xsl:if> <xsl:value-of select="@name"/><xsl:if test="not(@optional | parent::asn:Choice)"> = []</xsl:if>;</xsl:template>
 
   <xsl:template match="asn:SequenceOf | asn:SetOf" mode="EncodeSimpleValue" xml:space="default">
     <xsl:param name="writerName"/>

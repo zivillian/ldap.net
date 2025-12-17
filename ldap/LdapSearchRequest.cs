@@ -22,10 +22,9 @@ namespace zivillian.ldap
 
         public IReadOnlyList<LdapAttributeSelection> Attributes { get; }
 
-        internal LdapSearchRequest(Asn1LdapMessage message)
+        internal LdapSearchRequest(Asn1SearchRequest search, Asn1LdapMessage message)
             : base(message)
         {
-            var search = message.ProtocolOp.SearchRequest;
             BaseObject = new LdapDistinguishedName(search.BaseObject.Span);
             Scope = search.Scope;
             DerefAliases = search.DerefAliases;
@@ -56,7 +55,7 @@ namespace zivillian.ldap
             }
         }
 
-        public LdapSearchRequest(int messageId, string baseDn, SearchScope scope, string filter, string[] attributes, bool attributesOnly, TimeSpan timeout, int sizeLimit, LdapControl[] controls)
+        public LdapSearchRequest(int messageId, string baseDn, SearchScope scope, string filter, string[]? attributes, bool attributesOnly, TimeSpan timeout, int sizeLimit, LdapControl[]? controls)
             : base(messageId, controls)
         {
             if (timeout < TimeSpan.Zero)
@@ -87,14 +86,14 @@ namespace zivillian.ldap
         internal override void SetProtocolOp(Asn1ProtocolOp op)
         {
             op.SearchRequest = new Asn1SearchRequest
-            {
-                BaseObject =  BaseObject.GetBytes(),
-                Scope = Scope,
-                DerefAliases = DerefAliases,
-                TimeLimit = (int) TimeLimit.TotalSeconds,
-                TypesOnly = TypesOnly,
-                Filter = Filter.GetAsn(),
-            };
+            (
+                BaseObject.GetBytes(),
+                Scope,
+                DerefAliases,
+                (int)TimeLimit.TotalSeconds,
+                TypesOnly,
+                Filter.GetAsn()
+            );
 
             if (SizeLimit == Int32.MaxValue)
                 op.SearchRequest.SizeLimit = 0;

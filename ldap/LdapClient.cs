@@ -19,10 +19,10 @@ namespace zivillian.ldap
         private int _sizeLimit;
         private int _messageId;
         private TimeSpan _timeLimit;
-        private Task _reader;
-        private Task _dispatcher;
+        private Task? _reader;
+        private Task? _dispatcher;
         private bool _closed;
-        private Pipe _pipe;
+        private Pipe? _pipe;
         private readonly SemaphoreSlim _writeLock;
         private readonly ConcurrentDictionary<int, MessageState> _receiveQueue = new ConcurrentDictionary<int, MessageState>();
         private readonly CancellationTokenSource _closeTokenSource;
@@ -120,17 +120,17 @@ namespace zivillian.ldap
             return SearchAsync(baseDn, scope, filter, null, cancellationToken);
         }
 
-        public Task<LdapSearchResult> SearchAsync(string baseDn, SearchScope scope, string filter, string[] attributes, CancellationToken cancellationToken)
+        public Task<LdapSearchResult> SearchAsync(string baseDn, SearchScope scope, string filter, string[]? attributes, CancellationToken cancellationToken)
         {
             return SearchAsync(baseDn, scope, filter, attributes, false, cancellationToken);
         }
 
-        public Task<LdapSearchResult> SearchAsync(string baseDn, SearchScope scope, string filter, string[] attributes, bool attributeTypesOnly, CancellationToken cancellationToken)
+        public Task<LdapSearchResult> SearchAsync(string baseDn, SearchScope scope, string filter, string[]? attributes, bool attributeTypesOnly, CancellationToken cancellationToken)
         {
             return SearchInternalAsync(baseDn, scope, filter, attributes, attributeTypesOnly, TimeSpan.Zero, 0, null, cancellationToken);
         }
 
-        public async Task<LdapSearchResult> SearchAsync(string baseDn, SearchScope scope, string filter, string[] attributes, bool attributeTypesOnly, TimeSpan timeout, CancellationToken cancellationToken)
+        public async Task<LdapSearchResult> SearchAsync(string baseDn, SearchScope scope, string filter, string[]? attributes, bool attributeTypesOnly, TimeSpan timeout, CancellationToken cancellationToken)
         {
             using (var timeoutTokenSource = new CancellationTokenSource(timeout))
             using (var combined = CancellationTokenSource.CreateLinkedTokenSource(timeoutTokenSource.Token, cancellationToken))
@@ -139,7 +139,7 @@ namespace zivillian.ldap
             }
         }
 
-        public async Task<LdapSearchResult> SearchAsync(string baseDn, SearchScope scope, string filter, string[] attributes, bool attributeTypesOnly, TimeSpan timeout, int sizeLimit, LdapControl[] serverControls, CancellationToken cancellationToken)
+        public async Task<LdapSearchResult> SearchAsync(string baseDn, SearchScope scope, string filter, string[]? attributes, bool attributeTypesOnly, TimeSpan timeout, int sizeLimit, LdapControl[] serverControls, CancellationToken cancellationToken)
         {
             using (var timeoutTokenSource = new CancellationTokenSource(timeout))
             using (var combined = CancellationTokenSource.CreateLinkedTokenSource(timeoutTokenSource.Token, cancellationToken))
@@ -186,7 +186,7 @@ namespace zivillian.ldap
             }
         }
 
-        private async Task<LdapSearchResult> SearchInternalAsync(string baseDn, SearchScope scope, string filter, string[] attributes, bool attributeTypesOnly, TimeSpan timeout, int sizeLimit, LdapControl[] serverControls, CancellationToken cancellationToken)
+        private async Task<LdapSearchResult> SearchInternalAsync(string baseDn, SearchScope scope, string? filter, string[]? attributes, bool attributeTypesOnly, TimeSpan timeout, int sizeLimit, LdapControl[]? serverControls, CancellationToken cancellationToken)
         {
             if (filter is null)
                 filter = "(objectclass=*)";
@@ -274,13 +274,12 @@ namespace zivillian.ldap
 
             await _client.ConnectAsync(Hostname, Port).ConfigureAwait(false);
             _pipe = new Pipe(new PipeOptions(pauseWriterThreshold:MaxMessageSize));
-            _reader = ReadAsync(_closeTokenSource.Token);
-            _dispatcher = DispatchAsync(_closeTokenSource.Token);
+            _reader = ReadAsync(_pipe.Writer, _closeTokenSource.Token);
+            _dispatcher = DispatchAsync(_pipe.Reader, _closeTokenSource.Token);
         }
 
-        private async Task DispatchAsync(CancellationToken cancellationToken)
+        private async Task DispatchAsync(PipeReader reader, CancellationToken cancellationToken)
         {
-            var reader = _pipe.Reader;
             try
             {
                 using (var socket = _client.Client)
@@ -313,24 +312,24 @@ namespace zivillian.ldap
                         break;
                     reader.AdvanceTo(buffer.Start, buffer.End);
                 }
-                reader.Complete();
+                await reader.CompleteAsync();
             }
             catch (LdapException ex)
             {
-                reader.Complete(ex);
+                await reader.CompleteAsync(ex);
             }
             catch (SocketException ex)
             {
-                reader.Complete(ex);
+                await reader.CompleteAsync(ex);
             }
             catch (OperationCanceledException ex)
             {
-                reader.Complete(ex);
+                await reader.CompleteAsync(ex);
             }
             catch (ObjectDisposedException ex)
             {
                 if (ex.ObjectName != reader.GetType().FullName)
-                    reader.Complete(ex);
+                    await reader.CompleteAsync(ex);
             }
         }
 
@@ -363,9 +362,8 @@ namespace zivillian.ldap
             }
         }
         
-        private async Task ReadAsync(CancellationToken cancellationToken)
+        private async Task ReadAsync(PipeWriter writer, CancellationToken cancellationToken)
         {
-            var writer = _pipe.Writer;
             try
             {
                 using (var socket = _client.Client)

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text;
 
@@ -14,7 +15,7 @@ namespace zivillian.ldap
             return keystring;
         }
 
-        public static bool TryParseKeystring(this ReadOnlySpan<byte> data, out string keystring)
+        public static bool TryParseKeystring(this ReadOnlySpan<byte> data, [NotNullWhen(true)] out string? keystring)
         {
             //keystring = leadkeychar *keychar
             //leadkeychar = ALPHA
@@ -26,7 +27,7 @@ namespace zivillian.ldap
             return TryParseKeychar(data, out keystring);
         }
 
-        public static bool TryParseKeystring(this ReadOnlySpan<char> data, out string keystring)
+        public static bool TryParseKeystring(this ReadOnlySpan<char> data, [NotNullWhen(true)] out string? keystring)
         {
             //keystring = leadkeychar *keychar
             //leadkeychar = ALPHA
@@ -45,7 +46,7 @@ namespace zivillian.ldap
             return result;
         }
 
-        public static bool TryParseKeychar(this ReadOnlySpan<byte> data, out string keychar)
+        public static bool TryParseKeychar(this ReadOnlySpan<byte> data, [NotNullWhen(true)] out string? keychar)
         {
             //keychar = ALPHA / DIGIT / HYPHEN
             keychar = null;
@@ -60,7 +61,7 @@ namespace zivillian.ldap
             return true;
         }
 
-        public static bool TryParseKeychar(this ReadOnlySpan<char> data, out string keychar)
+        public static bool TryParseKeychar(this ReadOnlySpan<char> data, [NotNullWhen(true)] out string? keychar)
         {
             //keychar = ALPHA / DIGIT / HYPHEN
             keychar = null;
@@ -91,7 +92,7 @@ namespace zivillian.ldap
             return Encoding.UTF8.GetBytes(ldapstring);
         }
 
-        public static bool TryParseNumericOid(this ReadOnlySpan<byte> data, out string numericoid)
+        public static bool TryParseNumericOid(this ReadOnlySpan<byte> data, [NotNullWhen(true)] out string? numericoid)
         {
             //numericoid = number 1*( DOT number )
             numericoid = null;
@@ -108,7 +109,7 @@ namespace zivillian.ldap
             return true;
         }
 
-        public static bool TryParseNumericOid(this ReadOnlySpan<char> data, out string numericoid)
+        public static bool TryParseNumericOid(this ReadOnlySpan<char> data, [NotNullWhen(true)] out string? numericoid)
         {
             //numericoid = number 1*( DOT number )
             numericoid = null;
@@ -137,7 +138,7 @@ namespace zivillian.ldap
             return Encoding.ASCII.GetBytes(numericoid);
         }
 
-        public static bool TryParseHexstring(this ReadOnlySpan<char> data, out string hexstring)
+        public static bool TryParseHexstring(this ReadOnlySpan<char> data, [NotNullWhen(true)] out string? hexstring)
         {
             //hexstring = SHARP 1*hexpair
             //hexpair = HEX HEX
@@ -180,7 +181,7 @@ namespace zivillian.ldap
             ' ', '#', '='
         };
         
-        public static bool TryUnescapeString(this ReadOnlySpan<char> data, out string unescaped)
+        public static bool TryUnescapeString(this ReadOnlySpan<char> data, [NotNullWhen(true)] out string? unescaped)
         {
             //todo handle multi byte hex
             unescaped = null;

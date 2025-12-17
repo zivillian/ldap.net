@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace zivillian.ldap
 {
@@ -10,7 +11,7 @@ namespace zivillian.ldap
 
         public bool AllOperationalAttributes { get; }
 
-        public LdapAttributeDescription Selector { get; }
+        public LdapAttributeDescription? Selector { get; }
 
         public LdapAttributeSelection(ReadOnlySpan<byte> data)
             :this(data.LdapString())
@@ -23,7 +24,7 @@ namespace zivillian.ldap
             {
                 AllUserAttributes = true;
             }
-            else if (data.Length == 3 && data == "1.1")
+            else if (data.Length == 3 && data is "1.1")
             {
                 NoAttributes = true;
             }
@@ -45,9 +46,9 @@ namespace zivillian.ldap
                 return "1.1";
             if (AllOperationalAttributes)
                 return "+";
-            if (Selector != null)
+            if (Selector is not null)
                 return Selector.ToString();
-            return base.ToString();
+            throw new InvalidOperationException("this cannot happen");
         }
 
         public ReadOnlyMemory<byte> GetBytes()

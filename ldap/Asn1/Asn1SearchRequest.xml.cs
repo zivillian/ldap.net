@@ -18,7 +18,7 @@ namespace zivillian.ldap.Asn1
         internal int TimeLimit;
         internal bool TypesOnly;
         internal Asn1Filter Filter;
-        internal ReadOnlyMemory<byte>[] Attributes;
+        internal ReadOnlyMemory<byte>[] Attributes = [];
 
         internal void Encode(AsnWriter writer)
         {

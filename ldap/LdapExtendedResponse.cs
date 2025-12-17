@@ -14,14 +14,13 @@ namespace zivillian.ldap
 
         public IReadOnlyList<string> Referrals { get; }
 
-        public string Name { get; }
+        public string? Name { get; }
 
         public ReadOnlyMemory<byte>? Value { get; }
 
-        internal LdapExtendedResponse(Asn1LdapMessage message)
+        internal LdapExtendedResponse(Asn1ExtendedResponse extended, Asn1LdapMessage message)
             : base(message)
         {
-            var extended = message.ProtocolOp.ExtendedResponse;
             ResultCode = extended.ResultCode;
             MatchedDN = new LdapDistinguishedName(extended.MatchedDN.Span);
             DiagnosticMessage = extended.DiagnosticMessage.Span.LdapString();

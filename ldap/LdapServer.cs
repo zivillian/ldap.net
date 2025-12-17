@@ -25,9 +25,9 @@ namespace zivillian.ldap
         private readonly List<Task> _clients;
         private readonly TopObjectClass _rootDse;
         private readonly HashSet<string> _controls;
-        private SslServerAuthenticationOptions _sslOptions;
-        private TcpListener _sslListener;
-        private readonly IPAddress _localAddress;
+        private SslServerAuthenticationOptions? _sslOptions;
+        private TcpListener? _sslListener;
+        private readonly IPAddress? _localAddress;
 
         protected LdapServer(ushort port, TopObjectClass rootDse)
             : this(TcpListener.Create(port), rootDse)
@@ -62,7 +62,7 @@ namespace zivillian.ldap
         public void UseSsl(ushort port, SslServerAuthenticationOptions sslOptions)
         {
             _sslOptions = sslOptions;
-            if (_localAddress == null)
+            if (_localAddress is null)
             {
                 _sslListener = TcpListener.Create(port);
             }
@@ -80,21 +80,20 @@ namespace zivillian.ldap
                 bool running = true;
                 cancellationToken.Register(() => running = false);
                 var cancellationTask = Task.Delay(Timeout.Infinite, combined.Token);
-                var accept = _listener.AcceptTcpClientAsync();
+                var accept = _listener.AcceptTcpClientAsync(combined.Token).AsTask();
                 Task<TcpClient> sslAccept;
-                if (_sslOptions != null)
+                if (_sslOptions is not null)
                 {
-                    _sslListener.Start();
-                    sslAccept = _sslListener.AcceptTcpClientAsync();
+                    _sslListener!.Start();
+                    sslAccept = _sslListener.AcceptTcpClientAsync(combined.Token).AsTask();
                 }
                 else
                 {
-                    sslAccept = Task.Delay(-1, combined.Token).ContinueWith(x => (TcpClient) null, combined.Token,
-                        TaskContinuationOptions.LongRunning, TaskScheduler.Current);
+                    sslAccept = cancellationTask.ContinueWith(_ => (TcpClient) null!, combined.Token);
                 }
                 while (running)
                 {
-                    await Task.WhenAny(_clients.Concat(new []{accept, sslAccept, cancellationTask})).ConfigureAwait(false);
+                    await Task.WhenAny(_clients.Concat([accept, sslAccept, cancellationTask]));
                     if (accept.IsCompleted || sslAccept.IsCompleted)
                     {
                         try
@@ -103,14 +102,14 @@ namespace zivillian.ldap
                             bool ssl;
                             if (accept.IsCompleted)
                             {
-                                client = await accept.ConfigureAwait(false);
-                                accept = _listener.AcceptTcpClientAsync();
+                                client = await accept;
+                                accept = _listener.AcceptTcpClientAsync(combined.Token).AsTask();
                                 ssl = false;
                             }
                             else
                             {
-                                client = await sslAccept.ConfigureAwait(false);
-                                sslAccept = _sslListener.AcceptTcpClientAsync();
+                                client = await sslAccept;
+                                sslAccept = _sslListener!.AcceptTcpClientAsync(combined.Token).AsTask();
                                 ssl = true;
                             }
                             _clients.Add(HandleClient(client, ssl, combined.Token));
@@ -126,7 +125,7 @@ namespace zivillian.ldap
                         var finished = _clients.Where(x => x.IsCompleted).ToArray();
                         foreach (var client in finished)
                         {
-                            await client.ConfigureAwait(false);
+                            await client;
                             _clients.Remove(client);
                         }
                     }
@@ -171,7 +170,7 @@ namespace zivillian.ldap
 
         private async Task OnRequestAsync(LdapRequestMessage message, LdapClientConnection connection)
         {
-            if (!await connection.TryAddPendingAsync(message).ConfigureAwait(false))
+            if (!await connection.TryAddPendingAsync(message))
                 return;
             try
             {
@@ -187,13 +186,13 @@ namespace zivillian.ldap
                     connection.ContinueRead();
                     try
                     {
-                        await connection.BeginBindAsync().ConfigureAwait(false);
-                        var response = await BindRequestAsync(bind, connection).ConfigureAwait(false);
-                        await WriteAsync(response, connection).ConfigureAwait(false);
+                        await connection.BeginBindAsync();
+                        var response = await BindRequestAsync(bind, connection);
+                        await WriteAsync(response, connection);
                     }
                     catch(Exception ex)
                     {
-                        await WriteAsync(bind.Response(ResultCode.Other, ex.Message), connection).ConfigureAwait(false);
+                        await WriteAsync(bind.Response(ResultCode.Other, ex.Message), connection);
                     }
                     finally
                     {
@@ -208,11 +207,11 @@ namespace zivillian.ldap
                 else if (message is LdapSearchRequest search)
                 {
                     connection.ContinueRead();
-                    await SearchRequestAsync(search, connection).ConfigureAwait(false);
+                    await SearchRequestAsync(search, connection);
                 }
                 else if (message is LdapExtendedRequest extended)
                 {
-                    await ExtendedRequestAsync(extended, connection).ConfigureAwait(false);
+                    await ExtendedRequestAsync(extended, connection);
                 }
                 else
                 {
@@ -253,12 +252,12 @@ namespace zivillian.ldap
             ResultCode result = ResultCode.AuthMethodNotSupported;
             if (request.Simple != null)
             {
-                result = await OnBindAsync(request.Name, request.Simple.Value, connection).ConfigureAwait(false);
+                result = await OnBindAsync(request.Name, request.Simple.Value, connection);
             }
             else if (request.SaslMechanism == SupportedSASLMechanismsAttribute.Anonymous)
             {
                 var credentials = request.SaslCredentials.GetValueOrDefault(ReadOnlyMemory<byte>.Empty);
-                result = await OnSaslBindAsync(request.Name, String.Empty, credentials, connection).ConfigureAwait(false);
+                result = await OnSaslBindAsync(request.Name, String.Empty, credentials, connection);
             }
             else if (request.SaslMechanism == SupportedSASLMechanismsAttribute.Plain)
             {
@@ -280,7 +279,7 @@ namespace zivillian.ldap
                         first++;
                         var user = Encoding.UTF8.GetString(credentials.Slice(first, last - first).Span);
                         var password = credentials.Slice(last + 1);
-                        result = await OnSaslBindAsync(request.Name, user, password, connection).ConfigureAwait(false);
+                        result = await OnSaslBindAsync(request.Name, user, password, connection);
                     }
                 }
             }
@@ -307,12 +306,12 @@ namespace zivillian.ldap
                 using(var cts = new CancellationTokenSource(request.TimeLimit))
                 using (var combined = CancellationTokenSource.CreateLinkedTokenSource(connection.CancellationToken, cts.Token))
                 {
-                    await SearchRequestAsync(request, connection, combined.Token).ConfigureAwait(false);
+                    await SearchRequestAsync(request, connection, combined.Token);
                 }
             }
             else
             {
-                await SearchRequestAsync(request, connection, connection.CancellationToken).ConfigureAwait(false);
+                await SearchRequestAsync(request, connection, connection.CancellationToken);
             }
         }
 
@@ -326,7 +325,7 @@ namespace zivillian.ldap
                     (filter.Attribute.Oid.Equals("objectClass", StringComparison.OrdinalIgnoreCase) || filter.Attribute.Oid == "2.5.4.0"))
                 {
                     ICollection<LdapAttribute> attributes = _rootDse.GetAttributes(request.Attributes, request.TypesOnly).ToList();
-                    if (_sslOptions != null && request.Attributes.Where(x=>x.Selector != null).Any(x=>x.Selector.Oid == SupportedExtensionAttribute.OidValue || x.Selector.Oid == SupportedExtensionAttribute.ShortName))
+                    if (_sslOptions != null && request.Attributes.Where(x=>x.Selector is not null).Any(x=>x.Selector!.Oid == SupportedExtensionAttribute.OidValue || x.Selector.Oid == SupportedExtensionAttribute.ShortName))
                     {
                         var attribute = attributes.OfType<SupportedExtensionAttribute>().FirstOrDefault();
                         if (attribute == null)
@@ -342,18 +341,18 @@ namespace zivillian.ldap
                             attribute.Entries.Add(LdapExtendedRequest.StartTLS);
                         }
                     }
-                    attributes = await OnGetRootDSEAsync(attributes, connection, cancellationToken).ConfigureAwait(false);
+                    attributes = await OnGetRootDSEAsync(attributes, connection, cancellationToken);
                     var entry = request.Result(LdapDistinguishedName.Empty, attributes.ToArray(), Array.Empty<LdapControl>());
-                    await WriteAsync(entry, connection).ConfigureAwait(false);
-                    await WriteAsync(request.Done(), connection).ConfigureAwait(false);
+                    await WriteAsync(entry, connection);
+                    await WriteAsync(request.Done(), connection);
                 }
                 else
                 {
-                    var results = await OnSearchAsync(request, connection, cancellationToken).ConfigureAwait(false);
+                    var results = await OnSearchAsync(request, connection, cancellationToken);
                     bool done = false;
                     foreach (var response in results)
                     {
-                        await WriteAsync(response, connection).ConfigureAwait(false);
+                        await WriteAsync(response, connection);
                         if (response is LdapSearchResultDone)
                         {
                             done = true;
@@ -362,14 +361,14 @@ namespace zivillian.ldap
                     }
                     if (!done)
                     {
-                        await WriteAsync(request.Done(), connection).ConfigureAwait(false);
+                        await WriteAsync(request.Done(), connection);
                     }
                 }
             }
             catch (OperationCanceledException)
             {
                 var done = request.Done(ResultCode.TimeLimitExceeded);
-                await WriteAsync(done, connection).ConfigureAwait(false);
+                await WriteAsync(done, connection);
             }
         }
 
@@ -385,22 +384,23 @@ namespace zivillian.ldap
                 return OnExtendedAsync(request, connection).ContinueWith(x =>
                 {
                     var response = x.Result;
-                    return WriteAsync(response, connection).ConfigureAwait(false);
+                    return WriteAsync(response, connection);
                 }, connection.CancellationToken, TaskContinuationOptions.OnlyOnRanToCompletion, TaskScheduler.Current);
             }
         }
 
         private async Task StartTLS(LdapExtendedRequest request, LdapClientConnection connection)
         {
-            if (_sslOptions == null || !await connection.BeginStartSSL().ConfigureAwait(false))
+            if (_sslOptions is null || !await connection.BeginStartSSL())
             {
                 connection.ContinueRead();
-                await WriteAsync(request.NotSupported(), connection).ConfigureAwait(false);
+                await WriteAsync(request.NotSupported(), connection);
+                return;
             }
             try
             {
-                await WriteAsync(request.StartTlsResponse(), connection).ConfigureAwait(false);
-                await connection.StartSSLAsync(_sslOptions).ConfigureAwait(false);
+                await WriteAsync(request.StartTlsResponse(), connection);
+                await connection.StartSSLAsync(_sslOptions);
                 connection.ContinueRead();
             }
             finally
@@ -421,12 +421,12 @@ namespace zivillian.ldap
                     {
                         try
                         {
-                            await connection.UseSSLAsync(_sslOptions).ConfigureAwait(false);
+                            await connection.UseSSLAsync(_sslOptions!);
                         }
                         catch (Exception ex) when (ex is IOException || ex is AuthenticationException)
                         {
                             //client may have disconnected during ssl handshake
-                            cts.Cancel();
+                            await cts.CancelAsync();
                             OnClientDisconnected(connection.Id);
                             return;
                         }
@@ -435,11 +435,11 @@ namespace zivillian.ldap
                     {
                         var writing = FillPipeAsync(connection);
                         var reading = ReadPipeAsync(connection);
-                        await Task.WhenAny(reading, writing).ConfigureAwait(false);
+                        await Task.WhenAny(reading, writing);
                     }
                     finally
                     {
-                        cts.Cancel();
+                        await cts.CancelAsync();
                         OnClientDisconnected(connection.Id);
                     }
                 }
@@ -453,7 +453,7 @@ namespace zivillian.ldap
                 while (connection.IsConnected)
                 {
                     var buffer = connection.Writer.GetMemory(1024);
-                    var read = await connection.ReadAsync(buffer).ConfigureAwait(false);
+                    var read = await connection.ReadAsync(buffer);
                     if (read == 0)
                         break;
                     connection.Writer.Advance(read);
@@ -461,15 +461,15 @@ namespace zivillian.ldap
                     if (flushed.IsCompleted)
                         break;
                 }
-                connection.Writer.Complete();
+                await connection.Writer.CompleteAsync();
             }
             catch (OperationCanceledException ex)
             {
-                connection.Writer.Complete(ex);
+                await connection.Writer.CompleteAsync(ex);
             }
             catch (SocketException ex)
             {
-                connection.Writer.Complete(ex);
+                await connection.Writer.CompleteAsync(ex);
             }
         }
 
@@ -488,20 +488,20 @@ namespace zivillian.ldap
                         tasks.Add(readTask);
                         while (!read.IsCompleted)
                         {
-                            await Task.WhenAny(tasks).ConfigureAwait(false);
+                            await Task.WhenAny(tasks);
                             if (!read.IsCompleted)
                             {
                                 //remove finished messages
                                 var finished = tasks.Where(x => x.IsCompleted).ToList();
                                 foreach (var task in finished)
                                 {
-                                    await task.ConfigureAwait(false);
+                                    await task;
                                     tasks.Remove(task);
                                 }
                             }
                         }
                         tasks.Remove(readTask);
-                        result = await readTask.ConfigureAwait(false);
+                        result = await readTask;
                     }
                     else
                     {
@@ -538,25 +538,25 @@ namespace zivillian.ldap
                         break;
                     connection.Reader.AdvanceTo(buffer.Start, buffer.End);
                 }
-                connection.Reader.Complete();
+                await connection.Reader.CompleteAsync();
             }
             catch (LdapException ex)
             {
                 OnError(connection, ex);
-                connection.Reader.Complete(ex);
+                await connection.Reader.CompleteAsync(ex);
             }
             catch (SocketException ex)
             {
-                connection.Reader.Complete(ex);
+                await connection.Reader.CompleteAsync(ex);
             }
             catch (OperationCanceledException ex)
             {
-                connection.Reader.Complete(ex);
+                await connection.Reader.CompleteAsync(ex);
             }
             catch (ObjectDisposedException ex)
             {
                 if (ex.ObjectName != connection.Reader.GetType().FullName)
-                    connection.Reader.Complete(ex);
+                    await connection.Reader.CompleteAsync(ex);
             }
         }
 
@@ -566,7 +566,7 @@ namespace zivillian.ldap
             var asnwriter = new AsnWriter(AsnEncodingRules.BER);
             asn.Encode(asnwriter);
             var bytes = asnwriter.Encode();
-            await connection.WriteAsync(bytes).ConfigureAwait(false);
+            await connection.WriteAsync(bytes);
         }
 
         private static bool TryReadTagAndLength(ReadOnlySequence<byte> buffer, out long length)
@@ -616,8 +616,9 @@ namespace zivillian.ldap
             return LdapRequestMessage.Create(message);
         }
 
-        private bool CriticalControlsSupported(IEnumerable<LdapControl> controls)
+        private bool CriticalControlsSupported(IEnumerable<LdapControl>? controls)
         {
+            if (controls is null) return true;
             foreach (var control in controls)
             {
                 if (control.Criticality)

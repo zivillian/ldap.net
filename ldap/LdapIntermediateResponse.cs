@@ -6,13 +6,12 @@ namespace zivillian.ldap
 {
     public class LdapIntermediateResponse : LdapRequestMessage
     {
-        public string Name { get; }
+        public string? Name { get; }
         
         public ReadOnlyMemory<byte>? Value { get; }
 
-        internal LdapIntermediateResponse(Asn1LdapMessage message) : base(message)
+        internal LdapIntermediateResponse(Asn1IntermediateResponse intermediate, Asn1LdapMessage message) : base(message)
         {
-            var intermediate = message.ProtocolOp.IntermediateResponse;
             if (intermediate.Name.HasValue)
                 Name = intermediate.Name.Value.Span.NumericOid();
             Value = intermediate.Value;

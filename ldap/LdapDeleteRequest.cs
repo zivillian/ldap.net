@@ -7,10 +7,10 @@ namespace zivillian.ldap
     {
         public LdapDistinguishedName DN { get; }
 
-        internal LdapDeleteRequest(Asn1LdapMessage message)
+        internal LdapDeleteRequest(ReadOnlyMemory<byte> request, Asn1LdapMessage message)
             : base(message)
         {
-            DN = new LdapDistinguishedName(message.ProtocolOp.DelRequest.Value.Span);
+            DN = new LdapDistinguishedName(request.Span);
         }
 
         internal override void SetProtocolOp(Asn1ProtocolOp op)

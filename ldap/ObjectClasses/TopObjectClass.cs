@@ -13,17 +13,17 @@ namespace zivillian.ldap.ObjectClasses
             ObjectClass.Entries.Add("top");
         }
 
-        public LdapDistinguishedName Parent { get; set; }
+        public LdapDistinguishedName? Parent { get; set; }
 
         public ObjectClassAttribute ObjectClass { get; }
 
-        public CreatorsNameAttribute CreatorsName { get; set; }
+        public CreatorsNameAttribute? CreatorsName { get; set; }
 
-        public CreateTimestampAttribute CreateTimestamp { get; set; }
+        public CreateTimestampAttribute? CreateTimestamp { get; set; }
 
-        public ModifiersNameAttribute ModifiersName { get; set; }
+        public ModifiersNameAttribute? ModifiersName { get; set; }
 
-        public ModifyTimestampAttribute ModifyTimestamp { get; set; }
+        public ModifyTimestampAttribute? ModifyTimestamp { get; set; }
 
         public ICollection<LdapAttribute> GetAttributes(IReadOnlyList<LdapAttributeSelection> selection, bool typesOnly)
         {
@@ -41,7 +41,7 @@ namespace zivillian.ldap.ObjectClasses
                     .Where(x => !x.AllUserAttributes)
                     .Where(x => !x.NoAttributes)
                     .Where(x => !x.AllOperationalAttributes)
-                    .Select(x => x.Selector)
+                    .Select(x => x.Selector!)
                     .ToList();
 
                 if (selection.Any(x => x.AllUserAttributes))
@@ -73,12 +73,12 @@ namespace zivillian.ldap.ObjectClasses
 
         public IEnumerable<AbstractLdapAttribute> GetAttributes()
         {
-            var attributes = new List<AbstractLdapAttribute>();
+            var attributes = new List<AbstractLdapAttribute?>();
             GetAttributes(attributes);
-            return attributes.Where(x=>x != null).Where(x=>x.HasValue);
+            return attributes.Where(x => x is not null).Where(x => x!.HasValue).Select(x => x!);
         }
 
-        protected virtual void GetAttributes(List<AbstractLdapAttribute> result)
+        protected virtual void GetAttributes(List<AbstractLdapAttribute?> result)
         {
             result.Add(ObjectClass);
             result.Add(CreatorsName);

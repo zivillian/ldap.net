@@ -6,11 +6,11 @@ namespace zivillian.ldap
 {
     public class LdapExtensibleMatchFilter : LdapFilter
     {
-        public LdapAttributeDescription Attribute { get; }
+        public LdapAttributeDescription? Attribute { get; }
 
         public bool IsDnAttribute { get; }
 
-        public string MatchingRuleId { get; }
+        public string? MatchingRuleId { get; }
 
         public ReadOnlyMemory<byte> Value { get; }
 
@@ -31,7 +31,7 @@ namespace zivillian.ldap
                 Attribute = new LdapAttributeDescription(description);
             IsDnAttribute = isDn;
             if (!matchingRule.IsEmpty)
-            MatchingRuleId = matchingRule.Oid();
+                MatchingRuleId = matchingRule.Oid();
             Value = assertion.LdapString();
         }
 

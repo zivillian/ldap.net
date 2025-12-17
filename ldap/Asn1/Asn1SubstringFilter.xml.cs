@@ -12,7 +12,7 @@ namespace zivillian.ldap.Asn1
     internal sealed partial class Asn1SubstringFilter
     {
         internal ReadOnlyMemory<byte> Type;
-        internal Asn1Substring[] Substrings;
+        internal Asn1Substring[] Substrings = [];
 
         internal void Encode(AsnWriter writer)
         {

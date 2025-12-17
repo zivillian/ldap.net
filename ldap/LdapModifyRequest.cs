@@ -9,10 +9,9 @@ namespace zivillian.ldap
 
         public IReadOnlyList<LdapChange> Changes { get; }
 
-        internal LdapModifyRequest(Asn1LdapMessage message)
+        internal LdapModifyRequest(Asn1ModifyRequest modify, Asn1LdapMessage message)
             : base(message)
         {
-            var modify = message.ProtocolOp.ModifyRequest;
             ObjectDN = new LdapDistinguishedName(modify.Object.Span);
             var changes = new LdapChange[modify.Changes.Length];
             for (int i = 0; i < modify.Changes.Length; i++)

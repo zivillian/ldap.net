@@ -10,11 +10,11 @@ namespace zivillian.ldap.ObjectClasses
             ObjectClass.Entries.Add("organizationalPerson");
         }
 
-        public LocalityAttribute Locality { get; set; }
+        public LocalityAttribute? Locality { get; set; }
         
-        public OuAttribute OrganizationalUnitName { get; set; }
+        public OuAttribute? OrganizationalUnitName { get; set; }
 
-        protected override void GetAttributes(List<AbstractLdapAttribute> result)
+        protected override void GetAttributes(List<AbstractLdapAttribute?> result)
         {
             result.Add(Locality);
             result.Add(OrganizationalUnitName);

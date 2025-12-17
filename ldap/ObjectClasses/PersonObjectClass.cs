@@ -16,11 +16,11 @@ namespace zivillian.ldap.ObjectClasses
 
         public CnAttribute Cn { get; }
 
-        public TelephoneNumberAttribute TelephoneNumber  { get; set; }
+        public TelephoneNumberAttribute? TelephoneNumber  { get; set; }
 
-        public DescriptionAttribute Description { get; set; }
+        public DescriptionAttribute? Description { get; set; }
 
-        protected override void GetAttributes(List<AbstractLdapAttribute> result)
+        protected override void GetAttributes(List<AbstractLdapAttribute?> result)
         {
             result.Add(Sn);
             result.Add(Cn);

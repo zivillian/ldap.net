@@ -12,7 +12,7 @@ namespace zivillian.ldap.Asn1
     internal sealed partial class Asn1PartialAttribute
     {
         internal ReadOnlyMemory<byte> Type;
-        internal ReadOnlyMemory<byte>[] Values;
+        internal ReadOnlyMemory<byte>[] Values = [];
 
         internal void Encode(AsnWriter writer)
         {

@@ -52,9 +52,7 @@ namespace zivillian.ldap
 
         public override string ToString()
         {
-            if (RDNs is null)
-                return base.ToString();
-            return String.Join<LdapRelativeDistinguishedName>(',', RDNs);
+            return String.Join(',', RDNs);
         }
 
         public ReadOnlyMemory<byte> GetBytes()
@@ -69,7 +67,7 @@ namespace zivillian.ldap
 
         public LdapRelativeDistinguishedName(LdapAttributeTypeAndValue value)
         {
-            Values = new[] {value};
+            Values = [value];
         }
 
         public LdapRelativeDistinguishedName(ReadOnlySpan<char> rdn)
@@ -89,9 +87,7 @@ namespace zivillian.ldap
 
         public override string ToString()
         {
-            if (Values is null)
-                return base.ToString();
-            return String.Join<LdapAttributeTypeAndValue>('+', Values);
+            return String.Join('+', Values);
         }
 
         public ReadOnlyMemory<byte> GetBytes()
@@ -158,8 +154,6 @@ namespace zivillian.ldap
 
         public override string ToString()
         {
-            if (Type is null || Value is null)
-                return base.ToString();
             if (IsHexstring)
                 return $"{Type}={Value}";
             return $"{Type}={Value.AsSpan().EscapeString()}";

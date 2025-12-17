@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using zivillian.ldap.Asn1;
 
 namespace zivillian.ldap
@@ -7,10 +8,11 @@ namespace zivillian.ldap
     {
         public IReadOnlyList<string> Uris { get; }
 
-        internal LdapSearchResultReference(Asn1LdapMessage message)
+        internal LdapSearchResultReference(ReadOnlyMemory<byte>[] referral,
+            Asn1LdapMessage message)
             : base(message)
         {
-            Uris = LdapResultExtensions.GetReferrals(message.ProtocolOp.SearchResultReference);
+            Uris = LdapResultExtensions.GetReferrals(referral);
         }
 
         internal override void SetProtocolOp(Asn1ProtocolOp op)

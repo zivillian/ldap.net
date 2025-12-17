@@ -10,11 +10,10 @@ namespace zivillian.ldap
         
         public LdapRelativeDistinguishedName NewRDN { get; }
 
-        public LdapDistinguishedName NewSuperior { get; }
+        public LdapDistinguishedName? NewSuperior { get; }
 
-        internal LdapModifyDNRequest(Asn1LdapMessage message) : base(message)
+        internal LdapModifyDNRequest(Asn1ModifyDNRequest modify, Asn1LdapMessage message) : base(message)
         {
-            var modify = message.ProtocolOp.ModifyDNRequest;
             Entry = new LdapDistinguishedName(modify.Entry.Span);
             NewRDN = new LdapRelativeDistinguishedName(modify.NewRDN.Span.LdapString());
             DeleteOldRDN = modify.DeleteOldRDN;

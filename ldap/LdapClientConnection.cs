@@ -24,7 +24,7 @@ namespace zivillian.ldap
         {
             Id = Guid.NewGuid();
             _client = client;
-            Stream = client?.GetStream();
+            Stream = client.GetStream();
             Pipe = pipe;
             _cts = cts;
             CancellationToken = _cts.Token;

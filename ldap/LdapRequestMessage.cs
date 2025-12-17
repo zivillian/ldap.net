@@ -8,7 +8,7 @@ namespace zivillian.ldap
     {
         public int Id { get; }
 
-        public IReadOnlyList<LdapControl> Controls { get; set; }
+        public IReadOnlyList<LdapControl>? Controls { get; set; }
 
         internal LdapRequestMessage(Asn1LdapMessage message)
         {
@@ -18,7 +18,7 @@ namespace zivillian.ldap
             Controls = LdapControl.Create(message.Controls);
         }
 
-        internal LdapRequestMessage(int messageId, LdapControl[] controls)
+        internal LdapRequestMessage(int messageId, LdapControl[]? controls)
         {
             if (Id < 0)
                 throw new ArgumentOutOfRangeException(nameof(messageId));
@@ -29,11 +29,11 @@ namespace zivillian.ldap
         internal Asn1LdapMessage GetAsn()
         {
             var result = new Asn1LdapMessage
-            {
-                MessageID = Id,
-                Controls = LdapControl.Create(Controls),
-                ProtocolOp = new Asn1ProtocolOp()
-            };
+            (
+                Id,
+                new Asn1ProtocolOp(),
+                LdapControl.Create(Controls)
+            );
             SetProtocolOp(result.ProtocolOp);
             return result;
         }
@@ -42,89 +42,89 @@ namespace zivillian.ldap
 
         internal static LdapRequestMessage Create(Asn1LdapMessage message)
         {
-            if (message.ProtocolOp.BindRequest != null)
+            if (message.ProtocolOp.BindRequest is not null)
             {
-                return new LdapBindRequest(message);
+                return new LdapBindRequest(message.ProtocolOp.BindRequest, message);
             }
-            else if (message.ProtocolOp.BindResponse != null)
+            else if (message.ProtocolOp.BindResponse is not null)
             {
-                return new LdapBindResponse(message);
+                return new LdapBindResponse(message.ProtocolOp.BindResponse, message);
             }
-            else if (message.ProtocolOp.DelRequest != null)
+            else if (message.ProtocolOp.DelRequest is not null)
             {
-                return new LdapDeleteRequest(message);
+                return new LdapDeleteRequest(message.ProtocolOp.DelRequest.Value, message);
             }
-            else if (message.ProtocolOp.SearchRequest != null)
+            else if (message.ProtocolOp.SearchRequest is not null)
             {
-                return new LdapSearchRequest(message);
+                return new LdapSearchRequest(message.ProtocolOp.SearchRequest, message);
             }
-            else if (message.ProtocolOp.UnbindRequest != null)
+            else if (message.ProtocolOp.UnbindRequest is not null)
             {
-                return new LdapUnbindRequest(message);
+                return new LdapUnbindRequest(message);//todo why is UnbindRequest not used?
             }
-            else if (message.ProtocolOp.SearchResEntry != null)
+            else if (message.ProtocolOp.SearchResEntry is not null)
             {
-                return new LdapSearchResultEntry(message);
+                return new LdapSearchResultEntry(message.ProtocolOp.SearchResEntry, message);
             }
-            else if (message.ProtocolOp.SearchResultDone != null)
+            else if (message.ProtocolOp.SearchResultDone is not null)
             {
-                return new LdapSearchResultDone(message);
+                return new LdapSearchResultDone(message.ProtocolOp.SearchResultDone, message);
             }
-            else if (message.ProtocolOp.SearchResultReference != null)
+            else if (message.ProtocolOp.SearchResultReference is not null)
             {
-                return new LdapSearchResultReference(message);
+                return new LdapSearchResultReference(message.ProtocolOp.SearchResultReference, message);
             }
-            else if (message.ProtocolOp.ModifyRequest != null)
+            else if (message.ProtocolOp.ModifyRequest is not null)
             {
-                return new LdapModifyRequest(message);
+                return new LdapModifyRequest(message.ProtocolOp.ModifyRequest, message);
             }
-            else if (message.ProtocolOp.ModifyResponse != null)
+            else if (message.ProtocolOp.ModifyResponse is not null)
             {
-                return new LdapModifyResponse(message);
+                return new LdapModifyResponse(message.ProtocolOp.ModifyResponse, message);
             }
-            else if (message.ProtocolOp.AddRequest != null)
+            else if (message.ProtocolOp.AddRequest is not null)
             {
-                return new LdapAddRequest(message);
+                return new LdapAddRequest(message.ProtocolOp.AddRequest, message);
             }
-            else if (message.ProtocolOp.AddResponse != null)
+            else if (message.ProtocolOp.AddResponse is not null)
             {
-                return new LdapAddResponse(message);
+                return new LdapAddResponse(message.ProtocolOp.AddResponse, message);
             }
-            else if (message.ProtocolOp.DelResponse != null)
+            else if (message.ProtocolOp.DelResponse is not null)
             {
-                return new LdapDeleteResponse(message);
+                return new LdapDeleteResponse(message.ProtocolOp.DelResponse, message);
             }
-            else if (message.ProtocolOp.ModifyDNRequest != null)
+            else if (message.ProtocolOp.ModifyDNRequest is not null)
             {
-                return new LdapModifyDNRequest(message);
+                return new LdapModifyDNRequest(message.ProtocolOp.ModifyDNRequest, message);
             }
-            else if (message.ProtocolOp.ModifyDNResponse != null)
+            else if (message.ProtocolOp.ModifyDNResponse is not null)
             {
-                return new LdapModifyDNResponse(message);
+                return new LdapModifyDNResponse(message.ProtocolOp.ModifyDNResponse, message);
             }
-            else if (message.ProtocolOp.CompareRequest != null)
+            else if (message.ProtocolOp.CompareRequest is not null)
             {
-                return new LdapCompareRequest(message);
+                return new LdapCompareRequest(message.ProtocolOp.CompareRequest, message);
             }
-            else if (message.ProtocolOp.CompareResponse != null)
+            else if (message.ProtocolOp.CompareResponse is not null)
             {
-                return new LdapCompareResponse(message);
+                return new LdapCompareResponse(message.ProtocolOp.CompareResponse, message);
             }
-            else if (message.ProtocolOp.AbandonRequest != null)
+            else if (message.ProtocolOp.AbandonRequest is not null)
             {
-                return new LdapAbandonRequest(message);
+                return new LdapAbandonRequest(message.ProtocolOp.AbandonRequest.Value, message);
             }
-            else if (message.ProtocolOp.ExtendedRequest != null)
+            else if (message.ProtocolOp.ExtendedRequest is not null)
             {
-                return new LdapExtendedRequest(message);
+                return new LdapExtendedRequest(message.ProtocolOp.ExtendedRequest, message);
             }
-            else if (message.ProtocolOp.ExtendedResponse != null)
+            else if (message.ProtocolOp.ExtendedResponse is not null)
             {
-                return new LdapExtendedResponse(message);
+                return new LdapExtendedResponse(message.ProtocolOp.ExtendedResponse, message);
             }
-            else if (message.ProtocolOp.IntermediateResponse != null)
+            else if (message.ProtocolOp.IntermediateResponse is not null)
             {
-                return new LdapIntermediateResponse(message);
+                return new LdapIntermediateResponse(message.ProtocolOp.IntermediateResponse, message);
             }
             else
             {

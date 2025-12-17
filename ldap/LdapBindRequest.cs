@@ -11,14 +11,13 @@ namespace zivillian.ldap
 
         public ReadOnlyMemory<byte>? Simple { get; }
 
-        public string SaslMechanism { get; }
+        public string? SaslMechanism { get; }
 
         public ReadOnlyMemory<byte>? SaslCredentials { get; }
 
-        internal LdapBindRequest(Asn1LdapMessage message)
+        internal LdapBindRequest(Asn1BindRequest bindRequest, Asn1LdapMessage message)
             : base(message)
         {
-            var bindRequest = message.ProtocolOp.BindRequest;
             var version = bindRequest.Version;
             if (version < 1 || version > 127)
                 throw new ArgumentException("invalid LDAP version");
@@ -57,11 +56,11 @@ namespace zivillian.ldap
         internal override void SetProtocolOp(Asn1ProtocolOp op)
         {
             var bindRequest = op.BindRequest = new Asn1BindRequest
-            {
-                Version = Version,
-                Name = Name.GetBytes(),
-                Authentication = new Asn1AuthenticationChoice()
-            };
+            (
+                Version,
+                Name.GetBytes(),
+                new Asn1AuthenticationChoice()
+            );
             if (Simple.HasValue)
             {
                 bindRequest.Authentication.Simple = Simple.Value;

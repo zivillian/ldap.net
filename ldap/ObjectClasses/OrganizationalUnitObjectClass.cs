@@ -14,11 +14,11 @@ namespace zivillian.ldap.ObjectClasses
 
         public OuAttribute Ou { get; }
 
-        public DescriptionAttribute Description { get; set; }
+        public DescriptionAttribute? Description { get; set; }
         
-        public LocalityAttribute Locality { get; set; }
+        public LocalityAttribute? Locality { get; set; }
 
-        protected override void GetAttributes(List<AbstractLdapAttribute> result)
+        protected override void GetAttributes(List<AbstractLdapAttribute?> result)
         {
             result.Add(Ou);
             result.Add(Description);

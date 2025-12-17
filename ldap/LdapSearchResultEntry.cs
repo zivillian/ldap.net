@@ -10,10 +10,9 @@ namespace zivillian.ldap
 
         public IReadOnlyList<LdapAttribute> Attributes { get; }
 
-        internal LdapSearchResultEntry(Asn1LdapMessage message)
+        internal LdapSearchResultEntry(Asn1SearchResultEntry search, Asn1LdapMessage message)
             : base(message)
         {
-            var search = message.ProtocolOp.SearchResEntry;
             ObjectName = new LdapDistinguishedName(search.ObjectName.Span);
             if (search.Attributes.Length > 0)
             {

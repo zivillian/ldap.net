@@ -16,10 +16,9 @@ namespace zivillian.ldap
 
         public ReadOnlyMemory<byte>? ServerSaslCreds { get; }
 
-        internal LdapBindResponse(Asn1LdapMessage message)
+        internal LdapBindResponse(Asn1BindResponse bindResponse, Asn1LdapMessage message)
             : base(message)
         {
-            var bindResponse = message.ProtocolOp.BindResponse;
             ResultCode = bindResponse.ResultCode;
             MatchedDN = new LdapDistinguishedName(bindResponse.MatchedDN.Span);
             DiagnosticMessage = bindResponse.DiagnosticMessage.Span.LdapString();

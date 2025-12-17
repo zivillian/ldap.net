@@ -19,7 +19,7 @@ namespace zivillian.ldap
 
         public string Oid { get; }
 
-        internal static LdapControl[] Create(Asn1Control[] controls)
+        internal static LdapControl[] Create(Asn1Control[]? controls)
         {
             if (controls is null)
                 return Array.Empty<LdapControl>();
@@ -31,7 +31,7 @@ namespace zivillian.ldap
             return result;
         }
 
-        internal static Asn1Control[] Create(IReadOnlyList<LdapControl> controls)
+        internal static Asn1Control[]? Create(IReadOnlyList<LdapControl>? controls)
         {
             if (controls is null)
                 return null;

@@ -6,12 +6,12 @@ namespace zivillian.ldap
 {
     internal static class LdapResultExtensions
     {
-        public static string[] GetReferrals(this ILdapResult source, ReadOnlyMemory<byte>[] referral)
+        public static string[] GetReferrals(this ILdapResult source, ReadOnlyMemory<byte>[]? referral)
         {
             return GetReferrals(referral);
         }
 
-        public static string[] GetReferrals(ReadOnlyMemory<byte>[] referral)
+        public static string[] GetReferrals(ReadOnlyMemory<byte>[]? referral)
         {
             if (referral is null || referral.Length == 0) 
                 return Array.Empty<string>();
@@ -24,12 +24,12 @@ namespace zivillian.ldap
             return result;
         }
 
-        public static ReadOnlyMemory<byte>[] GetReferrals(this ILdapResult source, IReadOnlyList<string> referral)
+        public static ReadOnlyMemory<byte>[]? GetReferrals(this ILdapResult source, IReadOnlyList<string> referral)
         {
             return GetReferrals(referral);
         }
 
-        public static ReadOnlyMemory<byte>[] GetReferrals(IReadOnlyList<string> referral)
+        public static ReadOnlyMemory<byte>[]? GetReferrals(IReadOnlyList<string> referral)
         {
             if (referral is null || referral.Count == 0)
                 return null;

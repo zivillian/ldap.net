@@ -12,7 +12,7 @@ namespace zivillian.ldap.Asn1
     internal sealed partial class Asn1ModifyRequest
     {
         internal ReadOnlyMemory<byte> Object;
-        internal Asn1Change[] Changes;
+        internal Asn1Change[] Changes = [];
 
         internal void Encode(AsnWriter writer)
         {

@@ -44,8 +44,6 @@ namespace zivillian.ldap
 
         public override string ToString()
         {
-            if (Oid is null || Options is null)
-                return base.ToString();
             if (Options.Count == 0)
                 return Oid;
             return $"{Oid};{String.Join(';', Options)}";
