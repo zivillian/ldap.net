@@ -31,4 +31,6 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: nuget
-        path: 'ldap/bin/Release/*.{snupkg,nupkg}'
+        path: |
+          'ldap/bin/Release/*.nupkg'
+          'ldap/bin/Release/*.snupkg'
