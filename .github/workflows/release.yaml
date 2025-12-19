@@ -3,8 +3,6 @@ name: dotnet
 on:
   push:
     branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
 
 jobs:
   build:
@@ -25,7 +23,7 @@ jobs:
       run: dotnet test
     
     - name: dotnet pack
-      run: dotnet pack
+      run: "dotnet pack -p:PublicRelease=true"
     
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
