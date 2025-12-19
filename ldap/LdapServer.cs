@@ -193,6 +193,14 @@ namespace zivillian.ldap
                     catch(Exception ex)
                     {
                         await WriteAsync(bind.Response(ResultCode.Other, ex.Message), connection);
+                        try
+                        {
+                            throw new LdapException("error during bind", ex);
+                        }
+                        catch(LdapException ldapEx)
+                        {
+                            OnError(connection, ldapEx);
+                        }
                     }
                     finally
                     {
