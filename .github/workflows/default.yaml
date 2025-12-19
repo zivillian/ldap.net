@@ -32,5 +32,5 @@ jobs:
       with:
         name: nuget
         path: |
-          'ldap/bin/Release/*.nupkg'
-          'ldap/bin/Release/*.snupkg'
+          ldap/bin/Release/*.nupkg
+          ldap/bin/Release/*.snupkg
