@@ -9,7 +9,9 @@ namespace zivillian.ldap.Asn1
         {
             try
             {
-                return Asn1LdapMessage.Decode(data, AsnEncodingRules.BER);
+                var result = Asn1LdapMessage.Decode(data, AsnEncodingRules.BER);
+                result.DecodeAdditional();
+                return result;
             }
             catch (Exception ex) when (ex is AsnContentException || ex is CryptographicException)
             {

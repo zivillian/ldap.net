@@ -14,7 +14,7 @@ namespace zivillian.ldap.Asn1
         internal ReadOnlyMemory<byte> BaseObject;
         internal SearchScope Scope;
         internal DerefAliases DerefAliases;
-        internal int SizeLimit;
+        internal ReadOnlyMemory<byte> SizeLimitRaw;
         internal int TimeLimit;
         internal bool TypesOnly;
         internal Asn1Filter Filter;
@@ -32,7 +32,7 @@ namespace zivillian.ldap.Asn1
             writer.WriteOctetString(BaseObject.Span);
             writer.WriteEnumeratedValue(Scope);
             writer.WriteEnumeratedValue(DerefAliases);
-            writer.WriteInteger(SizeLimit);
+            writer.WriteEncodedValue(SizeLimitRaw.Span);
             writer.WriteInteger(TimeLimit);
             writer.WriteBoolean(TypesOnly);
             Filter.Encode(writer);
@@ -92,12 +92,8 @@ namespace zivillian.ldap.Asn1
 
             decoded.Scope = sequenceReader.ReadEnumeratedValue<SearchScope>();
             decoded.DerefAliases = sequenceReader.ReadEnumeratedValue<DerefAliases>();
-
-            if (!sequenceReader.TryReadInt32(out decoded.SizeLimit))
-            {
-                sequenceReader.ThrowIfNotEmpty();
-            }
-
+            tmpSpan = sequenceReader.ReadEncodedValue();
+            decoded.SizeLimitRaw = rebindSpan.Overlaps(tmpSpan.Span, out offset) ? rebind.Slice(offset, tmpSpan.Length) : tmpSpan.ToArray();
 
             if (!sequenceReader.TryReadInt32(out decoded.TimeLimit))
             {

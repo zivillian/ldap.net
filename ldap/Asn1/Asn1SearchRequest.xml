@@ -22,7 +22,7 @@
   <asn:OctetString name="BaseObject"/>
   <asn:Enumerated backingType="SearchScope" name="Scope"/>
   <asn:Enumerated backingType="DerefAliases" name="DerefAliases"/>
-  <asn:Integer backingType="int" name="SizeLimit"/>
+  <asn:AnyValue name="SizeLimitRaw"/>
   <asn:Integer backingType="int" name="TimeLimit"/>
   <asn:Boolean name="TypesOnly"/>
   <asn:AsnType typeName="Asn1Filter" name="Filter"/>
